@@ -2,6 +2,8 @@
 
 Code needs some tidying I am sure but if you git clone this and run test.py it should do some nice fits/residuals/derivatives graphs and save some run time data. You can play around with the settings (I realise my descriptions will also need tidying!). If the code throws up an error it will give advice on what to do to make it work hopefully. Some settings combinations will also give warnings.
 
+The sign flipping routine won't get implemented unless N>10.
+
 You can allow inflection points to occur by changing some of the settings. Currently you have to state which derivative you would like to allow an inflection point in.
 
 There is also a range of basis functions to try. 'normalised_polynomial' works best.
