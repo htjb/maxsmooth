@@ -74,6 +74,5 @@ class setting(object):
         self.cvxopt_maxiter = 1000 #needs explination
         self.filtering=True
         self.all_output=False
-        self.summary_stat_plot=False
         self.ifp=False
         self.ifp_list = 'None'
