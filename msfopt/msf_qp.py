@@ -143,4 +143,3 @@ class max_fit_qp(object):
         parameters=np.array(parameters)
 
         return parameters, obj_func, pass_fail
-msfopt
