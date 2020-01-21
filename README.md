@@ -11,7 +11,7 @@ There is also a range of basis functions to try. 'normalised_polynomial' works b
 ## **Tasks**
 - [ ] Tidy up variable/class/function names.
 - [ ] Simplify  settings descriptions.
-- [ ] Maybe edit the way the run time data is stored for easier access.
+- [x] Maybe edit the way the run time data is stored for easier access.
 - [ ] Add in potential for user to input their own basis function.
 - [ ] Maybe include a 'test all' feature for inflection points. (This will get complicated/time consuming if the user decides to allow inflection points in two of eleven derivatives for a 13th order polynomial for example and isn't really the point of the software).
 
