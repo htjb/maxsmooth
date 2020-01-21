@@ -306,8 +306,8 @@ class msf_fit(object):
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
-                y_fit,Optimum_sign_combinations,derivatives,Optimum_params,Optimum_chi_squareds\
-                    =np.array(y_fit),np.array(Optimum_sign_combinations),np.array(derivatives),np.array(Optimum_params),np.array(Optimum_chi_squareds)
+            y_fit,Optimum_sign_combinations,derivatives,Optimum_params,Optimum_chi_squareds\
+                =np.array(y_fit),np.array(Optimum_sign_combinations),np.array(derivatives),np.array(Optimum_params),np.array(Optimum_chi_squareds)
         if self.fit_type=='qp-sign_flipping':
             y_fit,Optimum_sign_combinations,derivatives,Optimum_params,Optimum_chi_squareds=[],[],[],[],[]
             for i in range(len(self.N)):
@@ -315,13 +315,14 @@ class msf_fit(object):
                     y_result,derive,obj,params,signs=qp(self.x,self.y,self.N[i],mid_point)
                 else:
                     y_result,derive,obj,params,signs=qp_sign_flipping(self.x,self.y,self.N[i],mid_point)
+                print(type(y_fit))
                 y_fit.append(y_result)
                 Optimum_sign_combinations.append(signs)
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
-                y_fit,Optimum_sign_combinations,derivatives,Optimum_params,Optimum_chi_squareds\
-                    =np.array(y_fit),np.array(Optimum_sign_combinations),np.array(derivatives),np.array(Optimum_params),np.array(Optimum_chi_squareds)
+            y_fit,Optimum_sign_combinations,derivatives,Optimum_params,Optimum_chi_squareds\
+                =np.array(y_fit),np.array(Optimum_sign_combinations),np.array(derivatives),np.array(Optimum_params),np.array(Optimum_chi_squareds)
         rms=plotting(self.x,self.y,self.N,y_fit,derivatives)
 
         return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, Optimum_chi_squareds,rms
