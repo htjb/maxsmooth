@@ -1,13 +1,13 @@
 import numpy as np
 import pylab as pl
-from msfopt.msf_qp import max_fit_qp
+from maxsmooth.msf_qp import max_fit_qp
 import time
 from itertools import product
 import os
 import sys
-from msfopt.fit_model import function_fit
-from msfopt.derivatives import derivative_class
-from msfopt.Data_save import save,save_optimum
+from maxsmooth.fit_model import function_fit
+from maxsmooth.derivatives import derivative_class
+from maxsmooth.Data_save import save,save_optimum
 
 class msf_qp_class(object):
     def __init__(self,x,y,N,setting):

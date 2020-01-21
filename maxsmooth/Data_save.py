@@ -17,7 +17,6 @@ class save(object):
             os.mkdir( self.base_dir+'Output_Parameters/')
 
         with open(self.base_dir+'Output_Parameters/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            f.write('\n')
             np.savetxt(f,np.array(self.params).T)
             f.close()
 
@@ -28,7 +27,6 @@ class save(object):
             os.mkdir( self.base_dir+'Output_Signs/')
 
         with open(self.base_dir+'Output_Signs/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            f.write('\n')
             np.savetxt(f,np.array(self.signs))
             f.close()
 
@@ -39,7 +37,6 @@ class save(object):
             os.mkdir( self.base_dir+'Output_Evaluation/')
 
         with open(self.base_dir+'Output_Evaluation/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            #f.write('\n')
             np.savetxt(f,np.array([self.obj_func]))
             f.close()
 
