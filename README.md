@@ -8,6 +8,8 @@ You can allow inflection points to occur by changing some of the settings. Curre
 
 There is also a range of basis functions to try. 'normalised_polynomial' works best.
 
+Everything in the maxsmooth folder now runs without giving any errors using flake8!
+
 ## **Tasks**
 - [x] Tidy up variable/class/function names.
 - [ ] Simplify  settings descriptions.

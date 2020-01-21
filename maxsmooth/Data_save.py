@@ -1,81 +1,94 @@
 import numpy as np
 import os
 
+
 class save(object):
-    def __init__(self,base_dir,params,chi_squared,signs,N,fit_type):
-        self.base_dir=base_dir
-        self.params=params
-        self.chi_squared=chi_squared
-        self.signs=signs
-        self.N=N
-        self.fit_type=fit_type
+    def __init__(self, base_dir, params, chi_squared, signs, N, fit_type):
+        self.base_dir = base_dir
+        self.params = params
+        self.chi_squared = chi_squared
+        self.signs = signs
+        self.N = N
+        self.fit_type = fit_type
 
-        if os.path.isfile( self.base_dir+'Output_Parameters/'):
-            os.remove( self.base_dir+'Output_Parameters/')
+        if os.path.isfile(self.base_dir+'Output_Parameters/'):
+            os.remove(self.base_dir+'Output_Parameters/')
 
-        if not os.path.exists( self.base_dir+'Output_Parameters/'):
-            os.mkdir( self.base_dir+'Output_Parameters/')
+        if not os.path.exists(self.base_dir+'Output_Parameters/'):
+            os.mkdir(self.base_dir+'Output_Parameters/')
 
-        with open(self.base_dir+'Output_Parameters/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            np.savetxt(f,np.array(self.params).T)
+        with open(
+                self.base_dir+'Output_Parameters/'+str(self.N) +
+                '_'+self.fit_type+'.txt', 'a') as f:
+            np.savetxt(f, np.array(self.params).T)
             f.close()
 
-        if os.path.isfile( self.base_dir+'Output_Signs/'):
-            os.remove( self.base_dir+'Output_Signs/')
+        if os.path.isfile(self.base_dir+'Output_Signs/'):
+            os.remove(self.base_dir+'Output_Signs/')
 
-        if not os.path.exists( self.base_dir+'Output_Signs/'):
-            os.mkdir( self.base_dir+'Output_Signs/')
+        if not os.path.exists(self.base_dir+'Output_Signs/'):
+            os.mkdir(self.base_dir+'Output_Signs/')
 
-        with open(self.base_dir+'Output_Signs/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            np.savetxt(f,np.array(self.signs))
+        with open(
+                self.base_dir+'Output_Signs/'+str(self.N) +
+                '_'+self.fit_type+'.txt', 'a') as f:
+            np.savetxt(f, np.array(self.signs))
             f.close()
 
-        if os.path.isfile( self.base_dir+'Output_Evaluation/'):
-            os.remove( self.base_dir+'Output_Evaluation/')
+        if os.path.isfile(self.base_dir+'Output_Evaluation/'):
+            os.remove(self.base_dir+'Output_Evaluation/')
 
-        if not os.path.exists( self.base_dir+'Output_Evaluation/'):
-            os.mkdir( self.base_dir+'Output_Evaluation/')
+        if not os.path.exists(self.base_dir+'Output_Evaluation/'):
+            os.mkdir(self.base_dir+'Output_Evaluation/')
 
-        with open(self.base_dir+'Output_Evaluation/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            np.savetxt(f,np.array([self.chi_squared]))
+        with open(
+                self.base_dir+'Output_Evaluation/'+str(self.N) +
+                '_'+self.fit_type+'.txt', 'a') as f:
+            np.savetxt(f, np.array([self.chi_squared]))
             f.close()
+
 
 class save_optimum(object):
-    def __init__(self,base_dir,time,N,Optimum_signs,Optimum_chi_squared,Optimum_params,fit_type,model_type,ifp,ifp_list,Optimum_pass_fail):
-        self.base_dir=base_dir
-        self.time=time
-        self.N=N
-        self.Optimum_signs=Optimum_signs
-        self.Optimum_chi_squared=Optimum_chi_squared
-        self.Optimum_params=Optimum_params
-        self.fit_type=fit_type
-        self.model_type=model_type
-        self.ifp=ifp
-        self.ifp_list=ifp_list
-        self.Optimum_pass_fail=Optimum_pass_fail
+    def __init__(
+                self, base_dir, time, N, Optimum_signs, Optimum_chi_squared,
+                Optimum_params, fit_type, model_type, ifp, ifp_list,
+                Optimum_pass_fail):
+        self.base_dir = base_dir
+        self.time = time
+        self.N = N
+        self.Optimum_signs = Optimum_signs
+        self.Optimum_chi_squared = Optimum_chi_squared
+        self.Optimum_params = Optimum_params
+        self.fit_type = fit_type
+        self.model_type = model_type
+        self.ifp = ifp
+        self.ifp_list = ifp_list
+        self.Optimum_pass_fail = Optimum_pass_fail
 
-        f=open(self.base_dir + 'Optimal_Results_'+self.fit_type+'_'+str(N)+'.txt','w')
+        f = open(
+                self.base_dir + 'Optimal_Results_'+self.fit_type +
+                '_'+str(N)+'.txt', 'w')
         f.write('Time:\n')
-        np.savetxt(f,np.array([self.time]))
+        np.savetxt(f, np.array([self.time]))
         f.write('Polynomial Order:\n')
-        np.savetxt(f,np.array([self.N]))
+        np.savetxt(f, np.array([self.N]))
         f.write('Number of Derivatives:\n')
-        np.savetxt(f,np.array([self.N-2]))
+        np.savetxt(f, np.array([self.N-2]))
         f.write('Signs:\n')
-        np.savetxt(f,self.Optimum_signs)
+        np.savetxt(f, self.Optimum_signs)
         f.write('Objective Function Value:\n')
-        np.savetxt(f,np.array([self.Optimum_chi_squared]))
+        np.savetxt(f, np.array([self.Optimum_chi_squared]))
         f.write('Parameters:\n')
-        np.savetxt(f,self.Optimum_params)
+        np.savetxt(f, self.Optimum_params)
         f.write('Method:\n')
         f.write(self.fit_type+'\n')
         f.write('Model:\n')
         f.write(self.model_type+'\n')
         f.write('Inflection Points?:\n')
         f.write(str(self.ifp)+'\n')
-        if self.ifp==True:
+        if self.ifp is True:
             f.write('Inflection Point Derivatives:\n')
-            np.savetxt(f,self.ifp_list)
+            np.savetxt(f, self.ifp_list)
             f.write('Inflection Points Used? (0 signifies Yes):\n')
-            np.savetxt(f,self.Optimum_pass_fail)
+            np.savetxt(f, self.Optimum_pass_fail)
         f.close()
