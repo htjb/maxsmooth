@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as pl
 from maxsmooth.settings import setting
-from maxsmooth.msf import msf_qp_class
+from maxsmooth.msf import msf_fit
 
 setting=setting()
 
@@ -18,7 +18,7 @@ y=np.array(y)
 
 N=[3,4,5,6,7,8,9,10]
 
-result=msf_qp_class(x,y,N,setting)
+result=msf_fit(x,y,N,setting)
 print('Objective Funtion Evaluations:\n', result.objective)
 print('Parameters:\n',result.parameters[2])
 print('RMS:\n',result.rms)

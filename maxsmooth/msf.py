@@ -9,7 +9,7 @@ from maxsmooth.fit_model import function_fit
 from maxsmooth.derivatives import derivative_class
 from maxsmooth.Data_save import save,save_optimum
 
-class msf_qp_class(object):
+class msf_fit(object):
     def __init__(self,x,y,N,setting):
         self.x=x
         self.y=y
