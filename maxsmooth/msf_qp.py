@@ -2,8 +2,8 @@ import numpy as np
 import pylab as pl
 #from cvxopt.solvers import qp
 from cvxopt import matrix, solvers
-from msfopt.fit_model import function_fit
-from msfopt.derivatives import derivative_class
+from maxsmooth.fit_model import function_fit
+from maxsmooth.derivatives import derivative_class
 import sys
 import warnings
 
