@@ -10,26 +10,38 @@ class save(object):
         self.N=N
         self.fit_type=fit_type
 
+        if os.path.isfile( self.base_dir+'Output_Parameters/'):
+            os.remove( self.base_dir+'Output_Parameters/')
+
         if not os.path.exists( self.base_dir+'Output_Parameters/'):
             os.mkdir( self.base_dir+'Output_Parameters/')
 
-        f=open(self.base_dir+'Output_Parameters/'+str(self.N)+'_'+self.fit_type+'.txt','a')
-        f.write(str(np.array(self.params).T)+'\n')
-        f.close()
+        with open(self.base_dir+'Output_Parameters/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
+            f.write('\n')
+            np.savetxt(f,np.array(self.params).T)
+            f.close()
+
+        if os.path.isfile( self.base_dir+'Output_Signs/'):
+            os.remove( self.base_dir+'Output_Signs/')
 
         if not os.path.exists( self.base_dir+'Output_Signs/'):
             os.mkdir( self.base_dir+'Output_Signs/')
 
-        f=open(self.base_dir+'Output_Signs/'+str(self.N)+'_'+self.fit_type+'.txt','a')
-        f.write(str(self.signs)+'\n')
-        f.close()
+        with open(self.base_dir+'Output_Signs/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
+            f.write('\n')
+            np.savetxt(f,np.array(self.signs))
+            f.close()
+
+        if os.path.isfile( self.base_dir+'Output_Evaluation/'):
+            os.remove( self.base_dir+'Output_Evaluation/')
 
         if not os.path.exists( self.base_dir+'Output_Evaluation/'):
             os.mkdir( self.base_dir+'Output_Evaluation/')
 
-        f=open(self.base_dir+'Output_Evaluation/'+str(self.N)+'_'+self.fit_type+'.txt','a')
-        f.write(str(self.obj_func)+'\n')
-        f.close()
+        with open(self.base_dir+'Output_Evaluation/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
+            #f.write('\n')
+            np.savetxt(f,np.array([self.obj_func]))
+            f.close()
 
 class save_optimum(object):
     def __init__(self,base_dir,time,N,best_signs,best_obj_func,best_params,fit_type,model_type,ifp,ifp_list,best_pass_fail):
@@ -47,17 +59,17 @@ class save_optimum(object):
 
         f=open(self.base_dir + 'Optimal_Results_'+self.fit_type+'_'+str(N)+'.txt','w')
         f.write('Time:\n')
-        f.write(str(self.time)+'\n')
+        np.savetxt(f,np.array([self.time]))
         f.write('Polynomial Order:\n')
-        f.write(str(self.N)+'\n')
+        np.savetxt(f,np.array([self.N]))
         f.write('Number of Derivatives:\n')
-        f.write(str(self.N-2)+'\n')
+        np.savetxt(f,np.array([self.N-2]))
         f.write('Signs:\n')
-        f.write(str(self.best_signs)+'\n')
+        np.savetxt(f,self.best_signs)
         f.write('Objective Function Value:\n')
-        f.write(str(self.best_obj_func)+'\n')
+        np.savetxt(f,np.array([self.best_obj_func]))
         f.write('Parameters:\n')
-        f.write(str(self.best_params.T)+'\n')
+        np.savetxt(f,self.best_params)
         f.write('Method:\n')
         f.write(self.fit_type+'\n')
         f.write('Model:\n')
@@ -66,7 +78,7 @@ class save_optimum(object):
         f.write(str(self.ifp)+'\n')
         if self.ifp==True:
             f.write('Inflection Point Derivatives:\n')
-            f.write(str(self.ifp_list)+'\n')
+            np.savetxt(f,self.ifp_list)
             f.write('Inflection Points Used? (0 signifies Yes):\n')
-            f.write(str(self.best_pass_fail)+'\n')
+            np.savetxt(f,self.best_pass_fail)
         f.close()

@@ -64,7 +64,7 @@ class setting(object):
             in(see ifp above). This should be a list of derivative orders eg. if I have a fith order
             polynomial and I wish to allow the the second derivative to have an inflection point then
             ifp_list=[2]. If I wished to allow the second and fourth derivative to have inflection points
-            I would write ifp_list=[2,4]. Values in ifp_list cannot exceed N-1.
+            I would write ifp_list=[2,4]. Values in ifp_list cannot exceed N-2.
 
         """
 
