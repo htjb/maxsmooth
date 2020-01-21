@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as pl
-from msfopt.settings import setting
-from msfopt.msf_qp_call import msf_qp_class
+from maxsmooth.settings import setting
+from maxsmooth.msf_qp_call import msf_qp_class
 
 setting=setting()
 
