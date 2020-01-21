@@ -16,11 +16,11 @@ for i in range(len(Tsky)):
 x=np.array(x)
 y=np.array(y)
 
-N=[3,4,5,6,7,8,9,10]
+N=[3,4]#,5,6,7,8,9,10]
 
 result=msf_fit(x,y,N,setting)
 print('Objective Funtion Evaluations:\n', result.objective)
-print('Parameters:\n',result.parameters[2])
+#print('Parameters:\n',result.parameters[2])
 print('RMS:\n',result.rms)
 #print('Fitted Temps:\n',result.y_fit)
 #print('Sign Combinations:\n',result.signs_results)

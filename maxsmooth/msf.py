@@ -1,13 +1,13 @@
 import numpy as np
 import pylab as pl
-from maxsmooth.msf_qp import max_fit_qp
+from maxsmooth.qp import qp_class
 import time
 from itertools import product
 import os
 import sys
-from maxsmooth.fit_model import function_fit
+from maxsmooth.Models import Models_class
 from maxsmooth.derivatives import derivative_class
-from maxsmooth.Data_save import save,save_optimum
+from maxsmooth.Data_save import save, save_optimum
 
 class msf_fit(object):
     def __init__(self,x,y,N,setting):
@@ -37,7 +37,7 @@ class msf_fit(object):
             params, objective_func, passed_failed,passed_signs=[],[],[],[]
             append_params,append_obj,append_pf,append_passed_signs=params.append,objective_func.append,passed_failed.append,passed_signs.append
             for j in range(signs.shape[0]):
-                fit = max_fit_qp(x,y,N,signs[j,:],mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
+                fit = qp_class(x,y,N,signs[j,:],mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
                 parameters, obj_func,pass_fail=fit.parameters,fit.obj_func,fit.pass_fail
                 if self.all_output==True:
                     print('----------------------------------------------------')
@@ -75,7 +75,7 @@ class msf_fit(object):
                     best_sign_combination=passed_signs[f,:]
                     best_objective_func=objective_func.min()
             #np.save(self.base_dir+'Objective_func_'+self.fit_type+'_'+str(N)+'.npy',best_objective_func)
-            y_fit=function_fit(best_params,x,y,N,mid_point,self.model_type).y_sum
+            y_fit=Models_class(best_params,x,y,N,mid_point,self.model_type).y_sum
             derivatives=derivative_class(x,y,best_params,N,best_sign_combination,mid_point,self.model_type,self.ifp)
             derive,best_pass_fail=derivatives.derive,derivatives.pass_fail
 
@@ -121,7 +121,7 @@ class msf_fit(object):
                                 sign =-1
                             signs.append(sign)
                         signs=np.array(signs)
-                        fit = max_fit_qp(x,y,N,signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
+                        fit = qp_class(x,y,N,signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
                         obj_func_old,params,pass_fail=fit.obj_func,fit.parameters,fit.pass_fail
                         if self.all_output==True:
                             print('----------------------------------------------------')
@@ -147,7 +147,7 @@ class msf_fit(object):
                             sign =-1
                         signs.append(sign)
                     signs=np.array(signs)
-                    fit = max_fit_qp(x,y,N,signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
+                    fit = qp_class(x,y,N,signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
                     obj_func_old,params,pass_fail=fit.obj_func,fit.parameters,fit.pass_fail
                     if self.all_output==True:
                         print('----------------------------------------------------')
@@ -181,7 +181,7 @@ class msf_fit(object):
                                     new_signs[h] = signs[h]*-1
                                 else:
                                     new_signs[m]=signs[m]
-                        fit = max_fit_qp(x,y,N,new_signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
+                        fit = qp_class(x,y,N,new_signs,mid_point,self.model_type,self.cvxopt_maxiter,self.filtering,self.all_output,self.ifp,self.ifp_list)
                         obj_func_new,pass_fail,params=fit.obj_func,fit.pass_fail,fit.parameters
                         if self.all_output==True:
                             print('----------------------------------------------------')
@@ -223,7 +223,7 @@ class msf_fit(object):
                     params_result=best_params[j]
                     signs_result=best_signs[j]
             #np.save(self.base_dir+'Objective_func_'+self.fit_type+'_'+str(N)+'.npy',obj_func_result)
-            y_result=function_fit(params_result,x,y,N,mid_point,self.model_type).y_sum
+            y_result=Models_class(params_result,x,y,N,mid_point,self.model_type).y_sum
             derivatives=derivative_class(x,y,params_result,N,signs_result,mid_point,self.model_type,self.ifp)
             derive,best_pass_fail=derivatives.derive,derivatives.pass_fail
 

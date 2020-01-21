@@ -2,7 +2,7 @@ import numpy as np
 import pylab as pl
 #from cvxopt.solvers import qp
 from cvxopt import matrix, solvers
-from maxsmooth.fit_model import function_fit
+from maxsmooth.Models import Models_class
 from maxsmooth.derivatives import derivative_class
 import sys
 import warnings
@@ -10,7 +10,7 @@ import warnings
 warnings.simplefilter('always', UserWarning)
 
 
-class max_fit_qp(object):
+class qp_class(object):
     def __init__(self,x,y,N,signs,mid_point,model_type,cvxopt_maxiter,filtering,all_output,ifp,ifp_list):
         self.x=x
         self.y=y
@@ -121,7 +121,7 @@ class max_fit_qp(object):
 
 
         parameters=qpfit['x']
-        y=function_fit(parameters,self.x,self.y,self.N,self.mid_point,self.model_type).y_sum
+        y=Models_class(parameters,self.x,self.y,self.N,self.mid_point,self.model_type).y_sum
         der=derivative_class(self.x,self.y,parameters,self.N,self.signs,self.mid_point,self.model_type,self.ifp)
         derive=der.derive
         pass_fail=der.pass_fail

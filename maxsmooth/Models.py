@@ -1,6 +1,6 @@
 import numpy as np
 
-class function_fit(object):
+class Models_class(object):
     def __init__(self,params,x,y,N,mid_point,model_type):
         self.x=x
         self.y=y

@@ -1,4 +1,4 @@
-# msf-opt/maxsmooth
+# maxsmooth
 
 Code needs some tidying I am sure but if you git clone this and run test.py it should do some nice fits/residuals/derivatives graphs and save some run time data. You can play around with the settings (I realise my descriptions will also need tidying!). If the code throws up an error it will give advice on what to do to make it work hopefully. Some settings combinations will also give warnings.
 
