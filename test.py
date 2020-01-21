@@ -16,14 +16,15 @@ for i in range(len(Tsky)):
 x=np.array(x)
 y=np.array(y)
 
-N=[3,4]#,5,6,7,8,9,10]
+N=[11]#,4]#,5,6,7,8,9,10]
+#setting.all_output=True
 
 result=msf_fit(x,y,N,setting)
-print('Objective Funtion Evaluations:\n', result.objective)
-#print('Parameters:\n',result.parameters[2])
+print('Objective Funtion Evaluations:\n', result.Optimum_chi)
+#print('Parameters:\n',result.Optimum_params[2])
 print('RMS:\n',result.rms)
 #print('Fitted Temps:\n',result.y_fit)
-#print('Sign Combinations:\n',result.signs_results)
+#print('Sign Combinations:\n',result.Optimum_signs)
 #print('Derivatives:\n',result.derivatives)
 
 pl.subplot(111)

@@ -15,59 +15,51 @@ class derivative_class(object):
         self.mid_point=mid_point
         self.model_type=model_type
         self.ifp=ifp
-        self.derive,self.pass_fail=self.derivatives_func()
+        self.derivatives,self.pass_fail=self.derivatives_func()
 
-    def derivatives_func(self):#,signs):
+    def derivatives_func(self):
         m=np.arange(1,self.N+1,1)
-        deriv=[]
+        derivatives=[]
         for j in range(len(m)-1):
             if m[j]>=2:
-                dif=[]
+                mth_order_derivative=[]
                 for i in range(self.N-m[j]):
                     if i<=(self.N-m[j]):
                         if self.model_type=='normalised_polynomial':
-                            dif_m_bit=(self.y[self.mid_point]/self.x[self.mid_point])*np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x)**i/(self.x[self.mid_point])**(i+1)
-                            dif.append(dif_m_bit)
+                            mth_order_derivative_term=(self.y[self.mid_point]/self.x[self.mid_point])*np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x)**i/(self.x[self.mid_point])**(i+1)
+                            mth_order_derivative.append(mth_order_derivative_term)
                         if self.model_type=='polynomial':
-                            dif_m_bit=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x)**i
-                            dif.append(dif_m_bit)
+                            mth_order_derivative_term=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x)**i
+                            mth_order_derivative.append(mth_order_derivative_term)
                         if self.model_type=='MSF_2017_polynomial':
-                            dif_m_bit=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x-self.x[self.mid_point])**i
-                            dif.append(dif_m_bit)
+                            mth_order_derivative_term=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*(self.x-self.x[self.mid_point])**i
+                            mth_order_derivative.append(mth_order_derivative_term)
                         if self.model_type=='logarithmic_polynomial':
-                            dif_m_bit=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*np.log10(self.x)**i
-                            dif.append(dif_m_bit)
-                dif=np.array(dif)
-                derivative=dif.sum(axis=0)
-                deriv.append([m[j],derivative])
-        deriv=np.array(deriv)
-        derive=[]
-        for i in range(deriv.shape[0]):
-            derive.append(deriv[i,1])
-        derive=np.array(derive)
-        #array_for_checking=np.array([0]*len(self.x))
-        #print(derive[0,:].max()-1e-4)
-        pass_fail=[] #1==pass, 0==fail
-        for i in range(derive.shape[0]):
-            if np.all(derive[i,:]>0) or np.all(derive[i,:]<0):
+                            mth_order_derivative_term=np.math.factorial(m[j]+i)/np.math.factorial(i)*self.params[int(m[j])+i]*np.log10(self.x)**i
+                            mth_order_derivative.append(mth_order_derivative_term)
+                mth_order_derivative=np.array(mth_order_derivative)
+                derivatives.append(mth_order_derivative.sum(axis=0))
+        derivatives=np.array(derivatives)
+
+        pass_fail=[]
+        for i in range(derivatives.shape[0]):
+            #In the array pass_fail a 0 signifies that the derivatives features an
+            #inflection point. The position of the 0 in the list informs the user which
+            #derivative that inflection point is in, where position one in the list is
+            #a second order derivative.
+            if np.all(derivatives[i,:]>0) or np.all(derivatives[i,:]<0):
                 pass_fail.append(1)
             else:
                 pass_fail.append(0)
 
         pass_fail=np.array(pass_fail)
 
-        #print('derive',derive)
         if np.any(pass_fail == 0):
             if self.ifp==True:
-                #print('Pass or Fail',pass_fail)
                 warnings.warn('WARNING: setting.ipf = True has lead to derivatives including inflection points.',stacklevel=2)
             if self.ifp==False:
                 print('Pass or fail',pass_fail)
-                #pl.subplot(111)
-                #[pl.plot(self.x,derive[i,:]) for i in range(derive.shape[0])]
-                #pl.show()
-                #pl.close()
                 print('ERROR: "Condition Violated" Derivatives feature crossing points.')
                 sys.exit(1)
 
-        return derive, pass_fail
+        return derivatives, pass_fail

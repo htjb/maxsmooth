@@ -1,11 +1,11 @@
-import os
 import numpy as np
+import os
 
 class save(object):
-    def __init__(self,base_dir,params,obj_func,signs,N,fit_type):
+    def __init__(self,base_dir,params,chi_squared,signs,N,fit_type):
         self.base_dir=base_dir
         self.params=params
-        self.obj_func=obj_func
+        self.chi_squared=chi_squared
         self.signs=signs
         self.N=N
         self.fit_type=fit_type
@@ -37,22 +37,22 @@ class save(object):
             os.mkdir( self.base_dir+'Output_Evaluation/')
 
         with open(self.base_dir+'Output_Evaluation/'+str(self.N)+'_'+self.fit_type+'.txt','a') as f:
-            np.savetxt(f,np.array([self.obj_func]))
+            np.savetxt(f,np.array([self.chi_squared]))
             f.close()
 
 class save_optimum(object):
-    def __init__(self,base_dir,time,N,best_signs,best_obj_func,best_params,fit_type,model_type,ifp,ifp_list,best_pass_fail):
+    def __init__(self,base_dir,time,N,Optimum_signs,Optimum_chi_squared,Optimum_params,fit_type,model_type,ifp,ifp_list,Optimum_pass_fail):
         self.base_dir=base_dir
         self.time=time
         self.N=N
-        self.best_signs=best_signs
-        self.best_obj_func=best_obj_func
-        self.best_params=best_params
+        self.Optimum_signs=Optimum_signs
+        self.Optimum_chi_squared=Optimum_chi_squared
+        self.Optimum_params=Optimum_params
         self.fit_type=fit_type
         self.model_type=model_type
         self.ifp=ifp
         self.ifp_list=ifp_list
-        self.best_pass_fail=best_pass_fail
+        self.Optimum_pass_fail=Optimum_pass_fail
 
         f=open(self.base_dir + 'Optimal_Results_'+self.fit_type+'_'+str(N)+'.txt','w')
         f.write('Time:\n')
@@ -62,11 +62,11 @@ class save_optimum(object):
         f.write('Number of Derivatives:\n')
         np.savetxt(f,np.array([self.N-2]))
         f.write('Signs:\n')
-        np.savetxt(f,self.best_signs)
+        np.savetxt(f,self.Optimum_signs)
         f.write('Objective Function Value:\n')
-        np.savetxt(f,np.array([self.best_obj_func]))
+        np.savetxt(f,np.array([self.Optimum_chi_squared]))
         f.write('Parameters:\n')
-        np.savetxt(f,self.best_params)
+        np.savetxt(f,self.Optimum_params)
         f.write('Method:\n')
         f.write(self.fit_type+'\n')
         f.write('Model:\n')
@@ -77,5 +77,5 @@ class save_optimum(object):
             f.write('Inflection Point Derivatives:\n')
             np.savetxt(f,self.ifp_list)
             f.write('Inflection Points Used? (0 signifies Yes):\n')
-            np.savetxt(f,self.best_pass_fail)
+            np.savetxt(f,self.Optimum_pass_fail)
         f.close()

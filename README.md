@@ -9,7 +9,7 @@ You can allow inflection points to occur by changing some of the settings. Curre
 There is also a range of basis functions to try. 'normalised_polynomial' works best.
 
 ## **Tasks**
-- [ ] Tidy up variable/class/function names.
+- [x] Tidy up variable/class/function names.
 - [ ] Simplify  settings descriptions.
 - [x] Maybe edit the way the run time data is stored for easier access.
 - [ ] Add in potential for user to input their own basis function.
