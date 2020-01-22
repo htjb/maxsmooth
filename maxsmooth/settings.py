@@ -30,9 +30,9 @@ class setting(object):
                     identify the true minimum. The number of repeats needed
                     is dependent on the polynomial order. High polynomial
                     orders require a larger number of repeats to find the true
-                    minimum. Currently the number of repeats is set at 2*N**2.
-                    The sucess of this method can be judged by running with
-                    the 'qp' method.
+                    minimum. Currently the number of repeats is set at
+                    2*(N-2)**2. The sucess of this method can be judged by
+                    running with the 'qp' method.
 
         model_type: (Default = 'normalised_polynomial') The type of model used
             to fit the data.
@@ -50,8 +50,10 @@ class setting(object):
                     log_{10}(y)=sum(p_i*(log_{10}(x))**i). NOTE this model
                     will not work if the y values are negative, for example in
                     the case of uncalibrated data.
+                'user_defined' - Allows the user to implement their own
+                    maximally smooth function to fit to the data.
 
-        base_dir: (Default = 'Data' + '_' + self.model_type+ '/') This is the
+        base_dir: (Default = 'Fitted_Output') This is the
             directory in which the resultant graphs of the fit, derivatives
             and residuals are saved. When testing multiple model types it is
             recommended to include this in the base directory
@@ -66,10 +68,7 @@ class setting(object):
             Setting filtering to True will flag this as a warning and exclude
             these sign combinations when determining the best possible fit.
             Setting filtering to False will cause the program to crash with
-            the error. Setting filtering to True will also save the
-            parameters,objective function value and sign combinations from each
-            successful run of cvxopt to the base directories
-            in seperate folders.
+            the error.
 
         all_output: (Default=False) If set to True this will output the results
             of each run of cvxopt to the terminal.
@@ -88,13 +87,26 @@ class setting(object):
             second and fourth derivative to have inflection points
             I would write ifp_list=[2,4]. Values in ifp_list cannot exceed N-2.
 
+        data_save: (Default = True) Setting data_save to True will save sample
+            graphs of the derivatives, fit and residuals. The inputs to
+            produce these graphs are all outputted from the msf_fit function
+            and they can be reproduced with more specific axis labels/units in
+            the users code. If filtering is also set to True, which it is by
+            default, then parameters,objective function values and sign
+            combinations from each successful run of cvxopt will be saved
+            to the base directories in seperate folders. The condition on
+            filtering prevents saving data from runs of cvxopt that did not
+            find solutions and terminated with a singular KKT matrix.
+
         """
 
         self.fit_type = 'qp-sign_flipping'
         self.model_type = 'normalised_polynomial'
-        self.base_dir = 'Data' + '_' + self.model_type + '/'
+        self.base_dir = 'Fitted_Output/'
         self.cvxopt_maxiter = 1000
         self.filtering = True
         self.all_output = False
         self.ifp = False
         self.ifp_list = 'None'
+        self.data_save = False
+        self.ud_initial_params = False

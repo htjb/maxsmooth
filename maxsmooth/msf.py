@@ -11,18 +11,47 @@ import sys
 
 
 class msf_fit(object):
-    def __init__(self, x, y, N, setting):
+    def __init__(self, x, y, N, setting, **kwargs):
         self.x = x
         self.y = y
         self.N = N
         self.fit_type, self.base_dir, self.model_type, self.filtering, \
             self.all_output, self.cvxopt_maxiter, self.ifp, \
-            self.ifp_list = setting.fit_type, setting.base_dir, \
-            setting.model_type, setting.filtering, setting.all_output, \
-            setting.cvxopt_maxiter, setting.ifp, setting.ifp_list
+            self.ifp_list, self.data_save, self.ud_initial_params = \
+            setting.fit_type, \
+            setting.base_dir, setting.model_type, setting.filtering, \
+            setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
+            setting.ifp_list, setting.data_save, setting.ud_initial_params
+        if ( 'initial_params' in kwargs):
+            self.initial_params = kwargs['initial_params']
+        else:
+            self.initial_params = None
+        if ('basis_functions' in kwargs):
+            self.basis_functions = kwargs['basis_functions']
+        else:
+            self.basis_functions = None
+        if ('data_matrix' in kwargs):
+            self.data_matrix = kwargs['data_matrix']
+        else:
+            self.data_matrix = None
+        if ('der_pres' in kwargs):
+            self.der_pres = kwargs['der_pres']
+        else:
+            self.der_pres = None
+        if ('model' in kwargs):
+            self.model = kwargs['model']
+        else:
+            self.model = None
+        if ('derivatives' in kwargs):
+            self.derivatives_function = kwargs['derivatives']
+        else:
+            self.derivatives_function = None
+        if ('args' in kwargs):
+            self.args = kwargs['args']
+        else:
+            self.args= None
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
             self.Optimum_chi, self.rms = self.fitting()
-
     def fitting(self):
 
         def signs_array(nums):
@@ -36,10 +65,11 @@ class msf_fit(object):
                 '######################################################' +
                 '#######')
             start = time.time()
-            if not os.path.exists(
+            if self.data_save is True:
+                if not os.path.exists(
                     self.base_dir + 'MSF_Order_' + str(N) + '_'
                     + self.fit_type + '/'):
-                os.mkdir(
+                    os.mkdir(
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
 
@@ -53,7 +83,10 @@ class msf_fit(object):
                 fit = qp_class(
                     x, y, N, signs[j, :], mid_point,
                     self.model_type, self.cvxopt_maxiter, self.filtering,
-                    self.all_output, self.ifp, self.ifp_list)
+                    self.all_output, self.ifp, self.ifp_list,
+                    self.initial_params, self.basis_functions,
+                    self.data_matrix, self.der_pres, self.model,
+                    self.derivatives_function, self.args)
 
                 if self.all_output is True:
                     print(
@@ -89,9 +122,10 @@ class msf_fit(object):
                         append_chi(fit.chi_squared)
                         append_pf(fit.pass_fail)
                         append_passed_signs(signs[j, :])
-                        save(
-                            self.base_dir, fit.parameters, fit.chi_squared,
-                            signs[j, :], N, self.fit_type)
+                        if self.data_save is True:
+                            save(
+                                self.base_dir, fit.parameters, fit.chi_squared,
+                                signs[j, :], N, self.fit_type)
             params, chi_squared, pass_fail, passed_signs = np.array(params), \
                 np.array(chi_squared), np.array(pass_fail), \
                 np.array(passed_signs)
@@ -103,10 +137,12 @@ class msf_fit(object):
                     Optimum_sign_combination = passed_signs[f, :]
 
             y_fit = Models_class(
-                Optimum_params, x, y, N, mid_point, self.model_type).y_sum
+                Optimum_params, x, y, N, mid_point, self.model_type, self.model
+                , self.args).y_sum
             der = derivative_class(
                 x, y, Optimum_params, N,
-                Optimum_sign_combination, mid_point, self.model_type, self.ifp)
+                Optimum_sign_combination, mid_point, self.model_type, self.ifp,
+                self.derivatives_function, self.args)
             derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
 
             end = time.time()
@@ -152,14 +188,16 @@ class msf_fit(object):
                 '######################################################' +
                 '#######')
             start = time.time()
-            if not os.path.exists(
+
+            if self.data_save is True:
+                if not os.path.exists(
                     self.base_dir + 'MSF_Order_' + str(N) +
                     '_' + self.fit_type + '/'):
-                os.mkdir(
+                    os.mkdir(
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
 
-            runs = np.arange(0, 2*N*N, 1)
+            runs = np.arange(0, 2*(N-2)**2, 1)
             Run_Optimum_params, Run_Optimum_chi_squared, \
                 Run_Optimum_sign_combination = [], [], []
             for k in range(len(runs)):
@@ -178,7 +216,10 @@ class msf_fit(object):
                             x, y, N, signs, mid_point,
                             self.model_type, self.cvxopt_maxiter,
                             self.filtering, self.all_output, self.ifp,
-                            self.ifp_list)
+                            self.ifp_list, self.initial_params,
+                            self.basis_functions,
+                            self.data_matrix, self.der_pres, self.model,
+                            self.derivatives_function, self.args)
                         chi_squared_old, pass_fail = fit.chi_squared, \
                             fit.pass_fail
                         if self.all_output is True:
@@ -204,9 +245,10 @@ class msf_fit(object):
                                 '--------------------------------------' +
                                 '--------------')
                         if pass_fail != []:
-                            save(
-                                self.base_dir, fit.parameters,
-                                chi_squared_old, signs, N, self.fit_type)
+                            if self.data_save is True:
+                                save(
+                                    self.base_dir, fit.parameters,
+                                    chi_squared_old, signs, N, self.fit_type)
                 else:
                     signs = []
                     append_signs = signs.append
@@ -219,7 +261,10 @@ class msf_fit(object):
                     fit = qp_class(
                         x, y, N, signs, mid_point,
                         self.model_type, self.cvxopt_maxiter, self.filtering,
-                        self.all_output, self.ifp, self.ifp_list)
+                        self.all_output, self.ifp, self.ifp_list,
+                        self.initial_params, self.basis_functions,
+                        self.data_matrix, self.der_pres, self.model,
+                        self.derivatives_function, self.args)
                     chi_squared_old = fit.chi_squared
                     if self.all_output is True:
                         print(
@@ -265,7 +310,10 @@ class msf_fit(object):
                         x, y, N, new_signs, mid_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.filtering, self.all_output, self.ifp,
-                        self.ifp_list)
+                        self.ifp_list, self.initial_params,
+                        self.basis_functions,
+                        self.data_matrix, self.der_pres, self.model,
+                        self.derivatives_function, self.args)
                     chi_squared_new = fit.chi_squared
                     if self.all_output is True:
                         print(
@@ -295,24 +343,27 @@ class msf_fit(object):
                         else:
                             parameters.append(fit.parameters)
                             tested_signs.append(new_signs)
-                            save(
-                                self.base_dir, fit.parameters,
-                                chi_squared_new, new_signs, N,
-                                self.fit_type)
+                            if self.data_save is True:
+                                save(
+                                    self.base_dir, fit.parameters,
+                                    chi_squared_new, new_signs, N,
+                                    self.fit_type)
                     if self.filtering is False:
                         parameters.append(fit.parameters)
                         tested_signs.append(new_signs)
                     if h <= len(signs):
                         pass
                     else:
-                        print(
-                            'ERROR: Sign flipping iterations' +
-                            'has exceeded len(signs)')
-                        sys.exit(1)
+                        break
                     h += 1
                 Run_Optimum_chi_squared.append(chi_squared_old)
-                Run_Optimum_params.append(parameters[-2])
-                Run_Optimum_sign_combination.append(tested_signs[-2])
+                parameters = np.array(parameters)
+                if parameters.shape[0] > 1 :
+                    Run_Optimum_params.append(parameters[-2])
+                    Run_Optimum_sign_combination.append(tested_signs[-2])
+                else:
+                    Run_Optimum_params.append(parameters[0])
+                    Run_Optimum_sign_combination.append(tested_signs[0])
             Run_Optimum_chi_squared = np.array(Run_Optimum_chi_squared)
             for j in range(len(Run_Optimum_chi_squared)):
                 if Run_Optimum_chi_squared[j] == Run_Optimum_chi_squared.min():
@@ -322,10 +373,11 @@ class msf_fit(object):
 
             y_fit = Models_class(
                 Optimum_params, x, y, N, mid_point,
-                self.model_type).y_sum
+                self.model_type, self.model, self.args).y_sum
             der = derivative_class(
                 x, y, Optimum_params, N,
-                Optimum_sign_combination, mid_point, self.model_type, self.ifp)
+                Optimum_sign_combination, mid_point, self.model_type, self.ifp,
+                self.derivatives_function, self.args)
             derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
 
             end = time.time()
@@ -384,10 +436,6 @@ class msf_fit(object):
                 pl.close()
 
                 rms = (np.sqrt(np.sum((y-y_fit[i, :])**2)/len(y)))
-                np.save(
-                    self.base_dir + 'MSF_Order_' + str(N[i]) + '_' +
-                    self.fit_type + '/RMS.npy', rms)
-                rms_array.append(rms)
 
                 pl.subplot(111)
                 pl.plot(x, y - y_fit[i, :], label='RMS = %2.5f' % (rms))
@@ -416,8 +464,6 @@ class msf_fit(object):
                     + self.fit_type + '/Derivatives.pdf')
                 pl.close()
 
-            rms_array = np.array(rms_array)
-            return rms_array
 
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':
@@ -454,7 +500,13 @@ class msf_fit(object):
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
                 np.array(Optimum_params), np.array(Optimum_chi_squareds)
-        rms = plotting(self.x, self.y, self.N, y_fit, derivatives)
+
+        rms = [
+            (np.sqrt(np.sum((self.y-y_fit[i, :])**2)/len(self.y)))
+            for i in range(len(self.N))]
+
+        if self.data_save is True:
+            plotting(self.x, self.y, self.N, y_fit, derivatives)
 
         return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, \
             Optimum_chi_squareds, rms
