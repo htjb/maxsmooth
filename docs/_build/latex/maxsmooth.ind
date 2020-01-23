@@ -1,0 +1,16 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter M
+  \item \spxentry{maxsmooth.msf}\spxextra{module}, \hyperpage{3}
+  \item \spxentry{maxsmooth.settings}\spxextra{module}, \hyperpage{3}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{setting}\spxextra{class in maxsmooth.settings}, \hyperpage{3}
+  \item \spxentry{smooth}\spxextra{class in maxsmooth.msf}, \hyperpage{3}
+
+\end{sphinxtheindex}

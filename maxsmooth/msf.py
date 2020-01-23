@@ -10,8 +10,46 @@ import time
 import os
 import sys
 
+"""
+docstring
+"""
 
 class smooth(object):
+
+    """
+
+    **Parameters:**
+
+        x: *numpy.array* The x data points for the set being fitted.
+
+        y: *numpy.array* The y data points for fitting.
+
+        N: *list* The number of terms in the MSF polynomial function.
+
+        setting: *class atributes* The settings determined by
+        `maxsmooth.settings.setting` and called before smooth().
+
+    **Kwargs:**
+
+        initial_params: *list of length N* Allows the user to overwrite the
+            the default initial parameters which are a list of length N given
+            by,
+
+            .. code:: bash
+
+                params0 = [(self.y[-1]-self.y[0])/2]*(self.N)
+
+            or equivalently in log-space for the 'logarithmic_polynomial'
+            model_type(see Settings),
+
+            .. code:: bash
+
+                params0 = [(np.log10(self.y[-1])-np.log10(self.y[0]))/2] *
+                    (self.N)
+
+
+    """
+
     def __init__(self, x, y, N, setting, **kwargs):
         self.x = x
         self.y = y
