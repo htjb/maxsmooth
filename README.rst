@@ -19,4 +19,4 @@ Dependencies
 ------------
 
 -Python version..
--`pylab https://pypi.org/project/pylab/`
+-`pylab https://pypi.org/project/pylab/`__
