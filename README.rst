@@ -9,15 +9,18 @@ maxsmooth: maximally smooth function fitting
 
 ``maxsmooth`` features a built in library of maximally smooth functions or allows the user to define their own. The addition of possible inflection points is also available to the user. The software has been designed with these two applications in mind and is a simple interface.
 
-Features
---------
-
 Instalation
 -----------
 
 Dependencies
 ------------
 
--Python version..
--`pylab <https://pypi.org/project/pylab/>`__
+Basic requirements:
+
+- Python version..
+- `pylab <https://pypi.org/project/pylab/>`__
 - `numpy <https://pypi.org/project/numpy/>`__
+- `cvxopt <https://pypi.org/project/cvxopt/>`__
+
+Citation
+--------
