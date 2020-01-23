@@ -58,24 +58,27 @@ class smooth(object):
         if ('args' in kwargs):
             self.args = kwargs['args']
         else:
-            self.args= None
+            self.args = None
 
-        self.basis_change=np.array([self.basis_functions, self.der_pres,
+        self.basis_change = np.array([
+            self.basis_functions, self.der_pres,
             self.derivatives_function, self.model])
-        if np.any(self.basis_change == None):
-            if np.any(self.basis_change != None):
-                print('Error: Attempt to change basis functions failed.' +
+        if np.any(self.basis_change is None):
+            if np.any(self.basis_change is not None):
+                print(
+                    'Error: Attempt to change basis functions failed.' +
                     ' One or more functions not defined.' +
                     ' Please consult documentation.')
                 sys.exit(1)
 
-        if np.all(self.basis_change != None):
-                self.model_type = 'User Defined'
-                if self.data_matrix == None:
-                    warnings.warn('Warning: Data matrix unchanged.')
+        if np.all(self.basis_change is not None):
+            self.model_type = 'User Defined'
+            if self.data_matrix is None:
+                warnings.warn('Warning: Data matrix unchanged.')
 
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
             self.Optimum_chi, self.rms = self.fitting()
+
     def fitting(self):
 
         def signs_array(nums):
@@ -92,7 +95,7 @@ class smooth(object):
             if self.data_save is True:
                 if not os.path.exists(
                     self.base_dir + 'MSF_Order_' + str(N) + '_'
-                    + self.fit_type + '/'):
+                        + self.fit_type + '/'):
                     os.mkdir(
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
@@ -161,8 +164,8 @@ class smooth(object):
                     Optimum_sign_combination = passed_signs[f, :]
 
             y_fit = Models_class(
-                Optimum_params, x, y, N, mid_point, self.model_type, self.model
-                , self.args).y_sum
+                Optimum_params, x, y, N, mid_point, self.model_type,
+                self.model, self.args).y_sum
             der = derivative_class(
                 x, y, Optimum_params, N,
                 Optimum_sign_combination, mid_point, self.model_type, self.ifp,
@@ -215,8 +218,8 @@ class smooth(object):
 
             if self.data_save is True:
                 if not os.path.exists(
-                    self.base_dir + 'MSF_Order_' + str(N) +
-                    '_' + self.fit_type + '/'):
+                        self.base_dir + 'MSF_Order_' + str(N) +
+                        '_' + self.fit_type + '/'):
                     os.mkdir(
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
@@ -382,7 +385,7 @@ class smooth(object):
                     h += 1
                 Run_Optimum_chi_squared.append(chi_squared_old)
                 parameters = np.array(parameters)
-                if parameters.shape[0] > 1 :
+                if parameters.shape[0] > 1:
                     Run_Optimum_params.append(parameters[-2])
                     Run_Optimum_sign_combination.append(tested_signs[-2])
                 else:
@@ -443,7 +446,6 @@ class smooth(object):
                 Optimum_sign_combination
 
         def plotting(x, y, N, y_fit, derivatives):
-            rms_array = []
             for i in range(len(N)):
                 pl.subplot(111)
                 pl.plot(
@@ -478,7 +480,7 @@ class smooth(object):
                 pl.subplot(111)
                 [pl.plot(
                     x, derivatives[i][j, :], label='M:' + str(j + 2) +
-                    ' Minimum: %2.2e' %(derivatives[i][j,:].min()))
+                    ' Minimum: %2.2e' % (derivatives[i][j, :].min()))
                     for j in range(derivatives[i].shape[0])]
                 pl.legend(loc=0, fontsize='small')
                 pl.xlabel(r'x')
@@ -488,7 +490,6 @@ class smooth(object):
                     self.base_dir + 'MSF_Order_' + str(N[i]) + '_'
                     + self.fit_type + '/Derivatives.pdf')
                 pl.close()
-
 
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':

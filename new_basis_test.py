@@ -16,6 +16,7 @@ params0 = [y[0]]*(N[0])
 
 b = matrix(y, (len(y), 1), 'd')
 
+
 def basis_functions(x, y, mid_point, N, *args):
 
     A = np.empty([len(x), N])
@@ -26,13 +27,15 @@ def basis_functions(x, y, mid_point, N, *args):
 
     return A
 
+
 def model(x, y, mid_point, N, params, *args):
 
-    y_sum = args[1]*np.sum(
-        [params[i]*(x/args[0])**i
+    y_sum = args[1]*np.sum([
+        params[i]*(x/args[0])**i
         for i in range(N)], axis=0)
 
     return y_sum
+
 
 def derivative(m, i, x, y, mid_point, params, *args):
 
@@ -43,6 +46,7 @@ def derivative(m, i, x, y, mid_point, params, *args):
 
     return mth_order_derivative_term
 
+
 def derivative_pre(m, i, x, y, mid_point, *args):
 
     mth_order_derivative_term = args[1]*np.math.factorial(m+i) / \
@@ -51,12 +55,13 @@ def derivative_pre(m, i, x, y, mid_point, *args):
     return mth_order_derivative_term
 
 
-result = smooth(x, y, N, setting, initial_params=params0,
+result = smooth(
+    x, y, N, setting, initial_params=params0,
     basis_functions=basis_functions, model=model, data_matrix=b,
     derivatives=derivative, der_pres=derivative_pre, args=arguments)
 print('Objective Funtion Evaluations:\n', result.Optimum_chi)
-print('RMS:\n',result.rms)
-# print('Parameters:\n',result.Optimum_params[2])
-# print('Fitted y:\n',result.y_fit)
-# print('Sign Combinations:\n',result.Optimum_signs)
-# print('Derivatives:\n',result.derivatives)
+print('RMS:\n', result.rms)
+# print('Parameters:\n', result.Optimum_params[2])
+# print('Fitted y:\n', result.y_fit)
+# print('Sign Combinations:\n', result.Optimum_signs)
+# print('Derivatives:\n', result.derivatives)

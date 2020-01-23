@@ -47,7 +47,7 @@ class qp_class(object):
                     derivatives.append([0]*len(self.x))
             for i in range(self.N-m):
                 if i < (self.N-m) or i == (self.N-m):
-                    if self.derivative_pres == None:
+                    if self.derivative_pres is None:
                         if self.model_type == 'normalised_polynomial':
                             mth_order_derivative_term = (
                                 self.y[self.mid_point] /
@@ -69,11 +69,11 @@ class qp_class(object):
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i)*(np.log10(self.x))**i
                             derivatives.append(mth_order_derivative_term)
-                    if self.derivative_pres != None:
-                        if self.args == None:
+                    if self.derivative_pres is not None:
+                        if self.args is None:
                             mth_order_derivative_term = self.derivative_pres(
                                 m, i, self.x, self.y, self.mid_point)
-                        if self.args != None:
+                        if self.args is not None:
                             mth_order_derivative_term = self.derivative_pres(
                                 m, i, self.x, self.y, self.mid_point,
                                 *self.args)
@@ -93,7 +93,7 @@ class qp_class(object):
                     derivatives.append(signs[i - 2] * derivative_prefactors)
         G = matrix(derivatives)  # Array of derivative prefactors for all m>=2
 
-        if self.basis_functions == None:
+        if self.basis_functions is None:
             A = np.empty([len(self.x), self.N])
             for h in range(len(self.x)):
                 for i in range(self.N):
@@ -107,19 +107,20 @@ class qp_class(object):
                     if self.model_type == 'logarithmic_polynomial':
                         A[h, i] = np.log10(self.x[h])**i
             A = matrix(A)
-        if self.basis_functions != None:
-            if self.args == None:
-                A = self.basis_functions(self.x, self.y, self.mid_point, self.N)
-            if self.args != None:
-                A = self.basis_functions(self.x, self.y, self.mid_point, self.N,
-                *self.args)
+        if self.basis_functions is not None:
+            if self.args is None:
+                A = self.basis_functions(
+                    self.x, self.y, self.mid_point, self.N)
+            if self.args is not None:
+                A = self.basis_functions(
+                    self.x, self.y, self.mid_point, self.N, *self.args)
 
-        if self.data_matrix == None:
+        if self.data_matrix is None:
             if self.model_type == 'logarithmic_polynomial':
                 b = matrix(np.log10(self.y), (len(self.y), 1), 'd')
             else:
                 b = matrix(self.y, (len(self.y), 1), 'd')
-        if self.data_matrix != None:
+        if self.data_matrix is not None:
             b = self.data_matrix
 
         if self.ifp is False:
@@ -153,15 +154,14 @@ class qp_class(object):
         P = A.T*A
         q = -A.T*b
 
-        if self.initial_params == None:
+        if self.initial_params is None:
             if self.model_type == 'logarithmic_polynomial':
                 params0 = [(np.log10(self.y[-1])-np.log10(self.y[0]))/2] * \
                     (self.N)
             else:
                 params0 = [(self.y[-1]-self.y[0])/2]*(self.N)
-        if self.initial_params != None:
-            params0=self.initial_params
-
+        if self.initial_params is not None:
+            params0 = self.initial_params
 
         qpfit = solvers.coneqp(P, q, G, h, initvals=params0)
 

@@ -6,7 +6,8 @@ warnings.simplefilter('always', UserWarning)
 
 
 class derivative_class(object):
-    def __init__(self, x, y, params, N, signs, mid_point, model_type, ifp,
+    def __init__(
+                self, x, y, params, N, signs, mid_point, model_type, ifp,
                 derivatives_function, args):
         self.signs = signs
         self.x = x
@@ -26,7 +27,7 @@ class derivative_class(object):
             mth_order_derivative = []
             for i in range(self.N-m):
                 if i < (self.N-m) or i == (self.N-m):
-                    if self.derivatives_function == None:
+                    if self.derivatives_function is None:
                         if self.model_type == 'normalised_polynomial':
                             mth_order_derivative_term = (
                                 self.y[self.mid_point] /
@@ -60,14 +61,17 @@ class derivative_class(object):
                                 np.log10(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
-                    if self.derivatives_function != None:
-                        if self.args == None:
-                            mth_order_derivative_term = self.derivatives_function(
-                                m, i, self.x, self.y, self.mid_point, self.params)
-                        if self.args != None:
-                            mth_order_derivative_term = self.derivatives_function(
-                                m, i, self.x, self.y, self.mid_point, self.params,
-                                *self.args)
+                    if self.derivatives_function is not None:
+                        if self.args is None:
+                            mth_order_derivative_term = \
+                                self.derivatives_function(
+                                    m, i, self.x, self.y, self.mid_point,
+                                    self.params)
+                        if self.args is not None:
+                            mth_order_derivative_term = \
+                                self.derivatives_function(
+                                    m, i, self.x, self.y, self.mid_point,
+                                    self.params, *self.args)
                         mth_order_derivative.append(
                             mth_order_derivative_term)
             mth_order_derivative = np.array(mth_order_derivative).sum(axis=0)
