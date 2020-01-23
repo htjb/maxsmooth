@@ -5,12 +5,13 @@ from maxsmooth.Data_save import save, save_optimum
 from itertools import product
 import numpy as np
 import pylab as pl
+import warnings
 import time
 import os
 import sys
 
 
-class msf_fit(object):
+class smooth(object):
     def __init__(self, x, y, N, setting, **kwargs):
         self.x = x
         self.y = y
@@ -22,34 +23,57 @@ class msf_fit(object):
             setting.base_dir, setting.model_type, setting.filtering, \
             setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
             setting.ifp_list, setting.data_save, setting.ud_initial_params
-        if ( 'initial_params' in kwargs):
+
+        if ('initial_params' in kwargs):
             self.initial_params = kwargs['initial_params']
         else:
             self.initial_params = None
+
         if ('basis_functions' in kwargs):
             self.basis_functions = kwargs['basis_functions']
         else:
             self.basis_functions = None
+
         if ('data_matrix' in kwargs):
             self.data_matrix = kwargs['data_matrix']
+            warnings.warn('Data matrix has been changed.', stacklevel=2)
         else:
             self.data_matrix = None
+
         if ('der_pres' in kwargs):
             self.der_pres = kwargs['der_pres']
         else:
             self.der_pres = None
+
         if ('model' in kwargs):
             self.model = kwargs['model']
         else:
             self.model = None
+
         if ('derivatives' in kwargs):
             self.derivatives_function = kwargs['derivatives']
         else:
             self.derivatives_function = None
+
         if ('args' in kwargs):
             self.args = kwargs['args']
         else:
             self.args= None
+
+        self.basis_change=np.array([self.basis_functions, self.der_pres,
+            self.derivatives_function, self.model])
+        if np.any(self.basis_change == None):
+            if np.any(self.basis_change != None):
+                print('Error: Attempt to change basis functions failed.' +
+                    ' One or more functions not defined.' +
+                    ' Please consult documentation.')
+                sys.exit(1)
+
+        if np.all(self.basis_change != None):
+                self.model_type = 'User Defined'
+                if self.data_matrix == None:
+                    warnings.warn('Warning: Data matrix unchanged.')
+
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
             self.Optimum_chi, self.rms = self.fitting()
     def fitting(self):
@@ -453,9 +477,10 @@ class msf_fit(object):
 
                 pl.subplot(111)
                 [pl.plot(
-                    x, derivatives[i][j, :], label='M:' + str(j + 2))
+                    x, derivatives[i][j, :], label='M:' + str(j + 2) +
+                    ' Minimum: %2.2e' %(derivatives[i][j,:].min()))
                     for j in range(derivatives[i].shape[0])]
-                pl.legend(loc=0)
+                pl.legend(loc=0, fontsize='small')
                 pl.xlabel(r'x')
                 pl.ylabel('M Order Derivatives')
                 pl.tight_layout()
