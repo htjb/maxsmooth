@@ -19,4 +19,5 @@ Dependencies
 ------------
 
 -Python version..
--`pylab https://pypi.org/project/pylab/`__
+-`pylab <https://pypi.org/project/pylab/>`__
+- `numpy <https://pypi.org/project/numpy/>`__
