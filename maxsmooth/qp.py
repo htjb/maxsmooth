@@ -13,7 +13,7 @@ class qp_class(object):
             self, x, y, N, signs, mid_point, model_type, cvxopt_maxiter,
             filtering, all_output, ifp, ifp_list, initial_params,
             basis_functions, data_matrix, derivative_pres, model,
-            derivatives_function, args):
+            derivatives_function, args, warnings):
         self.x = x
         self.y = y
         self.N = N
@@ -32,6 +32,7 @@ class qp_class(object):
         self.model = model
         self.derivatives_function = derivatives_function
         self.args = args
+        self.warnings = warnings
         self.parameters, self.chi_squared, self.pass_fail = self.fit()
 
     def fit(self):
@@ -134,11 +135,24 @@ class qp_class(object):
                     ' ifp_list to a list of derivative orders(see' +
                     ' settings.py for more information). ')
                 sys.exit(1)
+            for i in range(len(self.ifp_list)):
+                if self.ifp_list[i]-2 >= (self.N-2):
+                    print(
+                        'ERROR: ifp_list element exceeds the number of' +
+                        ' derivatives')
+                    sys.exit(1)
             else:
                 h_ifp = []
-                ifp_list = np.array(self.ifp_list)
+                ifp_list = [None]*(self.N-2)
                 for i in range(self.N-2):
-                    if np.any(ifp_list-2 == i):
+                    for j in range(len(self.ifp_list)):
+                        if i == self.ifp_list[j]-2:
+                            if ifp_list == []:
+                                ifp_list[i] = i
+                            elif np.any(ifp_list) != i:
+                                ifp_list[i] = (i)
+                for i in range(self.N-2):
+                    if ifp_list[i] == i:
                         h_ifp.append([1e20]*(len(self.x)))
                     else:
                         h_ifp.append([-1e-7]*(len(self.x)))
@@ -171,7 +185,8 @@ class qp_class(object):
             self.model_type, self.model, self.args).y_sum
         der = derivative_class(
             self.x, self.y, parameters, self.N, self.signs, self.mid_point,
-            self.model_type, self.ifp, self.derivatives_function, self.args)
+            self.model_type, self.ifp, self.derivatives_function, self.args,
+            self.warnings)
         pass_fail = der.pass_fail
 
         if 'unknown' in qpfit['status']:
@@ -191,12 +206,13 @@ class qp_class(object):
                     sys.exit(1)
                 if self.filtering is True:
                     pass_fail = []
-                    warnings.warn(
-                        '"Terminated (singular KKT matrix)".' +
-                        ' Problem infeasable with the following sign' +
-                        ' combination, therefore sign combination will' +
-                        ' be excluded when identifying the best solution.',
-                        stacklevel=2)
+                    if self.warnings is True:
+                        warnings.warn(
+                            '"Terminated (singular KKT matrix)".' +
+                            ' Problem infeasable with the following sign' +
+                            ' combination, therefore sign combination will' +
+                            ' be excluded when identifying the best solution.',
+                            stacklevel=2)
 
         chi_squared = np.sum((self.y-y)**2)
         parameters = np.array(parameters)

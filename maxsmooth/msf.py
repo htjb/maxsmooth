@@ -261,11 +261,6 @@ class smooth(object):
                         '-----------------------------------------------' +
                         '-----')
 
-                if self.filtering is False:
-                    append_params(fit.parameters)
-                    append_chi(fit.chi_squared)
-                    append_pf(fit.pass_fail)
-                    append_passed_signs(signs[j, :])
                 if self.filtering is True:
                     if fit.pass_fail == []:
                         pass
@@ -503,9 +498,6 @@ class smooth(object):
                                     self.base_dir, fit.parameters,
                                     chi_squared_new, new_signs, N,
                                     self.fit_type)
-                    if self.filtering is False:
-                        parameters.append(fit.parameters)
-                        tested_signs.append(new_signs)
                     if h <= len(signs):
                         pass
                     else:
