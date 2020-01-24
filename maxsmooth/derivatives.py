@@ -8,7 +8,7 @@ warnings.simplefilter('always', UserWarning)
 class derivative_class(object):
     def __init__(
                 self, x, y, params, N, signs, mid_point, model_type, ifp,
-                derivatives_function, args):
+                derivatives_function, args, warnings):
         self.signs = signs
         self.x = x
         self.y = y
@@ -19,6 +19,7 @@ class derivative_class(object):
         self.ifp = ifp
         self.derivatives_function = derivatives_function
         self.args = args
+        self.warnings = warnings
         self.derivatives, self.pass_fail = self.derivatives_func()
 
     def derivatives_func(self):
@@ -99,9 +100,10 @@ class derivative_class(object):
 
         if np.any(pass_fail == 0):
             if self.ifp is True:
-                warnings.warn(
-                    'WARNING: setting.ipf = True has lead to derivatives' +
-                    ' including inflection points.', stacklevel=2)
+                if self.warnings is True:
+                    warnings.warn(
+                        'WARNING: setting.ipf = True has lead to derivatives' +
+                        ' including inflection points.', stacklevel=2)
             if self.ifp is False:
                 print('Pass or fail', pass_fail)
                 print(

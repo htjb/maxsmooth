@@ -1,3 +1,9 @@
+
+"""
+*smooth* is used to call the fitting routine by the user.
+
+"""
+
 from maxsmooth.qp import qp_class
 from maxsmooth.Models import Models_class
 from maxsmooth.derivatives import derivative_class
@@ -10,13 +16,10 @@ import time
 import os
 import sys
 
-"""
-docstring
-"""
 
 class smooth(object):
 
-    """
+    r"""
 
     **Parameters:**
 
@@ -37,16 +40,96 @@ class smooth(object):
 
             .. code:: bash
 
-                params0 = [(self.y[-1]-self.y[0])/2]*(self.N)
+                params0 = [(y[-1]-y[0])/2]*(self.N)
 
             or equivalently in log-space for the 'logarithmic_polynomial'
             model_type(see Settings),
 
             .. code:: bash
 
-                params0 = [(np.log10(self.y[-1])-np.log10(self.y[0]))/2] *
+                params0 = [(np.log10(y[-1])-np.log10(y[0]))/2] *
                     (self.N)
 
+        The following Kwargs can be used by the user to define thier own basis
+        function. **Further details on the structures of the following matrix
+        and functions can be found in the section `Designing A Basis Function`.
+        **
+
+        data_matrix: *CVXOPT dense matrix of dimensions (len(y),1)* The data
+            matrix is a matrix of y values to be fitted by cvxopt.
+            The default data matrix used by *smooth* is,
+
+            .. code:: bash
+
+                b = matrix(y, (len(y), 1), 'd').
+
+            See CVXOPT documentation for details on building a dense matrix.
+            This will only need to be changed on rare occasions when the
+            fitting space is changed. For example smooth will automatically
+            adjust this matrix to,
+
+            .. code:: bash
+
+                b = matrix(np.log10(y), (len(y), 1), 'd'),
+
+            when model_type is set to 'logarithmic_polynomial' (see settings).
+
+        basis_function: *function with parameters (x, y, mid_point, N)* This is
+            a function of basis functions for the quadratic programming.
+            The variable mid_point is the index at the middle of the datasets
+            x and y.
+
+        model: *function with parameters (x, y, mid_point, N, params)* This is
+            a user defined function describing the model to be fitted to the
+            data.
+
+        der_pres: *function with parameters (m, i, x, y, mid_point)*
+            This function describes the prefactors on the ith term of the mth
+            order derivative used in defining the constraint.
+
+        derivatives: *function with parameters (m, i, x, y, mid_point, params)*
+            User defined function describing the ith term of the mth
+            order derivative used to check that conditions are being met.
+
+        args: *list* of extra arguments for `smooth` to pass to the functions
+            detailed above.
+
+    **Output**
+
+        If N is a list with length greater than 1 then the outputs from smooth
+        are lists and arrays with dimension 0 equal to len(N).
+
+        y_fit:
+            *numpy.array* The fitted arrays of y data from `smooth`.
+
+        Optimum_chi:
+            *numpy.array* The optimum chi squared values for the fit calculated
+            by,
+
+            .. math::
+
+                {X^2=\sum(y-y_{fit})^2}.
+
+        Optimum_params:
+            *numpy.array* The set of parameters corresponding to the optimum
+            fits.
+
+        rms:
+            *list* The rms value of the residuals :math:`{y_{res}=y-y_{fit}}`
+            calculated by,
+
+            .. math::
+
+                {rms=\sqrt{\frac{\sum(y-y_{fit})^2}{n}}}
+
+            where :math:`n` is the number of data points.
+
+        derivatives:
+            *numpy.array* The :math:`m^{th}` order derivatives.
+
+        Optimum_signs:
+            *numpy.array* The sign combinations corresponding to the
+            optimal results.
 
     """
 
@@ -56,11 +139,12 @@ class smooth(object):
         self.N = N
         self.fit_type, self.base_dir, self.model_type, self.filtering, \
             self.all_output, self.cvxopt_maxiter, self.ifp, \
-            self.ifp_list, self.data_save, self.ud_initial_params = \
-            setting.fit_type, \
+            self.ifp_list, self.data_save, self.ud_initial_params, \
+            self.warnings = setting.fit_type, \
             setting.base_dir, setting.model_type, setting.filtering, \
             setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
-            setting.ifp_list, setting.data_save, setting.ud_initial_params
+            setting.ifp_list, setting.data_save, setting.ud_initial_params, \
+            setting.warnings
 
         if ('initial_params' in kwargs):
             self.initial_params = kwargs['initial_params']
@@ -74,7 +158,8 @@ class smooth(object):
 
         if ('data_matrix' in kwargs):
             self.data_matrix = kwargs['data_matrix']
-            warnings.warn('Data matrix has been changed.', stacklevel=2)
+            if self.warnings is True:
+                warnings.warn('Data matrix has been changed.', stacklevel=2)
         else:
             self.data_matrix = None
 
@@ -98,21 +183,22 @@ class smooth(object):
         else:
             self.args = None
 
-        self.basis_change = np.array([
+        self.basis_change = [
             self.basis_functions, self.der_pres,
-            self.derivatives_function, self.model])
-        if np.any(self.basis_change is None):
-            if np.any(self.basis_change is not None):
+            self.derivatives_function, self.model]
+        if np.any(self.basis_change) is None:
+            if np.any(self.basis_change) is not None:
                 print(
                     'Error: Attempt to change basis functions failed.' +
                     ' One or more functions not defined.' +
                     ' Please consult documentation.')
                 sys.exit(1)
 
-        if np.all(self.basis_change is not None):
+        if np.all(self.basis_change) is not None:
             self.model_type = 'User Defined'
             if self.data_matrix is None:
-                warnings.warn('Warning: Data matrix unchanged.')
+                if self.warnings is True:
+                    warnings.warn('Warning: Data matrix unchanged.')
 
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
             self.Optimum_chi, self.rms = self.fitting()
@@ -151,7 +237,8 @@ class smooth(object):
                     self.all_output, self.ifp, self.ifp_list,
                     self.initial_params, self.basis_functions,
                     self.data_matrix, self.der_pres, self.model,
-                    self.derivatives_function, self.args)
+                    self.derivatives_function, self.args,
+                    self.warnings)
 
                 if self.all_output is True:
                     print(
@@ -207,7 +294,7 @@ class smooth(object):
             der = derivative_class(
                 x, y, Optimum_params, N,
                 Optimum_sign_combination, mid_point, self.model_type, self.ifp,
-                self.derivatives_function, self.args)
+                self.derivatives_function, self.args, self.warnings)
             derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
 
             end = time.time()
@@ -284,7 +371,8 @@ class smooth(object):
                             self.ifp_list, self.initial_params,
                             self.basis_functions,
                             self.data_matrix, self.der_pres, self.model,
-                            self.derivatives_function, self.args)
+                            self.derivatives_function, self.args,
+                            self.warnings)
                         chi_squared_old, pass_fail = fit.chi_squared, \
                             fit.pass_fail
                         if self.all_output is True:
@@ -329,7 +417,8 @@ class smooth(object):
                         self.all_output, self.ifp, self.ifp_list,
                         self.initial_params, self.basis_functions,
                         self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args)
+                        self.derivatives_function, self.args,
+                        self.warnings)
                     chi_squared_old = fit.chi_squared
                     if self.all_output is True:
                         print(
@@ -378,7 +467,8 @@ class smooth(object):
                         self.ifp_list, self.initial_params,
                         self.basis_functions,
                         self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args)
+                        self.derivatives_function, self.args,
+                        self.warnings)
                     chi_squared_new = fit.chi_squared
                     if self.all_output is True:
                         print(
@@ -442,7 +532,7 @@ class smooth(object):
             der = derivative_class(
                 x, y, Optimum_params, N,
                 Optimum_sign_combination, mid_point, self.model_type, self.ifp,
-                self.derivatives_function, self.args)
+                self.derivatives_function, self.args, self.warnings)
             derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
 
             end = time.time()
@@ -500,6 +590,9 @@ class smooth(object):
                 pl.close()
 
                 rms = (np.sqrt(np.sum((y-y_fit[i, :])**2)/len(y)))
+                np.save(
+                    self.base_dir + 'MSF_Order_' + str(N[i]) +
+                    '_' + self.fit_type + '/RMS.npy', rms)
 
                 pl.subplot(111)
                 pl.plot(x, y - y_fit[i, :], label='RMS = %2.5f' % (rms))

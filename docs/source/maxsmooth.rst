@@ -4,6 +4,10 @@ maxsmooth
 .. toctree::
    :maxdepth: 6
 
+Simple Example code
+~~~~~~~~~~~~~~~~~~~
+.. include:: simple_test.rst
+
 smooth
 ~~~~~~
 
@@ -11,7 +15,7 @@ smooth
    :members: smooth
 
 
-Settings
+settings
 ~~~~~~~~
 
 .. automodule:: maxsmooth.settings
