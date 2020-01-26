@@ -31,29 +31,7 @@ class setting(object):
         on the derivatives. This is a quick process provided the
         order of the polynomial is small.
 
-    'qp-sign_flipping' - Quadratic Programming testing a sub
-        sample of sign combinations on the derivatives. The
-        algorithm currently generates a random set of signs for
-        the :math:`N-2` derivatives. It then flips sucessive signs in the
-        list until it calculates a chi squared smaller than the
-        previous evaluation of the objective function. For
-        example a 4th order polynomial has 2 derivatives with :math:`m>=2`
-        which means it has 4 sign combinations [1,1],[-1,-1],[-1,1]
-        and [1,-1]. On first random generation we get [-1,1] with
-        which we evaluate the objective function. We then flip the
-        first sign and evaluate again with [1,1]. If the new chi chi squared
-        is less than the first calculated value the algorithm
-        then goes back to the original list and flips the second sign
-        evaluating with [-1,-1]. The process repeats until the new
-        chi squared is no longer smaller than the previous
-        evaluation and the previous evaluation is taken to be optimal.
-        The algorithm then repeats the entire process for a set number
-        of random sign generations to ensure that the
-        true minimum is identified. The number of repeats needed
-        is dependent on the polynomial order. High polynomial
-        orders require a larger number of repeats to find the true
-        minimum. Currently the number of repeats is set at
-        :math:`{2\times(N-2)^2}`.
+    'qp-sign_flipping' - Needs an explination...
 
     **model_type:** (Default = 'normalised_polynomial')
 
