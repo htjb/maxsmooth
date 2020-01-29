@@ -34,12 +34,6 @@ class Models_class(object):
                     self.params[i]*(self.x-self.x[self.mid_point])**i
                     for i in range(self.N)], axis=0)
 
-            if self.model_type == 'logarithmic_polynomial':
-
-                y_sum = 10**np.sum([
-                    self.params[i]*(np.log10(self.x))**i
-                    for i in range(self.N)], axis=0)
-
         if self.model is not None:
             if self.args is None:
                 y_sum = self.model(

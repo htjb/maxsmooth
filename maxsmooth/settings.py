@@ -20,7 +20,7 @@ class setting(object):
     r"""
     **Attributes**
 
-    **fit_type:** (Default=='qp-sign_flipping')
+    **fit_type:** (Default=='combined')
 
     The type of fitting routine used to fit the model. There are two options
     designed to explore the sign space of the function.
@@ -32,6 +32,8 @@ class setting(object):
         order of the polynomial is small.
 
     'qp-sign_flipping' - Needs an explination...
+
+    'combined' - Needs explination...
 
     **model_type:** (Default = 'normalised_polynomial')
 
@@ -55,15 +57,6 @@ class setting(object):
             `Sathyanarayana Rao, 2017
             <https://iopscience.iop.org/article/10.3847/1538-
             4357/aa69bd/meta>`__
-
-        'logarithmic_polynomial' - This is a polynomial model
-            similar to that used with the setting 'polynomial' but
-            solved in log-space. It has the form,
-
-            .. math::
-                {log_{10}(y)=\sum(p_i(log_{10}(x))^i)}.
-
-            NOTE this model will not work if the y values are negative.
 
     **base_dir:** (Default = 'Fitted_Output')
         This is the directory in which the output of the program is saved. If
@@ -126,7 +119,7 @@ class setting(object):
     """
     def __init__(self):
 
-        self.fit_type = 'qp-sign_flipping'
+        self.fit_type = 'combined'
         self.model_type = 'normalised_polynomial'
         self.base_dir = 'Fitted_Output/'
         self.cvxopt_maxiter = 1000

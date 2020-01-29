@@ -54,14 +54,6 @@ class derivative_class(object):
                                 (self.x-self.x[self.mid_point])**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
-                        if self.model_type == 'logarithmic_polynomial':
-                            mth_order_derivative_term = \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
-                                self.params[int(m)+i] * \
-                                np.log10(self.x)**i
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
                     if self.derivatives_function is not None:
                         if self.args is None:
                             mth_order_derivative_term = \

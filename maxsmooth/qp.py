@@ -66,10 +66,6 @@ class qp_class(object):
                                 / np.math.factorial(i) * (
                                 self.x - self.x[self.mid_point])**i
                             derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'logarithmic_polynomial':
-                            mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i)*(np.log10(self.x))**i
-                            derivatives.append(mth_order_derivative_term)
                     if self.derivative_pres is not None:
                         if self.args is None:
                             mth_order_derivative_term = self.derivative_pres(
@@ -105,8 +101,6 @@ class qp_class(object):
                         A[h, i] = (self.x[h])**i
                     if self.model_type == 'MSF_2017_polynomial':
                         A[h, i] = (self.x[h]-self.x[self.mid_point])**i
-                    if self.model_type == 'logarithmic_polynomial':
-                        A[h, i] = np.log10(self.x[h])**i
             A = matrix(A)
         if self.basis_functions is not None:
             if self.args is None:
@@ -117,10 +111,7 @@ class qp_class(object):
                     self.x, self.y, self.mid_point, self.N, *self.args)
 
         if self.data_matrix is None:
-            if self.model_type == 'logarithmic_polynomial':
-                b = matrix(np.log10(self.y), (len(self.y), 1), 'd')
-            else:
-                b = matrix(self.y, (len(self.y), 1), 'd')
+            b = matrix(self.y, (len(self.y), 1), 'd')
         if self.data_matrix is not None:
             b = self.data_matrix
 
@@ -169,11 +160,7 @@ class qp_class(object):
         q = -A.T*b
 
         if self.initial_params is None:
-            if self.model_type == 'logarithmic_polynomial':
-                params0 = [(np.log10(self.y[-1])-np.log10(self.y[0]))/2] * \
-                    (self.N)
-            else:
-                params0 = [(self.y[-1]-self.y[0])/2]*(self.N)
+            params0 = [(self.y[-1]-self.y[0])/2]*(self.N)
         if self.initial_params is not None:
             params0 = self.initial_params
 
