@@ -176,6 +176,9 @@ class qp_class(object):
             self.warnings)
         pass_fail = der.pass_fail
 
+        chi_squared = np.sum((self.y-y)**2)
+        parameters = np.array(parameters)
+
         if 'unknown' in qpfit['status']:
             if qpfit['iterations'] == self.cvxopt_maxiter:
                 print(
@@ -188,7 +191,7 @@ class qp_class(object):
                     print(
                         'ERROR: "Terminated (singular KKT matrix)".' +
                         ' Problem is infeasible with this sign combination' +
-                        ' set setting.filtering==True to filter out this ' +
+                        ' set setting.filtering = True to filter out this ' +
                         ' and any other incidences.')
                     sys.exit(1)
                 if self.filtering is True:
@@ -200,8 +203,5 @@ class qp_class(object):
                             ' combination, therefore sign combination will' +
                             ' be excluded when identifying the best solution.',
                             stacklevel=2)
-
-        chi_squared = np.sum((self.y-y)**2)
-        parameters = np.array(parameters)
 
         return parameters, chi_squared, pass_fail

@@ -15,6 +15,7 @@ import warnings
 import time
 import os
 import sys
+import shutil
 
 
 class smooth(object):
@@ -59,7 +60,7 @@ class smooth(object):
             See CVXOPT documentation for details on building a dense matrix.
             This will only need to be changed on rare occasions when the
             fitting space is changed.
-            
+
         basis_function: *function with parameters (x, y, mid_point, N)* This is
             a function of basis functions for the quadratic programming.
             The variable mid_point is the index at the middle of the datasets
@@ -125,11 +126,11 @@ class smooth(object):
         self.N = N
         self.fit_type, self.base_dir, self.model_type, self.filtering, \
             self.all_output, self.cvxopt_maxiter, self.ifp, \
-            self.ifp_list, self.data_save, self.ud_initial_params, \
+            self.ifp_list, self.data_save, \
             self.warnings = setting.fit_type, \
             setting.base_dir, setting.model_type, setting.filtering, \
             setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
-            setting.ifp_list, setting.data_save, setting.ud_initial_params, \
+            setting.ifp_list, setting.data_save, \
             setting.warnings
 
         if ('initial_params' in kwargs):
@@ -196,6 +197,13 @@ class smooth(object):
 
         if not os.path.exists(self.base_dir):
             os.mkdir(self.base_dir)
+
+        if os.path.isdir(self.base_dir+'Output_Parameters/'):
+            shutil.rmtree(self.base_dir+'Output_Parameters/')
+        if os.path.isdir(self.base_dir+'Output_Signs/'):
+            shutil.rmtree(self.base_dir+'Output_Signs/')
+        if os.path.isdir(self.base_dir+'Output_Evaluation/'):
+            shutil.rmtree(self.base_dir+'Output_Evaluation/')
 
         def qp(x, y, N, mid_point):
             print(
@@ -428,62 +436,87 @@ class smooth(object):
                     print(
                         '--------------------------------------' +
                         '--------------')
-            Run_Optimum_params, Run_Optimum_chi_squared, \
-                Run_Optimum_sign_combination = [], [], []
+
             chi_squared = []
             chi_squared.append(chi_squared_old)
             parameters = []
             parameters.append(fit.parameters)
             tested_signs = []
             tested_signs.append(signs)
-            count = 0
-            #for k in range(2*N**2):
-            #restart_count = False
+            passed_failed = []
+            passed_failed.append(fit.pass_fail)
             chi_squared_new = 0
-            h = 0
-            while h <= 4*N**2:
 
-                chis = np.array(chi_squared)
-                for j in range(len(chis)):
-                    if chis[j] == chis.min():
-                        best_signs = tested_signs[j]
+            sign_transform = []
+            for i in range(len(signs)):
+                base = np.array([1]*len(signs))
+                base[i] = -1
+                sign_transform.append(base)
+            sign_transform = np.array(sign_transform)
+            previous_signs = signs
+            count = 0
+            while chi_squared_new < chi_squared_old:
+                if chi_squared_new != 0:
+                        chi_squared_old = chi_squared_new
 
-                new_signs = np.empty(len(signs))
-                if len(signs)//2 > 0:
-                    r = np.random.randint(1, N-1, len(signs)//2)
+                tested_chi_squareds = []
+                signs_array = []
+                params = []
+                pass_fail = []
+                for h in range(sign_transform.shape[0]):
+                    signs = previous_signs * sign_transform[h]
+                    fit = qp_class(
+                        x, y, N, signs, mid_point,
+                        self.model_type, self.cvxopt_maxiter,
+                        self.filtering, self.all_output, self.ifp,
+                        self.ifp_list, self.initial_params,
+                        self.basis_functions,
+                        self.data_matrix, self.der_pres, self.model,
+                        self.derivatives_function, self.args,
+                        self.warnings)
+                    tested_signs.append(signs)
+                    signs_array.append(signs)
+                    params.append(fit.parameters)
+                    pass_fail.append(fit.pass_fail)
+                    tested_chi_squareds.append(fit.chi_squared)
+                tested_chi_squareds = np.array(tested_chi_squareds)
+                for p in range(len(tested_chi_squareds)):
+                    chi_squared.append(tested_chi_squareds[p])
+                    if tested_chi_squareds[p] == tested_chi_squareds.min():
+                        chi_squared_new = tested_chi_squareds.min()
+                        previous_signs = signs_array[p]
+                    tested_signs.append(signs_array[p])
+                    parameters.append(params[p])
+                    passed_failed.append(pass_fail[p])
+                filtered_tested_chis = []
+                filtered_params = []
+                filtered_signs = []
+                filtered_pf = []
+                for p in range(len(tested_chi_squareds)):
+                    if list(passed_failed[p]) != []:
+                        filtered_tested_chis.append(tested_chi_squareds[p])
+                        filtered_signs.append(signs_array[p])
+                        filtered_params.append(params[p])
+                        filtered_pf.append(pass_fail[p])
+                filtered_tested_chis = np.array(filtered_tested_chis)
+                if len(filtered_tested_chis) > 1:
+                    output_chi = filtered_tested_chis.min()
                 else:
-                    r = np.random.randint(1, N-1, 1)
-                random = [None]*len(signs)
-                for i in range(len(random)):
-                    for f in range(len(r)):
-                        if i == r[f]-1:
-                            random[i] = r[f]
-                for m in range(len(signs)):
-                    if m+1 == random[m]:
-                        new_signs[m] = best_signs[m]*-1.
-                    else:
-                        new_signs[m] = best_signs[m]
-                signs = new_signs
-
-                fit = qp_class(
-                    x, y, N, signs, mid_point,
-                    self.model_type, self.cvxopt_maxiter,
-                    self.filtering, self.all_output, self.ifp,
-                    self.ifp_list, self.initial_params,
-                    self.basis_functions,
-                    self.data_matrix, self.der_pres, self.model,
-                    self.derivatives_function, self.args,
-                    self.warnings)
-                chi_squared_new = fit.chi_squared
+                    output_chi = filtered_tested_chis
+                for l in range(len(filtered_tested_chis)):
+                    if filtered_tested_chis[l] == output_chi:
+                        output_params = filtered_params[l]
+                        output_signs = filtered_signs[l]
+                        output_pf = filtered_pf[l]
                 if self.all_output is True:
                     print(
                         '--------------------------------------' +
                         '--------------')
                     print('Polynomial Order:', N)
                     print('Number of Derivatives:', N-2)
-                    print('Signs :', signs)
-                    print('Objective Function Value:', chi_squared_new)
-                    print('Parameters:', (fit.parameters).T)
+                    print('Signs :', output_signs)
+                    print('Objective Function Value:', output_chi)
+                    print('Parameters:', output_params.T)
                     print('Method:', self.fit_type)
                     print('Model:', self.model_type)
                     print('Inflection Points?:', self.ifp)
@@ -493,49 +526,47 @@ class smooth(object):
                             self.ifp_list)
                         print(
                             'Inflection Points Used? (0 signifies' +
-                            'Yes):', fit.pass_fail)
+                            'Yes):', output_pf)
                     print(
                         '--------------------------------------' +
                         '--------------')
-                if self.filtering is True:
-                    if fit.pass_fail == []:
+                if self.data_save is True:
+                    save(
+                        self.base_dir, output_params, output_chi,
+                        output_signs, N, self.fit_type)
+                m = 0
+                for q in range(len(pass_fail)):
+                    if pass_fail[q] == []:
                         chi_squared_new = 0
-                        tested_signs.append(signs)
-                    else:
-                        parameters.append(fit.parameters)
-                        tested_signs.append(signs)
-                        chi_squared.append(chi_squared_new)
-                        if self.data_save is True:
-                            save(
-                                self.base_dir, fit.parameters,
-                                chi_squared_new, signs, N,
-                                self.fit_type)
-                if self.filtering is False:
-                    parameters.append(fit.parameters)
-                    tested_signs.append(signs)
-                if chi_squared_new != 0:
-                    if chi_squared_new < chi_squared_old:
-                        count = 0
-                        chi_squared_old = chi_squared_new
-                #print(h, count, chi_squared_new, chi_squared_old)
-                #if h <= len(signs):
-                #    pass
-                #else:
-                #    break
-                if chi_squared_old == min(chi_squared):
-                    count +=1
-                    if count == int(3*(4*N**2)/4):
-                        print('Stopping Condition Met', count)
-                        break
-                h += 1
-
+                        if m == 0:
+                            count += 1
+                            print('count',count)
+                        m += 1
+                print(chi_squared_new, chi_squared_old)
+                if count >= N:
+                    break
             parmeters = np.array(parameters)
             chi_squared = np.array(chi_squared)
-            for j in range(len(chi_squared)):
-                if chi_squared[j] == chi_squared.min():
-                    Optimum_chi_squared = chi_squared[j]
-                    Optimum_params = parameters[j]
-                    Optimum_sign_combination = tested_signs[j]
+            filtered_chi_squared = []
+            filtered_parameters = []
+            filtered_tested_signs = []
+            filtered_passed_failed = []
+            for p in range(len(chi_squared)):
+                if list(passed_failed[p]) != []:
+                    filtered_chi_squared.append(chi_squared[p])
+                    filtered_tested_signs.append(tested_signs[p])
+                    filtered_parameters.append(parameters[p])
+                    filtered_passed_failed.append(passed_failed[p])
+            filtered_chi_squared = np.array(filtered_chi_squared)
+            if len(filtered_chi_squared) > 1:
+                Optimum_chi_squared = filtered_chi_squared.min()
+            else:
+                Optimum_chi_squared = filtered_chi_squared
+            for l in range(len(filtered_chi_squared)):
+                if filtered_chi_squared[l] == Optimum_chi_squared:
+                    Optimum_params = filtered_parameters[l]
+                    Optimum_sign_combination = filtered_tested_signs[l]
+                    Optimum_pass_fail = filtered_passed_failed[l]
             y_fit = Models_class(
                 Optimum_params, x, y, N, mid_point,
                 self.model_type, self.model, self.args).y_sum
@@ -583,55 +614,6 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination
 
-        def plotting(x, y, N, y_fit, derivatives):
-            for i in range(len(N)):
-                pl.subplot(111)
-                pl.plot(
-                    x, y_fit[i, :], c='r', label='Fitted MSF with N = '
-                    + str(N[i]))
-                pl.plot(x, y, label='Data')
-                pl.legend(loc=0)
-                pl.xlabel('x')
-                pl.ylabel('y')
-                pl.tight_layout()
-                pl.savefig(
-                    self.base_dir + 'MSF_Order_' + str(N[i]) + '_' +
-                    self.fit_type + '/Fit.pdf')
-                pl.close()
-
-                rms = (np.sqrt(np.sum((y-y_fit[i, :])**2)/len(y)))
-                np.save(
-                    self.base_dir + 'MSF_Order_' + str(N[i]) +
-                    '_' + self.fit_type + '/RMS.npy', rms)
-
-                pl.subplot(111)
-                pl.plot(x, y - y_fit[i, :], label='RMS = %2.5f' % (rms))
-                pl.fill_between(
-                    x, np.array([rms]*len(x)),
-                    -np.array([rms]*len(x)), color='r', alpha=0.5)
-                pl.legend(loc=0)
-                pl.ylabel('Residuals')
-                pl.xlabel('x')
-                pl.tight_layout()
-                pl.savefig(
-                    self.base_dir + 'MSF_Order_' + str(N[i]) +
-                    '_' + self.fit_type + '/RMS.pdf')
-                pl.close()
-
-                pl.subplot(111)
-                [pl.plot(
-                    x, derivatives[i][j, :], label='M:' + str(j + 2) +
-                    ' Minimum: %2.2e' % (derivatives[i][j, :].min()))
-                    for j in range(derivatives[i].shape[0])]
-                pl.legend(loc=0, fontsize='small')
-                pl.xlabel(r'x')
-                pl.ylabel('M Order Derivatives')
-                pl.tight_layout()
-                pl.savefig(
-                    self.base_dir + 'MSF_Order_' + str(N[i]) + '_'
-                    + self.fit_type + '/Derivatives.pdf')
-                pl.close()
-
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
@@ -663,32 +645,10 @@ class smooth(object):
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
                 np.array(Optimum_params), np.array(Optimum_chi_squareds)
-        if self.fit_type == 'combined':
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = [], [], [], [], []
-            for i in range(len(self.N)):
-                if self.N[i] <= 10:
-                    y_result, derive, obj, params, signs = \
-                        qp(self.x, self.y, self.N[i], mid_point)
-                else:
-                    y_result, derive, obj, params, signs = \
-                        qp_sign_flipping(self.x, self.y, self.N[i], mid_point)
-                y_fit.append(y_result)
-                Optimum_sign_combinations.append(signs)
-                derivatives.append(derive)
-                Optimum_params.append(params)
-                Optimum_chi_squareds.append(obj)
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = np.array(y_fit), \
-                np.array(Optimum_sign_combinations), np.array(derivatives), \
-                np.array(Optimum_params), np.array(Optimum_chi_squareds)
-
+    
         rms = [
             (np.sqrt(np.sum((self.y-y_fit[i, :])**2)/len(self.y)))
             for i in range(len(self.N))]
-
-        if self.data_save is True:
-            plotting(self.x, self.y, self.N, y_fit, derivatives)
 
         return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, \
             Optimum_chi_squareds, rms

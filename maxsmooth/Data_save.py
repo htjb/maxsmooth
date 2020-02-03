@@ -11,20 +11,14 @@ class save(object):
         self.N = N
         self.fit_type = fit_type
 
-        if os.path.isfile(self.base_dir+'Output_Parameters/'):
-            os.remove(self.base_dir+'Output_Parameters/')
-
         if not os.path.exists(self.base_dir+'Output_Parameters/'):
             os.mkdir(self.base_dir+'Output_Parameters/')
 
         with open(
                 self.base_dir+'Output_Parameters/'+str(self.N) +
                 '_'+self.fit_type+'.txt', 'a') as f:
-            np.savetxt(f, np.array(self.params).T)
-            f.close()
-
-        if os.path.isfile(self.base_dir+'Output_Signs/'):
-            os.remove(self.base_dir+'Output_Signs/')
+                np.savetxt(f, np.array(self.params).T)
+                f.close()
 
         if not os.path.exists(self.base_dir+'Output_Signs/'):
             os.mkdir(self.base_dir+'Output_Signs/')
@@ -34,9 +28,6 @@ class save(object):
                 '_'+self.fit_type+'.txt', 'a') as f:
             np.savetxt(f, np.array(self.signs))
             f.close()
-
-        if os.path.isfile(self.base_dir+'Output_Evaluation/'):
-            os.remove(self.base_dir+'Output_Evaluation/')
 
         if not os.path.exists(self.base_dir+'Output_Evaluation/'):
             os.mkdir(self.base_dir+'Output_Evaluation/')
