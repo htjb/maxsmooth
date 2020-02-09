@@ -188,7 +188,8 @@ class smooth(object):
                     warnings.warn('Warning: Data matrix unchanged.')
 
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
-            self.Optimum_chi, self.rms = self.fitting()
+            self.Optimum_chi, self.rms, self.Optimum_pass_fail \
+            = self.fitting()
 
     def fitting(self):
 
@@ -327,7 +328,7 @@ class smooth(object):
                 self.ifp_list, Optimum_pass_fail)
 
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
-                Optimum_sign_combination
+                Optimum_sign_combination, Optimum_pass_fail
 
         def qp_sign_flipping(x, y, N, mid_point):
             print(
@@ -542,7 +543,6 @@ class smooth(object):
                             count += 1
                             print('count',count)
                         m += 1
-                print(chi_squared_new, chi_squared_old)
                 if count >= N:
                     break
             parmeters = np.array(parameters)
@@ -612,43 +612,47 @@ class smooth(object):
                 self.ifp_list, Optimum_pass_fail)
 
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
-                Optimum_sign_combination
+                Optimum_sign_combination, Optimum_pass_fail
 
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = [], [], [], [], []
+                Optimum_chi_squareds, Optimum_pass_fail = [], [], [], [], [], \
+                []
             for i in range(len(self.N)):
-                y_result, derive, obj, params, signs = \
+                y_result, derive, obj, params, signs, pf = \
                     qp(self.x, self.y, self.N[i], mid_point)
                 y_fit.append(y_result)
                 Optimum_sign_combinations.append(signs)
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
+                Optimum_pass_fail.append(pf)
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
                 np.array(Optimum_params), np.array(Optimum_chi_squareds)
         if self.fit_type == 'qp-sign_flipping':
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = [], [], [], [], []
+                Optimum_chi_squareds, Optimum_pass_fail = [], [], [], [], [], \
+                []
             for i in range(len(self.N)):
-                y_result, derive, obj, params, signs = \
+                y_result, derive, obj, params, signs, pf = \
                     qp_sign_flipping(self.x, self.y, self.N[i], mid_point)
                 y_fit.append(y_result)
                 Optimum_sign_combinations.append(signs)
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
+                Optimum_pass_fail.append(pf)
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
                 np.array(Optimum_params), np.array(Optimum_chi_squareds)
-    
+
         rms = [
             (np.sqrt(np.sum((self.y-y_fit[i, :])**2)/len(self.y)))
             for i in range(len(self.N))]
 
         return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, \
-            Optimum_chi_squareds, rms
+            Optimum_chi_squareds, rms, Optimum_pass_fail

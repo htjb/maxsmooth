@@ -14,8 +14,10 @@ class qp_class(object):
             filtering, all_output, ifp, ifp_list, initial_params,
             basis_functions, data_matrix, derivative_pres, model,
             derivatives_function, args, warnings):
-        self.x = x
-        self.y = y
+        self.x = x/x.max()
+        self.true_x = x
+        self.y = y/y.std()+y.mean()/y.std()
+        self.true_y = y
         self.N = N
         self.signs = signs
         self.mid_point = mid_point
@@ -39,6 +41,7 @@ class qp_class(object):
 
         solvers.options['maxiters'] = self.cvxopt_maxiter
         solvers.options['show_progress'] = False
+        #solvers.options['feastol'] = 1e-5
 
         def constraint_prefactors(m):
             # Derivative prefactors on parameters.
@@ -60,6 +63,11 @@ class qp_class(object):
                         if self.model_type == 'polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * (self.x)**i
+                            derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'log_MSF_polynomial':
+                            mth_order_derivative_term = np.math.factorial(m+i)\
+                                / np.math.factorial(i) * np.log10(self.x/ \
+                                self.x[self.mid_point])**i
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'MSF_2017_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
@@ -99,6 +107,8 @@ class qp_class(object):
                             self.x[h] / self.x[self.mid_point])**i
                     if self.model_type == 'polynomial':
                         A[h, i] = (self.x[h])**i
+                    if self.model_type == 'log_MSF_polynomial':
+                        A[h, i] = np.log10(self.x[h]/self.x[self.mid_point])**i
                     if self.model_type == 'MSF_2017_polynomial':
                         A[h, i] = (self.x[h]-self.x[self.mid_point])**i
             A = matrix(A)
@@ -167,16 +177,40 @@ class qp_class(object):
         qpfit = solvers.coneqp(P, q, G, h, initvals=params0)
 
         parameters = qpfit['x']
+
+        for i in range(len(parameters)):
+            if self.model_type == 'normalised_polynomial':
+                if i == 0:
+                    parameters[i] = parameters[i]*(1+self.true_y.mean()/self.true_y[self.mid_point]) \
+                    -self.true_y.mean()/(self.true_y[self.mid_point])
+                else:
+                    parameters[i] = parameters[i]*(1+self.true_y.mean()/self.true_y[self.mid_point])
+            if self.model_type == 'polynomial':
+                if i == 0:
+                    parameters[i] = parameters[i]*self.true_y.std() - self.true_y.mean()
+                else:
+                    parameters[i] = (parameters[i]/self.true_x.max()**(i))*self.true_y.std()
+            if self.model_type == 'log_MSF_polynomial':
+                if i == 0:
+                    parameters[i] = parameters[i]*self.true_y.std() - self.true_y.mean()
+                else:
+                    parameters[i] = (parameters[i])*self.true_y.std()
+            if self.model_type == 'MSF_2017_polynomial':
+                if i == 0:
+                    parameters[i] = parameters[i]*self.true_y.std() - self.true_y.mean()
+                else:
+                    parameters[i] = (parameters[i]/self.true_x.max()**(i))*self.true_y.std()
+
         y = Models_class(
-            parameters, self.x, self.y, self.N, self.mid_point,
+            parameters, self.true_x, self.true_y, self.N, self.mid_point,
             self.model_type, self.model, self.args).y_sum
         der = derivative_class(
-            self.x, self.y, parameters, self.N, self.signs, self.mid_point,
+            self.true_x, self.true_y, parameters, self.N, self.signs, self.mid_point,
             self.model_type, self.ifp, self.derivatives_function, self.args,
             self.warnings)
         pass_fail = der.pass_fail
 
-        chi_squared = np.sum((self.y-y)**2)
+        chi_squared = np.sum((self.true_y-y)**2)
         parameters = np.array(parameters)
 
         if 'unknown' in qpfit['status']:
@@ -196,6 +230,9 @@ class qp_class(object):
                     sys.exit(1)
                 if self.filtering is True:
                     pass_fail = []
+                    #chi_squared = np.sum((self.true_y)**2)
+                    #print(chi_squared)
+                    #parameters = [[0]*self.N]
                     if self.warnings is True:
                         warnings.warn(
                             '"Terminated (singular KKT matrix)".' +

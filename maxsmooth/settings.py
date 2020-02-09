@@ -127,5 +127,4 @@ class setting(object):
         self.ifp = False
         self.ifp_list = 'None'
         self.data_save = False
-        self.ud_initial_params = False
         self.warnings = False

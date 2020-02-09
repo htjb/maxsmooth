@@ -28,6 +28,12 @@ class Models_class(object):
                     [self.params[i]*(self.x)**i for i in range(self.N)],
                     axis=0)
 
+            if self.model_type == 'log_MSF_polynomial':
+
+                y_sum = np.sum(
+                    [self.params[i]*np.log10(self.x/self.x[self.mid_point])**i for i in range(self.N)],
+                    axis=0)
+
             if self.model_type == 'MSF_2017_polynomial':
 
                 y_sum = np.sum([

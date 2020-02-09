@@ -46,6 +46,14 @@ class derivative_class(object):
                                 self.params[int(m)+i]*(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
+                        if self.model_type == 'log_MSF_polynomial':
+                            mth_order_derivative_term = \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i]*np.log10(self.x/ \
+                                self.x[self.mid_point])**i
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
                         if self.model_type == 'MSF_2017_polynomial':
                             mth_order_derivative_term = \
                                 np.math.factorial(m+i) / \
