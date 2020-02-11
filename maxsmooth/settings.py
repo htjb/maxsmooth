@@ -34,7 +34,7 @@ class setting(object):
     'qp-sign_flipping' - Needs an explination...
 
 
-    **model_type:** (Default = 'normalised_polynomial')
+    **model_type:** (Default = 'log_MSF_polynomial')
 
     The type of model used to fit the data. There is a built in library of
     maximally smooth functions that can be called by the user.
@@ -57,6 +57,8 @@ class setting(object):
             <https://iopscience.iop.org/article/10.3847/1538-
             4357/aa69bd/meta>`__
 
+        'log_MSF_polynomial' - ...
+
     **base_dir:** (Default = 'Fitted_Output')
         This is the directory in which the output of the program is saved. If
         the directory does not exist the software will create it in the working
@@ -68,15 +70,6 @@ class setting(object):
         The maximum number of iterations for the cvxopt quadratic
         programming routine. If cvxopt reaches maxiter the fitting routine
         will exit with an error recommending this be increased.
-
-    **filtering:** (Default=True)
-        Generally for high order N there will be
-        combinations of sign for which CVXOPT cannot find a solution and
-        these terminate with the error "Terminated (Singular KKT Matrix)".
-        If filtering is set to True these cases will be flagged with a warning
-        and the corresponding sign combinations will be excluded when
-        determining the best possible fit. Setting filtering to False will
-        cause the program to crash with CVXOPT error.
 
     **all_output:** (Default=False)
         If set to True this will output the results of each run of cvxopt
@@ -119,12 +112,12 @@ class setting(object):
     def __init__(self):
 
         self.fit_type = 'qp-sign_flipping'
-        self.model_type = 'normalised_polynomial'
+        self.model_type = 'log_MSF_polynomial'
         self.base_dir = 'Fitted_Output/'
         self.cvxopt_maxiter = 1000
-        self.filtering = True
         self.all_output = False
         self.ifp = False
         self.ifp_list = 'None'
         self.data_save = False
         self.warnings = False
+        self.cvxopt_feastol = 'Default' # needs documenting

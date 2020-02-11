@@ -11,9 +11,9 @@ warnings.simplefilter('always', UserWarning)
 class qp_class(object):
     def __init__(
             self, x, y, N, signs, mid_point, model_type, cvxopt_maxiter,
-            filtering, all_output, ifp, ifp_list, initial_params,
+            all_output, ifp, ifp_list, initial_params,
             basis_functions, data_matrix, derivative_pres, model,
-            derivatives_function, args, warnings):
+            derivatives_function, args, warnings, feastol):
         self.x = x/x.max()
         self.true_x = x
         self.y = y/y.std()+y.mean()/y.std()
@@ -23,7 +23,6 @@ class qp_class(object):
         self.mid_point = mid_point
         self.model_type = model_type
         self.cvxopt_maxiter = cvxopt_maxiter
-        self.filtering = filtering
         self.all_output = all_output
         self.ifp = ifp
         self.ifp_list = ifp_list
@@ -35,14 +34,18 @@ class qp_class(object):
         self.derivatives_function = derivatives_function
         self.args = args
         self.warnings = warnings
+        self.cvxopt_feastol = feastol
         self.parameters, self.chi_squared, self.pass_fail = self.fit()
 
     def fit(self):
 
         solvers.options['maxiters'] = self.cvxopt_maxiter
         solvers.options['show_progress'] = False
-        #solvers.options['feastol'] = 1e-5
-
+        if self.cvxopt_feastol != 'Default':
+            solvers.options['feastol'] = self.cvxopt_feastol
+        if self.cvxopt_feastol == 'Default':
+            pass
+        
         def constraint_prefactors(m):
             # Derivative prefactors on parameters.
             derivatives = []
@@ -221,24 +224,12 @@ class qp_class(object):
                     ' setting.cvxopt_maxiter')
                 sys.exit(1)
             else:
-                if self.filtering is False:
-                    print(
-                        'ERROR: "Terminated (singular KKT matrix)".' +
-                        ' Problem is infeasible with this sign combination' +
-                        ' set setting.filtering = True to filter out this ' +
-                        ' and any other incidences.')
-                    sys.exit(1)
-                if self.filtering is True:
-                    pass_fail = []
-                    #chi_squared = np.sum((self.true_y)**2)
-                    #print(chi_squared)
-                    #parameters = [[0]*self.N]
-                    if self.warnings is True:
-                        warnings.warn(
-                            '"Terminated (singular KKT matrix)".' +
-                            ' Problem infeasable with the following sign' +
-                            ' combination, therefore sign combination will' +
-                            ' be excluded when identifying the best solution.',
-                            stacklevel=2)
+                print(
+                    'ERROR: "CVXOPT:Terminated (singular KKT matrix)".' +
+                    ' The problem cannot be solved by CVXOPT to the required' +
+                    ' accuracy. Increasing the maxsmooth parameter' +
+                    ' setting.cvxopt_feastol above the default value of 1e-7' +
+                    ' will prevent this error.')
+                sys.exit(1)
 
         return parameters, chi_squared, pass_fail

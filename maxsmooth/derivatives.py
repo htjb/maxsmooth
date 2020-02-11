@@ -108,7 +108,11 @@ class derivative_class(object):
                 print('Pass or fail', pass_fail)
                 print(
                     'ERROR: "Condition Violated" Derivatives feature' +
-                    ' crossing points.')
+                    ' crossing points. CVXOPT likely cannot solve the problem'+
+                    ' to the required accuracy. ' +
+                    ' Increasing the maxsmooth parameter' +
+                    ' setting.cvxopt_feastol above the default value of 1e-7' +
+                    ' will prevent this error.')
                 sys.exit(1)
 
         return derivatives, pass_fail

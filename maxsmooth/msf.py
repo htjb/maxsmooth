@@ -124,14 +124,14 @@ class smooth(object):
         self.x = x
         self.y = y
         self.N = N
-        self.fit_type, self.base_dir, self.model_type, self.filtering, \
+        self.fit_type, self.base_dir, self.model_type, \
             self.all_output, self.cvxopt_maxiter, self.ifp, \
             self.ifp_list, self.data_save, \
-            self.warnings = setting.fit_type, \
-            setting.base_dir, setting.model_type, setting.filtering, \
+            self.warnings, self.cvxopt_feastol = setting.fit_type, \
+            setting.base_dir, setting.model_type, \
             setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
             setting.ifp_list, setting.data_save, \
-            setting.warnings
+            setting.warnings, setting.cvxopt_feastol
 
         if ('initial_params' in kwargs):
             self.initial_params = kwargs['initial_params']
@@ -228,12 +228,12 @@ class smooth(object):
             for j in range(signs.shape[0]):
                 fit = qp_class(
                     x, y, N, signs[j, :], mid_point,
-                    self.model_type, self.cvxopt_maxiter, self.filtering,
+                    self.model_type, self.cvxopt_maxiter,
                     self.all_output, self.ifp, self.ifp_list,
                     self.initial_params, self.basis_functions,
                     self.data_matrix, self.der_pres, self.model,
                     self.derivatives_function, self.args,
-                    self.warnings)
+                    self.warnings, self.cvxopt_feastol)
 
                 if self.all_output is True:
                     print(
@@ -256,23 +256,15 @@ class smooth(object):
                         '-----------------------------------------------' +
                         '-----')
 
-                if self.filtering is True:
-                    if fit.pass_fail == []:
-                        pass
-                    else:
-                        append_params(fit.parameters)
-                        append_chi(fit.chi_squared)
-                        append_pf(fit.pass_fail)
-                        append_passed_signs(signs[j, :])
-                        if self.data_save is True:
-                            save(
-                                self.base_dir, fit.parameters, fit.chi_squared,
-                                signs[j, :], N, self.fit_type)
-                if self.filtering is False:
-                    append_params(fit.parameters)
-                    append_chi(fit.chi_squared)
-                    append_pf(fit.pass_fail)
-                    append_passed_signs(signs[j, :])
+                append_params(fit.parameters)
+                append_chi(fit.chi_squared)
+                append_pf(fit.pass_fail)
+                append_passed_signs(signs[j, :])
+                if self.data_save is True:
+                    save(
+                        self.base_dir, fit.parameters, fit.chi_squared,
+                        signs[j, :], N, self.fit_type)
+
             params, chi_squared, pass_fail, passed_signs = np.array(params), \
                 np.array(chi_squared), np.array(pass_fail), \
                 np.array(passed_signs)
@@ -344,99 +336,47 @@ class smooth(object):
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
 
-            if self.filtering is True:
-                pass_fail = []
-                while pass_fail == []:
-                    signs = []
-                    append_signs = signs.append
-                    for l in range(N-2):
-                        sign = np.random.randint(0, 2)
-                        if sign == 0:
-                            sign = -1.
-                        else:
-                            sign = 1.
-                        append_signs(sign)
-                    signs = np.array(signs)
-                    fit = qp_class(
-                        x, y, N, signs, mid_point,
-                        self.model_type, self.cvxopt_maxiter,
-                        self.filtering, self.all_output, self.ifp,
-                        self.ifp_list, self.initial_params,
-                        self.basis_functions,
-                        self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args,
-                        self.warnings)
-                    chi_squared_old, pass_fail = fit.chi_squared, \
-                        fit.pass_fail
-                    if self.all_output is True:
-                        print(
-                            '----------------------------------------' +
-                            '------------')
-                        print('Polynomial Order:', N)
-                        print('Number of Derivatives:', N-2)
-                        print('Signs :', signs)
-                        print('Objective Function Value:', chi_squared_old)
-                        print('Parameters:', (fit.parameters).T)
-                        print('Method:', self.fit_type)
-                        print('Model:', self.model_type)
-                        print('Inflection Points?:', self.ifp)
-                        if self.ifp is True:
-                            print(
-                                'Inflection Point Derivatives:',
-                                self.ifp_list)
-                            print(
-                                'Inflection Points Used? (0 signifies' +
-                                'Yes):', fit.pass_fail)
-                        print(
-                            '--------------------------------------' +
-                            '--------------')
-                    if pass_fail != []:
-                        if self.data_save is True:
-                            save(
-                                self.base_dir, fit.parameters,
-                                chi_squared_old, signs, N, self.fit_type)
-            else:
-                signs = []
-                append_signs = signs.append
-                for l in range(N-2):
-                    sign = np.random.randint(0, 2)
-                    if sign == 0:
-                        sign = -1.
-                    else:
-                        sign = 1.
-                    append_signs(sign)
-                signs = np.array(signs)
-                fit = qp_class(
-                    x, y, N, signs, mid_point,
-                    self.model_type, self.cvxopt_maxiter, self.filtering,
-                    self.all_output, self.ifp, self.ifp_list,
-                    self.initial_params, self.basis_functions,
-                    self.data_matrix, self.der_pres, self.model,
-                    self.derivatives_function, self.args,
-                    self.warnings)
-                chi_squared_old = fit.chi_squared
-                if self.all_output is True:
+            signs = []
+            append_signs = signs.append
+            for l in range(N-2):
+                sign = np.random.randint(0, 2)
+                if sign == 0:
+                    sign = -1.
+                else:
+                    sign = 1.
+                append_signs(sign)
+            signs = np.array(signs)
+            fit = qp_class(
+                x, y, N, signs, mid_point,
+                self.model_type, self.cvxopt_maxiter,
+                self.all_output, self.ifp, self.ifp_list,
+                self.initial_params, self.basis_functions,
+                self.data_matrix, self.der_pres, self.model,
+                self.derivatives_function, self.args,
+                self.warnings, self.cvxopt_feastol)
+            chi_squared_old = fit.chi_squared
+            if self.all_output is True:
+                print(
+                    '--------------------------------------' +
+                    '--------------')
+                print('Polynomial Order:', N)
+                print('Number of Derivatives:', N-2)
+                print('Signs :', signs)
+                print('Objective Function Value:', chi_squared_old)
+                print('Parameters:', (fit.parameters).T)
+                print('Method:', self.fit_type)
+                print('Model:', self.model_type)
+                print('Inflection Points?:', self.ifp)
+                if self.ifp is True:
                     print(
-                        '--------------------------------------' +
-                        '--------------')
-                    print('Polynomial Order:', N)
-                    print('Number of Derivatives:', N-2)
-                    print('Signs :', signs)
-                    print('Objective Function Value:', chi_squared_old)
-                    print('Parameters:', (fit.parameters).T)
-                    print('Method:', self.fit_type)
-                    print('Model:', self.model_type)
-                    print('Inflection Points?:', self.ifp)
-                    if self.ifp is True:
-                        print(
-                            'Inflection Point Derivatives:',
-                            self.ifp_list)
-                        print(
-                            'Inflection Points Used? (0 signifies' +
-                            'Yes):', fit.pass_fail)
+                        'Inflection Point Derivatives:',
+                        self.ifp_list)
                     print(
-                        '--------------------------------------' +
-                        '--------------')
+                        'Inflection Points Used? (0 signifies' +
+                        'Yes):', fit.pass_fail)
+                print(
+                    '--------------------------------------' +
+                    '--------------')
 
             chi_squared = []
             chi_squared.append(chi_squared_old)
@@ -459,56 +399,27 @@ class smooth(object):
             while chi_squared_new < chi_squared_old:
                 if chi_squared_new != 0:
                         chi_squared_old = chi_squared_new
-
-                tested_chi_squareds = []
-                signs_array = []
-                params = []
-                pass_fail = []
                 for h in range(sign_transform.shape[0]):
                     signs = previous_signs * sign_transform[h]
                     fit = qp_class(
                         x, y, N, signs, mid_point,
                         self.model_type, self.cvxopt_maxiter,
-                        self.filtering, self.all_output, self.ifp,
+                        self.all_output, self.ifp,
                         self.ifp_list, self.initial_params,
                         self.basis_functions,
                         self.data_matrix, self.der_pres, self.model,
                         self.derivatives_function, self.args,
-                        self.warnings)
-                    tested_signs.append(signs)
-                    signs_array.append(signs)
-                    params.append(fit.parameters)
-                    pass_fail.append(fit.pass_fail)
-                    tested_chi_squareds.append(fit.chi_squared)
-                tested_chi_squareds = np.array(tested_chi_squareds)
-                for p in range(len(tested_chi_squareds)):
-                    chi_squared.append(tested_chi_squareds[p])
-                    if tested_chi_squareds[p] == tested_chi_squareds.min():
-                        chi_squared_new = tested_chi_squareds.min()
-                        previous_signs = signs_array[p]
-                    tested_signs.append(signs_array[p])
-                    parameters.append(params[p])
-                    passed_failed.append(pass_fail[p])
-                filtered_tested_chis = []
-                filtered_params = []
-                filtered_signs = []
-                filtered_pf = []
-                for p in range(len(tested_chi_squareds)):
-                    if list(passed_failed[p]) != []:
-                        filtered_tested_chis.append(tested_chi_squareds[p])
-                        filtered_signs.append(signs_array[p])
-                        filtered_params.append(params[p])
-                        filtered_pf.append(pass_fail[p])
-                filtered_tested_chis = np.array(filtered_tested_chis)
-                if len(filtered_tested_chis) > 1:
-                    output_chi = filtered_tested_chis.min()
-                else:
-                    output_chi = filtered_tested_chis
-                for l in range(len(filtered_tested_chis)):
-                    if filtered_tested_chis[l] == output_chi:
-                        output_params = filtered_params[l]
-                        output_signs = filtered_signs[l]
-                        output_pf = filtered_pf[l]
+                        self.warnings, self.cvxopt_feastol)
+                    if h == sign_transform.shape[0]-1:
+                        chi_squared_new = chi_squared_old
+                    if fit.chi_squared < chi_squared_old:
+                        chi_squared_new = fit.chi_squared
+                        chi_squared.append(fit.chi_squared)
+                        parameters.append(fit.parameters)
+                        tested_signs.append(signs)
+                        previous_signs = signs
+                        passed_failed.append(fit.pass_fail)
+                        break
                 if self.all_output is True:
                     print(
                         '--------------------------------------' +
@@ -535,38 +446,14 @@ class smooth(object):
                     save(
                         self.base_dir, output_params, output_chi,
                         output_signs, N, self.fit_type)
-                m = 0
-                for q in range(len(pass_fail)):
-                    if pass_fail[q] == []:
-                        chi_squared_new = 0
-                        if m == 0:
-                            count += 1
-                            print('count',count)
-                        m += 1
-                if count >= N:
-                    break
             parmeters = np.array(parameters)
             chi_squared = np.array(chi_squared)
-            filtered_chi_squared = []
-            filtered_parameters = []
-            filtered_tested_signs = []
-            filtered_passed_failed = []
-            for p in range(len(chi_squared)):
-                if list(passed_failed[p]) != []:
-                    filtered_chi_squared.append(chi_squared[p])
-                    filtered_tested_signs.append(tested_signs[p])
-                    filtered_parameters.append(parameters[p])
-                    filtered_passed_failed.append(passed_failed[p])
-            filtered_chi_squared = np.array(filtered_chi_squared)
-            if len(filtered_chi_squared) > 1:
-                Optimum_chi_squared = filtered_chi_squared.min()
-            else:
-                Optimum_chi_squared = filtered_chi_squared
-            for l in range(len(filtered_chi_squared)):
-                if filtered_chi_squared[l] == Optimum_chi_squared:
-                    Optimum_params = filtered_parameters[l]
-                    Optimum_sign_combination = filtered_tested_signs[l]
-                    Optimum_pass_fail = filtered_passed_failed[l]
+            Optimum_chi_squared = chi_squared.min()
+            for l in range(len(chi_squared)):
+                if chi_squared[l] == Optimum_chi_squared:
+                    Optimum_params = parameters[l]
+                    Optimum_sign_combination = tested_signs[l]
+                    Optimum_pass_fail = passed_failed[l]
             y_fit = Models_class(
                 Optimum_params, x, y, N, mid_point,
                 self.model_type, self.model, self.args).y_sum
