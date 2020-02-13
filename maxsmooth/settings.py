@@ -120,4 +120,3 @@ class setting(object):
         self.ifp_list = 'None'
         self.data_save = False
         self.warnings = False
-        self.cvxopt_feastol = 'Default' # needs documenting

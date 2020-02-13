@@ -127,11 +127,11 @@ class smooth(object):
         self.fit_type, self.base_dir, self.model_type, \
             self.all_output, self.cvxopt_maxiter, self.ifp, \
             self.ifp_list, self.data_save, \
-            self.warnings, self.cvxopt_feastol = setting.fit_type, \
+            self.warnings = setting.fit_type, \
             setting.base_dir, setting.model_type, \
             setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
             setting.ifp_list, setting.data_save, \
-            setting.warnings, setting.cvxopt_feastol
+            setting.warnings
 
         if ('initial_params' in kwargs):
             self.initial_params = kwargs['initial_params']
@@ -233,7 +233,7 @@ class smooth(object):
                     self.initial_params, self.basis_functions,
                     self.data_matrix, self.der_pres, self.model,
                     self.derivatives_function, self.args,
-                    self.warnings, self.cvxopt_feastol)
+                    self.warnings)
 
                 if self.all_output is True:
                     print(
@@ -353,7 +353,7 @@ class smooth(object):
                 self.initial_params, self.basis_functions,
                 self.data_matrix, self.der_pres, self.model,
                 self.derivatives_function, self.args,
-                self.warnings, self.cvxopt_feastol)
+                self.warnings)
             chi_squared_old = fit.chi_squared
             if self.all_output is True:
                 print(
@@ -409,7 +409,7 @@ class smooth(object):
                         self.basis_functions,
                         self.data_matrix, self.der_pres, self.model,
                         self.derivatives_function, self.args,
-                        self.warnings, self.cvxopt_feastol)
+                        self.warnings)
                     if h == sign_transform.shape[0]-1:
                         chi_squared_new = chi_squared_old
                     if fit.chi_squared < chi_squared_old:
@@ -446,7 +446,7 @@ class smooth(object):
                     save(
                         self.base_dir, output_params, output_chi,
                         output_signs, N, self.fit_type)
-            parmeters = np.array(parameters)
+            parameters = np.array(parameters)
             chi_squared = np.array(chi_squared)
             Optimum_chi_squared = chi_squared.min()
             for l in range(len(chi_squared)):
