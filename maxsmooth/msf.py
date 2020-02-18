@@ -125,13 +125,27 @@ class smooth(object):
         self.y = y
         self.N = N
         self.fit_type, self.base_dir, self.model_type, \
-            self.all_output, self.cvxopt_maxiter, self.ifp, \
+            self.all_output, self.cvxopt_maxiter, \
             self.ifp_list, self.data_save, \
-            self.warnings = setting.fit_type, \
+            self.warnings, self.constraints = setting.fit_type, \
             setting.base_dir, setting.model_type, \
-            setting.all_output, setting.cvxopt_maxiter, setting.ifp, \
+            setting.all_output, setting.cvxopt_maxiter, \
             setting.ifp_list, setting.data_save, \
-            setting.warnings
+            setting.warnings, setting.constraints
+
+        if self.ifp_list is not None:
+            for i in range(len(self.ifp_list)):
+                if self.ifp_list[i] < self.constraints:
+                    print('ERROR: One or more specified derivatives for' +
+                        ' inflection points is less than the minimum constrained' +
+                        ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
+                        ' Minimum Constrained Derivative = ' + str(self.constraints))
+                    sys.exit(1)
+
+        if ('initial_signs' in kwargs):
+            self.initial_signs = kwargs['initial_signs']
+        else:
+            self.initial_signs = None
 
         if ('initial_params' in kwargs):
             self.initial_params = kwargs['initial_params']
@@ -188,7 +202,7 @@ class smooth(object):
                     warnings.warn('Warning: Data matrix unchanged.')
 
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
-            self.Optimum_chi, self.rms, self.Optimum_pass_fail \
+            self.Optimum_chi, self.rms, self.Optimum_ifp_dict \
             = self.fitting()
 
     def fitting(self):
@@ -219,54 +233,66 @@ class smooth(object):
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
 
-            signs = signs_array([1]*(N-2))
+            if self.ifp_list is not None:
+                signs = signs_array([1]*(N-self.constraints-len(self.ifp_list)))
+            else:
+                signs = signs_array([1]*(N-self.constraints))
 
-            params, chi_squared, pass_fail, passed_signs = [], [], [], []
-            append_params, append_chi, append_pf, append_passed_signs = \
-                params.append, chi_squared.append, pass_fail.append, \
+            params, chi_squared, ifp_dict, passed_signs = [], [], [], []
+            append_params, append_chi, append_ifp_dict, append_passed_signs = \
+                params.append, chi_squared.append, ifp_dict.append, \
                 passed_signs.append
             for j in range(signs.shape[0]):
                 fit = qp_class(
                     x, y, N, signs[j, :], mid_point,
                     self.model_type, self.cvxopt_maxiter,
-                    self.all_output, self.ifp, self.ifp_list,
+                    self.all_output, self.ifp_list,
                     self.initial_params, self.basis_functions,
                     self.data_matrix, self.der_pres, self.model,
                     self.derivatives_function, self.args,
-                    self.warnings)
+                    self.warnings, self.constraints)
 
                 if self.all_output is True:
                     print(
                         '-----------------------------------------------' +
                         '-----')
                     print('Polynomial Order:', N)
-                    print('Number of Derivatives:', N-2)
+                    if self.ifp_list is not None:
+                        print('Number of Constrained Derivatives:',
+                            N-self.constraints-len(self.ifp_list))
+                    else:
+                        print('Number of Constrained Derivatives:',
+                            N-self.constraints)
                     print('Signs :', signs[j, :])
                     print('Objective Function Value:', fit.chi_squared)
                     print('Parameters:', (fit.parameters).T)
                     print('Method:', self.fit_type)
                     print('Model:', self.model_type)
-                    print('Inflection Points?:', self.ifp)
-                    if self.ifp is True:
+                    print('Constraints: m >=', self.constraints)
+                    if self.ifp_list is None:
+                        print(
+                            'Inflection Points Used? (0 signifies Yes):',
+                            Optimum_ifp_dict)
+                    if self.ifp_list is not None:
                         print('Inflection Point Derivatives:', self.ifp_list)
                         print(
                             'Inflection Points Used? (0 signifies Yes):',
-                            fit.pass_fail)
+                            fit.ifp_dict)
                     print(
                         '-----------------------------------------------' +
                         '-----')
 
                 append_params(fit.parameters)
                 append_chi(fit.chi_squared)
-                append_pf(fit.pass_fail)
+                append_ifp_dict(fit.ifp_dict)
                 append_passed_signs(signs[j, :])
                 if self.data_save is True:
                     save(
                         self.base_dir, fit.parameters, fit.chi_squared,
                         signs[j, :], N, self.fit_type)
 
-            params, chi_squared, pass_fail, passed_signs = np.array(params), \
-                np.array(chi_squared), np.array(pass_fail), \
+            params, chi_squared, ifp_dict, passed_signs = np.array(params), \
+                np.array(chi_squared), np.array(ifp_dict), \
                 np.array(passed_signs)
 
             Optimum_chi_squared = chi_squared.min()
@@ -280,9 +306,10 @@ class smooth(object):
                 self.model, self.args).y_sum
             der = derivative_class(
                 x, y, Optimum_params, N,
-                Optimum_sign_combination, mid_point, self.model_type, self.ifp,
-                self.derivatives_function, self.args, self.warnings)
-            derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
+                Optimum_sign_combination, mid_point, self.model_type, self.ifp_list,
+                self.derivatives_function, self.args, self.warnings,
+                self.constraints)
+            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 
@@ -294,18 +321,27 @@ class smooth(object):
                 '-----')
             print('Time:', end-start)
             print('Polynomial Order:', N)
-            print('Number of Derivatives:', N-2)
+            if self.ifp_list is not None:
+                print('Number of Constrained Derivatives:',
+                    N-self.constraints-len(self.ifp_list))
+            else:
+                print('Number of Constrained Derivatives:',
+                    N-self.constraints)
             print('Signs :', Optimum_sign_combination)
             print('Objective Function Value:', Optimum_chi_squared)
             print('Parameters:', Optimum_params.T)
             print('Method:', self.fit_type)
             print('Model:', self.model_type)
-            print('Inflection Points?:', self.ifp)
-            if self.ifp is True:
+            print('Constraints: m >=', self.constraints)
+            if self.ifp_list is None:
+                print(
+                    'Inflection Points Used? (0 signifies Yes):',
+                    Optimum_ifp_dict)
+            if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
                     'Inflection Points Used? (0 signifies Yes):',
-                    Optimum_pass_fail)
+                    Optimum_ifp_dict)
             print(
                 '-------------------------------------------------------' +
                 '------')
@@ -316,11 +352,11 @@ class smooth(object):
             save_optimum(
                 self.base_dir, end-start, N,
                 Optimum_sign_combination, Optimum_chi_squared,
-                Optimum_params, self.fit_type, self.model_type, self.ifp,
-                self.ifp_list, Optimum_pass_fail)
+                Optimum_params, self.fit_type, self.model_type,
+                self.ifp_list, Optimum_ifp_dict, self.constraints)
 
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
-                Optimum_sign_combination, Optimum_pass_fail
+                Optimum_sign_combination, Optimum_ifp_dict
 
         def qp_sign_flipping(x, y, N, mid_point):
             print(
@@ -336,132 +372,176 @@ class smooth(object):
                         self.base_dir + 'MSF_Order_' + str(N) + '_' +
                         self.fit_type + '/')
 
-            signs = []
-            append_signs = signs.append
-            for l in range(N-2):
-                sign = np.random.randint(0, 2)
-                if sign == 0:
-                    sign = -1.
+            p = 0
+            runs_chi_squared, runs_params, runs_sign_combination, \
+                runs_ifp_dict = [], [], [], []
+            while p <= 5*N:
+                signs = []
+                append_signs = signs.append
+                if self.ifp_list is not None:
+                    for l in range(N-self.constraints-len(self.ifp_list)):
+                        sign = np.random.randint(0, 2)
+                        if sign == 0:
+                            sign = -1.
+                        else:
+                            sign = 1.
+                        append_signs(sign)
                 else:
-                    sign = 1.
-                append_signs(sign)
-            signs = np.array(signs)
-            fit = qp_class(
-                x, y, N, signs, mid_point,
-                self.model_type, self.cvxopt_maxiter,
-                self.all_output, self.ifp, self.ifp_list,
-                self.initial_params, self.basis_functions,
-                self.data_matrix, self.der_pres, self.model,
-                self.derivatives_function, self.args,
-                self.warnings)
-            chi_squared_old = fit.chi_squared
-            if self.all_output is True:
-                print(
-                    '--------------------------------------' +
-                    '--------------')
-                print('Polynomial Order:', N)
-                print('Number of Derivatives:', N-2)
-                print('Signs :', signs)
-                print('Objective Function Value:', chi_squared_old)
-                print('Parameters:', (fit.parameters).T)
-                print('Method:', self.fit_type)
-                print('Model:', self.model_type)
-                print('Inflection Points?:', self.ifp)
-                if self.ifp is True:
-                    print(
-                        'Inflection Point Derivatives:',
-                        self.ifp_list)
-                    print(
-                        'Inflection Points Used? (0 signifies' +
-                        'Yes):', fit.pass_fail)
-                print(
-                    '--------------------------------------' +
-                    '--------------')
-
-            chi_squared = []
-            chi_squared.append(chi_squared_old)
-            parameters = []
-            parameters.append(fit.parameters)
-            tested_signs = []
-            tested_signs.append(signs)
-            passed_failed = []
-            passed_failed.append(fit.pass_fail)
-            chi_squared_new = 0
-
-            sign_transform = []
-            for i in range(len(signs)):
-                base = np.array([1]*len(signs))
-                base[i] = -1
-                sign_transform.append(base)
-            sign_transform = np.array(sign_transform)
-            previous_signs = signs
-            count = 0
-            while chi_squared_new < chi_squared_old:
-                if chi_squared_new != 0:
-                        chi_squared_old = chi_squared_new
-                for h in range(sign_transform.shape[0]):
-                    signs = previous_signs * sign_transform[h]
-                    fit = qp_class(
-                        x, y, N, signs, mid_point,
-                        self.model_type, self.cvxopt_maxiter,
-                        self.all_output, self.ifp,
-                        self.ifp_list, self.initial_params,
-                        self.basis_functions,
-                        self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args,
-                        self.warnings)
-                    if h == sign_transform.shape[0]-1:
-                        chi_squared_new = chi_squared_old
-                    if fit.chi_squared < chi_squared_old:
-                        chi_squared_new = fit.chi_squared
-                        chi_squared.append(fit.chi_squared)
-                        parameters.append(fit.parameters)
-                        tested_signs.append(signs)
-                        previous_signs = signs
-                        passed_failed.append(fit.pass_fail)
-                        break
+                    for l in range(N-self.constraints):
+                        sign = np.random.randint(0, 2)
+                        if sign == 0:
+                            sign = -1.
+                        else:
+                            sign = 1.
+                        append_signs(sign)
+                signs = np.array(signs)
+                fit = qp_class(
+                    x, y, N, signs, mid_point,
+                    self.model_type, self.cvxopt_maxiter,
+                    self.all_output, self.ifp_list,
+                    self.initial_params, self.basis_functions,
+                    self.data_matrix, self.der_pres, self.model,
+                    self.derivatives_function, self.args,
+                    self.warnings, self.constraints)
+                chi_squared_old = fit.chi_squared
                 if self.all_output is True:
                     print(
                         '--------------------------------------' +
                         '--------------')
                     print('Polynomial Order:', N)
-                    print('Number of Derivatives:', N-2)
-                    print('Signs :', output_signs)
-                    print('Objective Function Value:', output_chi)
-                    print('Parameters:', output_params.T)
+                    if self.ifp_list is not None:
+                        print('Number of Constrained Derivatives:',
+                            N-self.constraints-len(self.ifp_list))
+                    else:
+                        print('Number of Constrained Derivatives:',
+                            N-self.constraints)
+                    print('Signs :', signs)
+                    print('Objective Function Value:', chi_squared_old)
+                    print('Parameters:', (fit.parameters).T)
                     print('Method:', self.fit_type)
                     print('Model:', self.model_type)
-                    print('Inflection Points?:', self.ifp)
-                    if self.ifp is True:
+                    print('Constraints: m >=', self.constraints)
+                    if self.ifp_list is None:
+                        print(
+                            'Inflection Points Used? (0 signifies Yes):',
+                            fit.ifp_dict)
+                    if self.ifp_list is not None:
                         print(
                             'Inflection Point Derivatives:',
                             self.ifp_list)
                         print(
                             'Inflection Points Used? (0 signifies' +
-                            'Yes):', output_pf)
+                            'Yes):', fit.ifp_dict)
                     print(
                         '--------------------------------------' +
                         '--------------')
-                if self.data_save is True:
-                    save(
-                        self.base_dir, output_params, output_chi,
-                        output_signs, N, self.fit_type)
-            parameters = np.array(parameters)
-            chi_squared = np.array(chi_squared)
-            Optimum_chi_squared = chi_squared.min()
-            for l in range(len(chi_squared)):
-                if chi_squared[l] == Optimum_chi_squared:
-                    Optimum_params = parameters[l]
-                    Optimum_sign_combination = tested_signs[l]
-                    Optimum_pass_fail = passed_failed[l]
+
+                chi_squared = []
+                chi_squared.append(chi_squared_old)
+                parameters = []
+                parameters.append(fit.parameters)
+                tested_signs = []
+                tested_signs.append(signs)
+                ifp_dicts = []
+                ifp_dicts.append(fit.ifp_dict)
+                chi_squared_new = 0
+
+                sign_transform = []
+                for i in range(len(signs)):
+                    base = np.array([1]*len(signs))
+                    base[i] = -1
+                    sign_transform.append(base)
+                sign_transform = np.array(sign_transform)
+                previous_signs = signs
+                while chi_squared_new < chi_squared_old:
+                    if chi_squared_new != 0:
+                        chi_squared_old = chi_squared_new
+                    for h in range(sign_transform.shape[0]):
+                        new_signs = previous_signs * sign_transform[h]
+                        fit = qp_class(
+                            x, y, N, new_signs, mid_point,
+                            self.model_type, self.cvxopt_maxiter,
+                            self.all_output,
+                            self.ifp_list, self.initial_params,
+                            self.basis_functions,
+                            self.data_matrix, self.der_pres, self.model,
+                            self.derivatives_function, self.args,
+                            self.warnings, self.constraints)
+                        if fit.chi_squared < chi_squared_old:
+                            chi_squared_new = fit.chi_squared
+                            chi_squared.append(fit.chi_squared)
+                            parameters.append(fit.parameters)
+                            tested_signs.append(signs)
+                            previous_signs = signs
+                            ifp_dicts.append(fit.ifp_dict)
+                            break
+                    if self.all_output is True:
+                        print(
+                            '--------------------------------------' +
+                            '--------------')
+                        print('Polynomial Order:', N)
+                        if self.ifp_list is not None:
+                            print('Number of Constrained Derivatives:',
+                                N-self.constraints-len(self.ifp_list))
+                        else:
+                            print('Number of Constrained Derivatives:',
+                                N-self.constraints)
+                        print('Signs :', signs)
+                        print('Objective Function Value:', fit.chi_squared)
+                        print('Parameters:', fit.parameters.T)
+                        print('Method:', self.fit_type)
+                        print('Model:', self.model_type)
+                        print('Constraints: m >=', self.constraints)
+                        if self.ifp_list is None:
+                            print(
+                                'Inflection Points Used? (0 signifies Yes):',
+                                fit.ifp_dict)
+                        if self.ifp_list is not None:
+                            print(
+                                'Inflection Point Derivatives:',
+                                self.ifp_list)
+                            print(
+                                'Inflection Points Used? (0 signifies' +
+                                'Yes):', fit.ifp_dict)
+                        print(
+                            '--------------------------------------' +
+                            '--------------')
+                    if self.data_save is True:
+                        save(
+                            self.base_dir, fit.parameters, fit.chi_squared,
+                            signs, N, self.fit_type)
+                chi_squared = np.array(chi_squared)
+                runs_chi_squared.append(chi_squared.min())
+                for l in range(len(chi_squared)):
+                    if chi_squared[l] == chi_squared.min():
+                        runs_params.append(parameters[l])
+                        runs_sign_combination.append(tested_signs[l])
+                        runs_ifp_dict.append(ifp_dicts[l])
+                p += 1
+            runs_chi_squared = np.array(runs_chi_squared)
+            Optimum_chi_squared = runs_chi_squared.min()
+            for l in range(len(runs_chi_squared)):
+                if runs_chi_squared[l] == runs_chi_squared.min():
+                    Optimum_params = runs_params[l]
+                    Optimum_sign_combination = runs_sign_combination[l]
+                    Optimum_ifp_dict = runs_ifp_dict[l]
+
+            #chi_squared = np.array(chi_squared)
+            #Optimum_chi_squared = chi_squared.min()
+            #for l in range(len(chi_squared)):
+            #    if chi_squared[l] == chi_squared.min():
+            #        Optimum_params = parameters[l]
+            #        Optimum_sign_combination = tested_signs[l]
+            #        Optimum_ifp_dict = ifp_dicts[l]
             y_fit = Models_class(
                 Optimum_params, x, y, N, mid_point,
                 self.model_type, self.model, self.args).y_sum
             der = derivative_class(
                 x, y, Optimum_params, N,
-                Optimum_sign_combination, mid_point, self.model_type, self.ifp,
-                self.derivatives_function, self.args, self.warnings)
-            derivatives, Optimum_pass_fail = der.derivatives, der.pass_fail
+                Optimum_sign_combination, mid_point, self.model_type, self.ifp_list,
+                self.derivatives_function, self.args, self.warnings,
+                self.constraints)
+            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 
@@ -473,18 +553,27 @@ class smooth(object):
                 '-----')
             print('Time:', end-start)
             print('Polynomial Order:', N)
-            print('Number of Derivatives:', N-2)
+            if self.ifp_list is not None:
+                print('Number of Constrained Derivatives:',
+                    N-self.constraints-len(self.ifp_list))
+            else:
+                print('Number of Constrained Derivatives:',
+                    N-self.constraints)
             print('Signs :', Optimum_sign_combination)
             print('Objective Function Value:', Optimum_chi_squared)
             print('Parameters:', Optimum_params.T)
             print('Method:', self.fit_type)
             print('Model:', self.model_type)
-            print('Inflection Points?:', self.ifp)
-            if self.ifp is True:
+            print('Constraints: m >=', self.constraints)
+            if self.ifp_list is None:
+                print(
+                    'Inflection Points Used? (0 signifies Yes):',
+                    Optimum_ifp_dict)
+            if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
                     'Inflection Points Used? (0 signifies Yes):',
-                    Optimum_pass_fail)
+                    Optimum_ifp_dict)
             print(
                 '----------------------------------------------------' +
                 '---------')
@@ -495,43 +584,43 @@ class smooth(object):
             save_optimum(
                 self.base_dir, end-start, N,
                 Optimum_sign_combination, Optimum_chi_squared,
-                Optimum_params, self.fit_type, self.model_type, self.ifp,
-                self.ifp_list, Optimum_pass_fail)
+                Optimum_params, self.fit_type, self.model_type,
+                self.ifp_list, Optimum_ifp_dict, self.constraints)
 
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
-                Optimum_sign_combination, Optimum_pass_fail
+                Optimum_sign_combination, Optimum_ifp_dict
 
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds, Optimum_pass_fail = [], [], [], [], [], \
+                Optimum_chi_squareds, Optimum_ifp_dict = [], [], [], [], [], \
                 []
             for i in range(len(self.N)):
-                y_result, derive, obj, params, signs, pf = \
+                y_result, derive, obj, params, signs, ifp = \
                     qp(self.x, self.y, self.N[i], mid_point)
                 y_fit.append(y_result)
                 Optimum_sign_combinations.append(signs)
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
-                Optimum_pass_fail.append(pf)
+                Optimum_ifp_dict.append(ifp)
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
                 np.array(Optimum_params), np.array(Optimum_chi_squareds)
         if self.fit_type == 'qp-sign_flipping':
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds, Optimum_pass_fail = [], [], [], [], [], \
+                Optimum_chi_squareds, Optimum_ifp_dict = [], [], [], [], [], \
                 []
             for i in range(len(self.N)):
-                y_result, derive, obj, params, signs, pf = \
+                y_result, derive, obj, params, signs, ifp = \
                     qp_sign_flipping(self.x, self.y, self.N[i], mid_point)
                 y_fit.append(y_result)
                 Optimum_sign_combinations.append(signs)
                 derivatives.append(derive)
                 Optimum_params.append(params)
                 Optimum_chi_squareds.append(obj)
-                Optimum_pass_fail.append(pf)
+                Optimum_ifp_dict.append(ifp)
             y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
                 Optimum_chi_squareds = np.array(y_fit), \
                 np.array(Optimum_sign_combinations), np.array(derivatives), \
@@ -542,4 +631,4 @@ class smooth(object):
             for i in range(len(self.N))]
 
         return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, \
-            Optimum_chi_squareds, rms, Optimum_pass_fail
+            Optimum_chi_squareds, rms, Optimum_ifp_dict
