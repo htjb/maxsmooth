@@ -90,7 +90,8 @@ class setting(object):
         an inflection point then ifp_list=[2]. If I wished to allow the
         second and fourth derivative to have inflection points
         I would write ifp_list=[2,4]. Values in ifp_list cannot exceed the
-        number of possible derivatives and cannot equal 1.
+        number of possible derivatives and cannot be smaller than the value
+        of setting.constraints.
 
     **data_save:** (Default = True)
         Setting data_save to True will save sample
@@ -107,6 +108,10 @@ class setting(object):
     **warnings:** (Default = False)
         Setting to False will prevent warnings showing in the terminal.
         Setting to True will show all warnings.
+
+    **constraints:** (Default = 2)
+        The minimum derivative order to constrain from. Set by default to 2 for
+        MSFs.
 
     """
     def __init__(self):
