@@ -182,7 +182,7 @@ class qp_class(object):
                     ' setting.cvxopt_maxiter')
                 sys.exit(1)
             else:
-                parameters = np.array([0]*self.N)
+                parameters = np.array(matrix(0, (self.N, 1), 'd'))
                 chi_squared = np.sum((self.true_y)**2)
                 ifp_dict = {}
         else:

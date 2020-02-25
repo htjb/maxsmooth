@@ -260,7 +260,7 @@ class smooth(object):
                     if self.ifp_list is None:
                         print(
                             'Inflection Points Used? (0 signifies Yes):',
-                            Optimum_ifp_dict)
+                            fit.ifp_dict)
                     if self.ifp_list is not None:
                         print('Inflection Point Derivatives:', self.ifp_list)
                         print(
