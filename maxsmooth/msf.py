@@ -410,16 +410,6 @@ class smooth(object):
                     self.base_dir, fit.parameters, fit.chi_squared,
                     signs, N, self.fit_type)
 
-            chi_squared = []
-            chi_squared.append(chi_squared_old)
-            parameters = []
-            parameters.append(fit.parameters)
-            tested_signs = []
-            tested_signs.append(signs)
-            ifp_dicts = []
-            ifp_dicts.append(fit.ifp_dict)
-            chi_squared_new = 0 # Initialize new chi squared value as 0
-
             # Transforms or 'steps' of sign combination
             sign_transform = []
             for i in range(len(signs)):
@@ -427,6 +417,7 @@ class smooth(object):
                 base[i] = -1
                 sign_transform.append(base)
             sign_transform = np.array(sign_transform)
+            chi_squared_new = 0 # Initialize new chi squared value as 0
             previous_signs = signs # Original Signs that were randomly chosen
 
             # Steepest descent algorithm
