@@ -11,9 +11,9 @@ warnings.simplefilter('always', UserWarning)
 class qp_class(object):
     def __init__(
             self, x, y, N, signs, mid_point, model_type, cvxopt_maxiter,
-            all_output, ifp, ifp_list, initial_params,
+            all_output, ifp_list, initial_params,
             basis_functions, data_matrix, derivative_pres, model,
-            derivatives_function, args, warnings):
+            derivatives_function, args, warnings, constraints):
         self.x = x/x.max()
         self.true_x = x
         self.y = y/y.std()+y.mean()/y.std()
@@ -24,7 +24,6 @@ class qp_class(object):
         self.model_type = model_type
         self.cvxopt_maxiter = cvxopt_maxiter
         self.all_output = all_output
-        self.ifp = ifp
         self.ifp_list = ifp_list
         self.initial_params = initial_params
         self.basis_functions = basis_functions
@@ -34,13 +33,14 @@ class qp_class(object):
         self.derivatives_function = derivatives_function
         self.args = args
         self.warnings = warnings
-        self.parameters, self.chi_squared, self.pass_fail = self.fit()
+        self.constraints = constraints
+        self.parameters, self.chi_squared, self.ifp_dict = self.fit()
 
     def fit(self):
 
         solvers.options['maxiters'] = self.cvxopt_maxiter
         solvers.options['show_progress'] = False
-        #solvers.options['feastol'] = 1e-7
+
         def constraint_prefactors(m):
             # Derivative prefactors on parameters.
             derivatives = []
@@ -48,7 +48,7 @@ class qp_class(object):
                 if i <= m - 1:
                     derivatives.append([0]*len(self.x))
             for i in range(self.N-m):
-                if i < (self.N-m) or i == (self.N-m):
+                if i <= (self.N-m):
                     if self.derivative_pres is None:
                         if self.model_type == 'normalised_polynomial':
                             mth_order_derivative_term = (
@@ -90,10 +90,20 @@ class qp_class(object):
         derivatives = []
         signs = matrix(self.signs)
         for i in range(len(m)):
-            if m[i] >= 2:
-                derivative_prefactors = constraint_prefactors(m[i])
-                if derivative_prefactors != []:
-                    derivatives.append(signs[i - 2] * derivative_prefactors)
+            if m[i] >= self.constraints:
+                if self.ifp_list is not None:
+                    if m[i] not in set(self.ifp_list):
+                        derivative_prefactors = constraint_prefactors(m[i])
+                        if derivative_prefactors != []:
+                            derivatives.append(derivative_prefactors)
+                else:
+                    derivative_prefactors = constraint_prefactors(m[i])
+                    if derivative_prefactors != []:
+                        derivatives.append(derivative_prefactors)
+
+        for i in range(len(derivatives)):
+            derivatives[i] *= signs[i]
+
         G = matrix(derivatives)  # Array of derivative prefactors for all m>=2
 
         if self.basis_functions is None:
@@ -119,50 +129,15 @@ class qp_class(object):
                     self.x, self.y, self.mid_point, self.N, *self.args)
 
         if self.data_matrix is None:
-            b = matrix(self.y, (len(self.y), 1), 'd')
+            b = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
         if self.data_matrix is not None:
             b = self.data_matrix
 
-        if self.ifp is False:
-            h = matrix(-1e-7, ((self.N-2)*len(self.x), 1), 'd')
-        if self.ifp is True:
-            if self.ifp_list == 'None':
-                print(
-                    'ERROR: setting.ifp set to True but no derivatives' +
-                    ' selected. Please state which derivatives you would' +
-                    ' like to allow inflection points in by setting' +
-                    ' ifp_list to a list of derivative orders(see' +
-                    ' settings.py for more information). ')
-                sys.exit(1)
-            for i in range(len(self.ifp_list)):
-                if self.ifp_list[i]-2 >= (self.N-2):
-                    print(
-                        'ERROR: ifp_list element exceeds the number of' +
-                        ' derivatives')
-                    sys.exit(1)
-            else:
-                h_ifp = []
-                ifp_list = [None]*(self.N-2)
-                for i in range(self.N-2):
-                    for j in range(len(self.ifp_list)):
-                        if i == self.ifp_list[j]-2:
-                            if ifp_list == []:
-                                ifp_list[i] = i
-                            elif np.any(ifp_list) != i:
-                                ifp_list[i] = (i)
-                for i in range(self.N-2):
-                    if ifp_list[i] == i:
-                        h_ifp.append([1e20]*(len(self.x)))
-                    else:
-                        h_ifp.append([-1e-7]*(len(self.x)))
-                h_ifp = np.array(h_ifp)
-                # Correcting array format to transform to cvxopt matrix.
-                for i in range(h_ifp.shape[0]):
-                    if i == 0:
-                        hifp = np.array(h_ifp[i])
-                    else:
-                        hifp = np.concatenate([hifp, h_ifp[i]])
-                h = matrix(hifp.T)
+        if self.ifp_list is None:
+            h = matrix(-1e-7, ((self.N-self.constraints)*len(self.x), 1), 'd')
+        else:
+            h = matrix(-1e-7, ((self.N-self.constraints-len(self.ifp_list))
+                *len(self.x), 1), 'd')
 
         P = A.T*A
         q = -A.T*b
@@ -209,19 +184,19 @@ class qp_class(object):
             else:
                 parameters = np.array([0]*self.N)
                 chi_squared = np.sum((self.true_y)**2)
-                pass_fail = []
+                ifp_dict = {}
         else:
             y = Models_class(
                 parameters, self.true_x, self.true_y, self.N, self.mid_point,
                 self.model_type, self.model, self.args).y_sum
             der = derivative_class(
                 self.true_x, self.true_y, parameters, self.N, self.signs, self.mid_point,
-                self.model_type, self.ifp, self.derivatives_function, self.args,
-                self.warnings)
-            pass_fail = der.pass_fail
+                self.model_type, self.ifp_list, self.derivatives_function, self.args,
+                self.warnings, self.constraints)
+            ifp_dict = der.ifp_dict
 
             chi_squared = np.sum((self.true_y-y)**2)
             parameters = np.array(parameters)
 
 
-        return parameters, chi_squared, pass_fail
+        return parameters, chi_squared, ifp_dict

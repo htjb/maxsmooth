@@ -7,8 +7,8 @@ warnings.simplefilter('always', UserWarning)
 
 class derivative_class(object):
     def __init__(
-                self, x, y, params, N, signs, mid_point, model_type, ifp,
-                derivatives_function, args, warnings):
+                self, x, y, params, N, signs, mid_point, model_type, ifp_list,
+                derivatives_function, args, warnings, constraints):
         self.signs = signs
         self.x = x
         self.y = y
@@ -16,11 +16,13 @@ class derivative_class(object):
         self.params = params
         self.mid_point = mid_point
         self.model_type = model_type
-        self.ifp = ifp
+        self.ifp_list = ifp_list
         self.derivatives_function = derivatives_function
         self.args = args
         self.warnings = warnings
-        self.derivatives, self.pass_fail = self.derivatives_func()
+        self.constraints = constraints
+        self.derivatives, self.pass_fail, self.ifp_dict = \
+            self.derivatives_func()
 
     def derivatives_func(self):
 
@@ -80,11 +82,26 @@ class derivative_class(object):
 
         m = np.arange(0, self.N, 1)
         derivatives = []
+        ifp_derivatives = []
+        ifp_orders = []
         for i in range(len(m)):
-            if m[i] >= 2:
-                derivatives.append(mth_order_derivatives(m[i]))
+            if m[i] < self.constraints:
+                ifp_orders.append(m[i])
+                ifp_derivatives.append(mth_order_derivatives(m[i]))
+            if m[i] >= self.constraints:
+                if self.ifp_list is not None:
+                    if m[i] not in set(self.ifp_list):
+                        derivatives.append(mth_order_derivatives(m[i]))
+                    if m[i] in set(self.ifp_list):
+                        ifp_orders.append(m[i])
+                        ifp_derivatives.append(mth_order_derivatives(m[i]))
+                else:
+                    derivatives.append(mth_order_derivatives(m[i]))
         derivatives = np.array(derivatives)
+        ifp_derivatives = np.array(ifp_derivatives)
+        ifp_orders = np.array(ifp_orders)
 
+        # Check constrained derivvatives
         pass_fail = []
         for i in range(derivatives.shape[0]):
             # In the array pass_fail a 0 signifies that the derivatives
@@ -95,20 +112,23 @@ class derivative_class(object):
                 pass_fail.append(1)
             else:
                 pass_fail.append(0)
-
         pass_fail = np.array(pass_fail)
 
+        # ifp dictionary for reporting back to user presence of inflection
+        # points
+        ifp_dict = {}
+        for i in range(ifp_derivatives.shape[0]):
+            if np.all(ifp_derivatives[i, :] > 0) or np.all(ifp_derivatives[i, :] < 0):
+                ifp_dict[str(ifp_orders[i])] = 1
+            else:
+                ifp_dict[str(ifp_orders[i])] = 0
+
         if np.any(pass_fail == 0):
-            if self.ifp is True:
-                if self.warnings is True:
-                    warnings.warn(
-                        'WARNING: setting.ipf = True has lead to derivatives' +
-                        ' including inflection points.', stacklevel=2)
-            if self.ifp is False:
+            if self.ifp_list is not None:
                 print('Pass or fail', pass_fail)
                 print(
                     'ERROR: "Condition Violated" Derivatives feature' +
                     ' crossing points.')
                 sys.exit(1)
 
-        return derivatives, pass_fail
+        return derivatives, pass_fail, ifp_dict

@@ -116,7 +116,7 @@ class setting(object):
         self.base_dir = 'Fitted_Output/'
         self.cvxopt_maxiter = 1000
         self.all_output = False
-        self.ifp = False
-        self.ifp_list = 'None'
+        self.ifp_list = None
         self.data_save = False
         self.warnings = False
+        setting.constraints = 2

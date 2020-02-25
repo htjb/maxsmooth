@@ -42,8 +42,8 @@ class save(object):
 class save_optimum(object):
     def __init__(
                 self, base_dir, time, N, Optimum_signs, Optimum_chi_squared,
-                Optimum_params, fit_type, model_type, ifp, ifp_list,
-                Optimum_pass_fail):
+                Optimum_params, fit_type, model_type, ifp_list,
+                Optimum_ifp_dict, constraints):
         self.base_dir = base_dir
         self.time = time
         self.N = N
@@ -52,9 +52,9 @@ class save_optimum(object):
         self.Optimum_params = Optimum_params
         self.fit_type = fit_type
         self.model_type = model_type
-        self.ifp = ifp
         self.ifp_list = ifp_list
-        self.Optimum_pass_fail = Optimum_pass_fail
+        self.Optimum_ifp_dict = Optimum_ifp_dict
+        self.constraints = constraints
 
         f = open(
                 self.base_dir + 'Optimal_Results_'+self.fit_type +
@@ -64,7 +64,10 @@ class save_optimum(object):
         f.write('Polynomial Order:\n')
         np.savetxt(f, np.array([self.N]))
         f.write('Number of Derivatives:\n')
-        np.savetxt(f, np.array([self.N-2]))
+        if self.ifp_list is None:
+            np.savetxt(f, np.array([self.N-self.constraints]))
+        else:
+            np.savetxt(f, np.array([self.N-self.constraints-len(self.ifp_list)]))
         f.write('Signs:\n')
         np.savetxt(f, self.Optimum_signs)
         f.write('Objective Function Value:\n')
@@ -75,11 +78,14 @@ class save_optimum(object):
         f.write(self.fit_type+'\n')
         f.write('Model:\n')
         f.write(self.model_type+'\n')
-        f.write('Inflection Points?:\n')
-        f.write(str(self.ifp)+'\n')
-        if self.ifp is True:
+        f.write('Constraints'+'\n')
+        np.savetxt(f, np.array([self.constraints]))
+        if self.ifp_list is None:
+            f.write('Inflection Points Used? (0 signifies Yes):\n')
+            f.write(str(self.Optimum_ifp_dict))
+        if self.ifp_list is not None:
             f.write('Inflection Point Derivatives:\n')
             np.savetxt(f, self.ifp_list)
             f.write('Inflection Points Used? (0 signifies Yes):\n')
-            np.savetxt(f, self.Optimum_pass_fail)
+            f.write(str(self.Optimum_ifp_dict))
         f.close()
