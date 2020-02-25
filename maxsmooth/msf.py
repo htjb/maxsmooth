@@ -422,7 +422,6 @@ class smooth(object):
 
             # Steepest descent algorithm
             while chi_squared_new < chi_squared_old:
-                print(chi_squared_old, chi_squared_new)
                 # If we enter back in the loop after first iter replace old
                 # chi with new
                 if chi_squared_new != 0:
@@ -562,43 +561,16 @@ class smooth(object):
 
         mid_point = len(self.x)//2
         if self.fit_type == 'qp':
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds, Optimum_ifp_dict = [], [], [], [], [], \
-                []
-            for i in range(len(self.N)):
-                y_result, derive, obj, params, signs, ifp = \
-                    qp(self.x, self.y, self.N[i], mid_point)
-                y_fit.append(y_result)
-                Optimum_sign_combinations.append(signs)
-                derivatives.append(derive)
-                Optimum_params.append(params)
-                Optimum_chi_squareds.append(obj)
-                Optimum_ifp_dict.append(ifp)
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = np.array(y_fit), \
-                np.array(Optimum_sign_combinations), np.array(derivatives), \
-                np.array(Optimum_params), np.array(Optimum_chi_squareds)
+            y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
+                Optimum_sign_combination, Optimum_ifp_dict = \
+                qp(self.x, self.y, self.N, mid_point)
         if self.fit_type == 'qp-sign_flipping':
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds, Optimum_ifp_dict = [], [], [], [], [], \
-                []
-            for i in range(len(self.N)):
-                y_result, derive, obj, params, signs, ifp = \
-                    qp_sign_flipping(self.x, self.y, self.N[i], mid_point)
-                y_fit.append(y_result)
-                Optimum_sign_combinations.append(signs)
-                derivatives.append(derive)
-                Optimum_params.append(params)
-                Optimum_chi_squareds.append(obj)
-                Optimum_ifp_dict.append(ifp)
-            y_fit, Optimum_sign_combinations, derivatives, Optimum_params, \
-                Optimum_chi_squareds = np.array(y_fit), \
-                np.array(Optimum_sign_combinations), np.array(derivatives), \
-                np.array(Optimum_params), np.array(Optimum_chi_squareds)
+            y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
+                Optimum_sign_combination, Optimum_ifp_dict = \
+                qp_sign_flipping(self.x, self.y, self.N, mid_point)
 
-        rms = [
-            (np.sqrt(np.sum((self.y-y_fit[i, :])**2)/len(self.y)))
-            for i in range(len(self.N))]
+        rms = (np.sqrt(np.sum((self.y-y_fit)**2)/len(self.y)))
 
-        return y_fit, Optimum_sign_combinations, Optimum_params, derivatives, \
-            Optimum_chi_squareds, rms, Optimum_ifp_dict
+
+        return y_fit, Optimum_sign_combination, Optimum_params, derivatives, \
+            Optimum_chi_squared, rms, Optimum_ifp_dict

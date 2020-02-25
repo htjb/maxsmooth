@@ -53,7 +53,7 @@ pl.xlabel('x "Frequency [MHz]"', fontsize=12)
 pl.ylabel('y "Temperature [K]"', fontsize=12)
 pl.show()
 
-N = [12]
+N = 12
 
 setting = setting()
 
