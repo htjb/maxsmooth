@@ -452,11 +452,7 @@ class smooth(object):
                         # If new chi is a step down hill update the value of
                         # chi new and the best sign combination ('previous_signs')
                         chi_squared_new = fit.chi_squared
-                        chi_squared.append(fit.chi_squared)
-                        parameters.append(fit.parameters)
-                        tested_signs.append(signs)
                         previous_signs = signs
-                        ifp_dicts.append(fit.ifp_dict)
                         break
                     if h == sign_transform.shape[0] - 1:
                         # If no step down break for loop and break while loop
@@ -498,15 +494,20 @@ class smooth(object):
                     save(
                         self.base_dir, fit.parameters, fit.chi_squared,
                         signs, N, self.fit_type)
-            chi_squared = np.array(chi_squared)
-            # Minimum of all calculated chi values and associated parameters,
-            # signs and information about inflection points.
-            Optimum_chi_squared = chi_squared.min()
-            for l in range(len(chi_squared)):
-                if chi_squared[l] == chi_squared.min():
-                    Optimum_params = parameters[l]
-                    Optimum_sign_combination = tested_signs[l]
-                    Optimum_ifp_dict = ifp_dicts[l]
+
+            fit = qp_class(
+                x, y, N, previous_signs, mid_point,
+                self.model_type, self.cvxopt_maxiter,
+                self.all_output,
+                self.ifp_list, self.initial_params,
+                self.basis_functions,
+                self.data_matrix, self.der_pres, self.model,
+                self.derivatives_function, self.args,
+                self.warnings, self.constraints)
+
+            Optimum_params = fit.parameters
+            Optimum_sign_combination = previous_signs
+            Optimum_chi_squared = fit.chi_squared
 
             # Re-calculate fitted y and derivatives. Could return this from
             # the qp_class but it is easier to redo rather than save at each
