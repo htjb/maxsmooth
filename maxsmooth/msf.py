@@ -435,12 +435,13 @@ class smooth(object):
             previous_signs = signs
 
             while chi_squared_new < chi_squared_old:
+                print(chi_squared_old, chi_squared_new)
                 if chi_squared_new != 0:
                     chi_squared_old = chi_squared_new
                 for h in range(sign_transform.shape[0]):
-                    new_signs = previous_signs * sign_transform[h]
+                    signs = previous_signs * sign_transform[h]
                     fit = qp_class(
-                        x, y, N, new_signs, mid_point,
+                        x, y, N, signs, mid_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.all_output,
                         self.ifp_list, self.initial_params,
