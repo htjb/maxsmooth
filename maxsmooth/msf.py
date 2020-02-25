@@ -215,7 +215,7 @@ class smooth(object):
         if os.path.isdir(self.base_dir+'Output_Evaluation/'):
             shutil.rmtree(self.base_dir+'Output_Evaluation/')
 
-        def qp(x, y, N, mid_point):
+        def qp(x, y, N, mid_point): # Testing all signs
             print(
                 '######################################################' +
                 '#######')
@@ -346,31 +346,24 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict
 
-        def qp_sign_flipping(x, y, N, mid_point):
+        def qp_sign_flipping(x, y, N, mid_point): # Steepest Descent
             print(
                 '######################################################' +
                 '#######')
             start = time.time()
 
-            signs = []
-            append_signs = signs.append
+            # Generate all sign combinations using function defined
+            # at top of fitting
             if self.ifp_list is not None:
-                for l in range(N-self.constraints-len(self.ifp_list)):
-                    sign = np.random.randint(0, 2)
-                    if sign == 0:
-                        sign = -1.
-                    else:
-                        sign = 1.
-                    append_signs(sign)
+                array_signs = signs_array([1]*(N-self.constraints-len(self.ifp_list)))
             else:
-                for l in range(N-self.constraints):
-                    sign = np.random.randint(0, 2)
-                    if sign == 0:
-                        sign = -1.
-                    else:
-                        sign = 1.
-                    append_signs(sign)
-            signs = np.array(signs)
+                array_signs = signs_array([1]*(N-self.constraints))
+
+            # Randomly pick one of the generated sign combinations
+            r = np.random.randint(0, len(array_signs), 1)
+            signs = array_signs[r][0]
+
+            # Calculate the starting chi value
             fit = qp_class(
                 x, y, N, signs, mid_point,
                 self.model_type, self.cvxopt_maxiter,
@@ -380,6 +373,7 @@ class smooth(object):
                 self.derivatives_function, self.args,
                 self.warnings, self.constraints)
             chi_squared_old = fit.chi_squared
+
             if self.all_output is True:
                 print(
                     '--------------------------------------' +
@@ -424,21 +418,26 @@ class smooth(object):
             tested_signs.append(signs)
             ifp_dicts = []
             ifp_dicts.append(fit.ifp_dict)
-            chi_squared_new = 0
+            chi_squared_new = 0 # Initialize new chi squared value as 0
 
+            # Transforms or 'steps' of sign combination
             sign_transform = []
             for i in range(len(signs)):
                 base = np.array([1]*len(signs))
                 base[i] = -1
                 sign_transform.append(base)
             sign_transform = np.array(sign_transform)
-            previous_signs = signs
+            previous_signs = signs # Original Signs that were randomly chosen
 
+            # Steepest descent algorithm
             while chi_squared_new < chi_squared_old:
                 print(chi_squared_old, chi_squared_new)
+                # If we enter back in the loop after first iter replace old
+                # chi with new
                 if chi_squared_new != 0:
                     chi_squared_old = chi_squared_new
                 for h in range(sign_transform.shape[0]):
+                    # Transform old signs and calculate chi
                     signs = previous_signs * sign_transform[h]
                     fit = qp_class(
                         x, y, N, signs, mid_point,
@@ -450,6 +449,8 @@ class smooth(object):
                         self.derivatives_function, self.args,
                         self.warnings, self.constraints)
                     if fit.chi_squared < chi_squared_old:
+                        # If new chi is a step down hill update the value of
+                        # chi new and the best sign combination ('previous_signs')
                         chi_squared_new = fit.chi_squared
                         chi_squared.append(fit.chi_squared)
                         parameters.append(fit.parameters)
@@ -458,6 +459,8 @@ class smooth(object):
                         ifp_dicts.append(fit.ifp_dict)
                         break
                     if h == sign_transform.shape[0] - 1:
+                        # If no step down break for loop and break while loop
+                        # by setting...
                         chi_squared_new = chi_squared_old
                         break
                 if self.all_output is True:
@@ -496,6 +499,8 @@ class smooth(object):
                         self.base_dir, fit.parameters, fit.chi_squared,
                         signs, N, self.fit_type)
             chi_squared = np.array(chi_squared)
+            # Minimum of all calculated chi values and associated parameters,
+            # signs and information about inflection points.
             Optimum_chi_squared = chi_squared.min()
             for l in range(len(chi_squared)):
                 if chi_squared[l] == chi_squared.min():
@@ -503,6 +508,9 @@ class smooth(object):
                     Optimum_sign_combination = tested_signs[l]
                     Optimum_ifp_dict = ifp_dicts[l]
 
+            # Re-calculate fitted y and derivatives. Could return this from
+            # the qp_class but it is easier to redo rather than save at each
+            # iteration.
             y_fit = Models_class(
                 Optimum_params, x, y, N, mid_point,
                 self.model_type, self.model, self.args).y_sum
