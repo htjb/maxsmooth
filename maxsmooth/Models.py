@@ -42,20 +42,15 @@ class Models_class(object):
                     for i in range(self.N)], axis=0)
 
             if self.model_type == 'legendre':
+                
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 lps = []
                 for l in range(self.N):
                     P = legendre(l)
                     lps.append(P(interval))
                 lps=np.array(lps)
-                """print(lps)
-                print(self.params)"""
                 y_sum = np.sum([self.params[i]*lps[i] for i in range(self.N)], axis=0)
-                """print(y_sum.shape)
-                import pylab as pl
-                pl.plot(self.x, y_sum)
-                pl.plot(self.x, self.y)
-                pl.show()"""
+
         if self.model is not None:
             if self.args is None:
                 y_sum = self.model(

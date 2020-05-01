@@ -120,39 +120,39 @@ class qp_class(object):
         G = matrix(derivatives)  # Array of derivative prefactors for all m>=2
 
         if self.basis_functions is None:
-            A = np.empty([len(self.x), self.N])
+            phi = np.empty([len(self.x), self.N])
             if self.model_type != 'legendre':
                 for h in range(len(self.x)):
                     for i in range(self.N):
                         if self.model_type == 'normalised_polynomial':
-                            A[h, i] = self.y[self.mid_point] * (
+                            phi[h, i] = self.y[self.mid_point] * (
                                 self.x[h] / self.x[self.mid_point])**i
                         if self.model_type == 'polynomial':
-                            A[h, i] = (self.x[h])**i
+                            phi[h, i] = (self.x[h])**i
                         if self.model_type == 'log_MSF_polynomial':
-                            A[h, i] = np.log10(self.x[h]/self.x[self.mid_point])**i
+                            phi[h, i] = np.log10(self.x[h]/self.x[self.mid_point])**i
                         if self.model_type == 'MSF_2017_polynomial':
-                            A[h, i] = (self.x[h]-self.x[self.mid_point])**i
+                            phi[h, i] = (self.x[h]-self.x[self.mid_point])**i
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
-                A = []
+                phi = []
                 for l in range(self.N):
                     P = legendre(l)
-                    A.append(P(interval))
-                A=np.array(A).T
-            A = matrix(A)
+                    phi.append(P(interval))
+                phi = np.array(phi).T
+            phi = matrix(phi)
         if self.basis_functions is not None:
             if self.args is None:
-                A = self.basis_functions(
+                phi = self.basis_functions(
                     self.x, self.y, self.mid_point, self.N)
             if self.args is not None:
-                A = self.basis_functions(
+                phi = self.basis_functions(
                     self.x, self.y, self.mid_point, self.N, *self.args)
 
         if self.data_matrix is None:
-            b = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
+            data_matrix = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
         if self.data_matrix is not None:
-            b = self.data_matrix
+            data_matrix = self.data_matrix
 
         if self.ifp_list is None:
             h = matrix(0.0, ((self.N-self.constraints)*len(self.x), 1), 'd')
@@ -160,15 +160,8 @@ class qp_class(object):
             h = matrix(0.0, ((self.N-self.constraints-len(self.ifp_list))
                 *len(self.x), 1), 'd')
 
-        Q = A.T*A
-        q = -A.T*b
-        import matplotlib.pyplot as plt
-        plt.imshow(Q, cmap='jet')
-        cbar = plt.colorbar()
-        cbar.set_label(r'$Q$')
-        plt.savefig('EDGES_Q_basic_qp.pdf')
-        plt.show()
-        sys.exit(1)
+        Q = phi.T*phi
+        q = -phi.T*data_matrix
 
         if self.initial_params is None:
             qpfit = solvers.qp(Q, q, G, h)
