@@ -670,7 +670,7 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict
 
-        mid_point = 0#len(self.x)//2
+        mid_point = len(self.x)//2
         if self.fit_type == 'qp':
             y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict = \
