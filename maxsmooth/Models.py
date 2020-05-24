@@ -29,6 +29,19 @@ class Models_class(object):
                     [self.params[i]*(self.x)**i for i in range(self.N)],
                     axis=0)
 
+            if self.model_type == 'loglog':
+
+                y_sum = 10**(np.sum(
+                    [self.params[i]*(self.x)**i for i in range(self.N)],
+                    axis=0))
+
+            if self.model_type == 'exponential':
+
+                y_sum = self.y[self.mid_point]*np.sum(
+                    [self.params[i]*np.exp(-i*self.x
+                    /self.x[self.mid_point]) for i in range(self.N)],
+                    axis=0)
+
             if self.model_type == 'log_MSF_polynomial':
 
                 y_sum = np.sum(
@@ -42,7 +55,7 @@ class Models_class(object):
                     for i in range(self.N)], axis=0)
 
             if self.model_type == 'legendre':
-                
+
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 lps = []
                 for l in range(self.N):

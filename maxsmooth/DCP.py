@@ -131,6 +131,8 @@ class smooth(object):
         self.data_save = kwargs.pop('data_save', False)
         self.warnings = kwargs.pop('warnings', False)
         self.constraints = kwargs.pop('constraints', 2)
+        self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
+        self.cap = kwargs.pop('cap', None)
 
         self.initial_params = kwargs.pop('initial_params', None)
         self.basis_functions = kwargs.pop('basis_functions', None)
@@ -263,15 +265,28 @@ class smooth(object):
                     Optimum_params = params[f, :]
                     Optimum_sign_combination = passed_signs[f, :]
 
-            y_fit = Models_class(
-                Optimum_params, x, y, self.N, mid_point, self.model_type,
-                self.model, self.args).y_sum
-            der = derivative_class(
-                x, y, Optimum_params, self.N,
-                mid_point, self.model_type, self.ifp_list,
-                self.derivatives_function, self.args, self.warnings,
-                self.constraints)
-            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            if self.model_type == 'loglog':
+                y_fit = Models_class(
+                    Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
+                    self.N, mid_point,
+                    self.model_type, self.model, self.args).y_sum
+                der = derivative_class(
+                    np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
+                    self.N,
+                    mid_point, self.model_type, self.ifp_list,
+                    self.derivatives_function, self.args, self.warnings,
+                    self.constraints)
+                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            else:
+                y_fit = Models_class(
+                    Optimum_params, x, y, self.N, mid_point,
+                    self.model_type, self.model, self.args).y_sum
+                der = derivative_class(
+                    x, y, Optimum_params, self.N,
+                    mid_point, self.model_type, self.ifp_list,
+                    self.derivatives_function, self.args, self.warnings,
+                    self.constraints)
+                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 
@@ -470,15 +485,22 @@ class smooth(object):
                         chi_squared_new = chi_squared_old
                         break
 
-            lim = 2*min(chi_squared)
-            number = self.N
+            if self.chi_squared_limit is not None:
+                lim = self.chi_squared_limit
+            else:
+                lim = 2*min(chi_squared)
+
+            if self.cap is not None:
+                cap = self.cap
+            else:
+                cap = (len(array_signs)//self.N) + self.N
 
             for i in range(len(array_signs)):
                 if np.all(previous_signs == array_signs[i]):
                     index = i
 
             down_int = 1
-            while down_int < (len(array_signs)//number) + self.N:
+            while down_int < cap:
                 if index-down_int < 0:
                     break
                 elif (index-down_int) in set(tested_indices):
@@ -543,7 +565,7 @@ class smooth(object):
                 down_int += 1
 
             up_int = 1
-            while up_int < (len(array_signs)//number) + self.N:
+            while up_int < cap:
                 if index+up_int >= len(array_signs):
                     break
                 elif (index + up_int) in set(tested_indices):
@@ -613,15 +635,28 @@ class smooth(object):
                     Optimum_sign_combination = tested_signs[i]
                     Optimum_chi_squared = chi_squared[i]
 
-            y_fit = Models_class(
-                Optimum_params, x, y, self.N, mid_point,
-                self.model_type, self.model, self.args).y_sum
-            der = derivative_class(
-                x, y, Optimum_params, self.N,
-                mid_point, self.model_type, self.ifp_list,
-                self.derivatives_function, self.args, self.warnings,
-                self.constraints)
-            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            if self.model_type == 'loglog':
+                y_fit = Models_class(
+                    Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
+                    self.N, mid_point,
+                    self.model_type, self.model, self.args).y_sum
+                der = derivative_class(
+                    np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
+                    self.N,
+                    mid_point, self.model_type, self.ifp_list,
+                    self.derivatives_function, self.args, self.warnings,
+                    self.constraints)
+                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            else:
+                y_fit = Models_class(
+                    Optimum_params, x, y, self.N, mid_point,
+                    self.model_type, self.model, self.args).y_sum
+                der = derivative_class(
+                    x, y, Optimum_params, self.N,
+                    mid_point, self.model_type, self.ifp_list,
+                    self.derivatives_function, self.args, self.warnings,
+                    self.constraints)
+                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 

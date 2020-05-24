@@ -27,57 +27,58 @@ class derivative_class(object):
     def derivatives_func(self):
 
         def mth_order_derivatives(m):
-            if self.model_type != 'legendre':
-                mth_order_derivative = []
-                for i in range(self.N-m):
-                    if i < (self.N-m) or i == (self.N-m):
-                        if self.derivatives_function is None:
-                            if self.model_type == 'normalised_polynomial':
-                                mth_order_derivative_term = (
-                                    self.y[self.mid_point] /
-                                    self.x[self.mid_point]) * \
-                                    np.math.factorial(m+i) / \
-                                    np.math.factorial(i) * \
-                                    self.params[int(m)+i]*(self.x)**i / \
-                                    (self.x[self.mid_point])**(i+1)
-                                mth_order_derivative.append(
-                                    mth_order_derivative_term)
-                            if self.model_type == 'polynomial':
-                                mth_order_derivative_term = \
-                                    np.math.factorial(m+i) / \
-                                    np.math.factorial(i) * \
-                                    self.params[int(m)+i]*(self.x)**i
-                                mth_order_derivative.append(
-                                    mth_order_derivative_term)
-                            if self.model_type == 'log_MSF_polynomial':
-                                mth_order_derivative_term = \
-                                    np.math.factorial(m+i) / \
-                                    np.math.factorial(i) * \
-                                    self.params[int(m)+i]*np.log10(self.x/ \
-                                    self.x[self.mid_point])**i
-                                mth_order_derivative.append(
-                                    mth_order_derivative_term)
-                            if self.model_type == 'MSF_2017_polynomial':
-                                mth_order_derivative_term = \
-                                    np.math.factorial(m+i) / \
-                                    np.math.factorial(i) * \
-                                    self.params[int(m)+i] * \
-                                    (self.x-self.x[self.mid_point])**i
-                                mth_order_derivative.append(
-                                    mth_order_derivative_term)
-                        if self.derivatives_function is not None:
-                            if self.args is None:
-                                mth_order_derivative_term = \
-                                    self.derivatives_function(
-                                        m, i, self.x, self.y, self.mid_point,
-                                        self.params)
-                            if self.args is not None:
-                                mth_order_derivative_term = \
-                                    self.derivatives_function(
-                                        m, i, self.x, self.y, self.mid_point,
-                                        self.params, *self.args)
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
+            if self.derivatives_function is None:
+                if np.any(self.model_type != ['legendre', 'exponential']):
+                    mth_order_derivative = []
+                    for i in range(self.N-m):
+                        if i < (self.N-m) or i == (self.N-m):
+                                if self.model_type == 'normalised_polynomial':
+                                    mth_order_derivative_term = (
+                                        self.y[self.mid_point] /
+                                        self.x[self.mid_point]) * \
+                                        np.math.factorial(m+i) / \
+                                        np.math.factorial(i) * \
+                                        self.params[int(m)+i]*(self.x)**i / \
+                                        (self.x[self.mid_point])**(i+1)
+                                    mth_order_derivative.append(
+                                        mth_order_derivative_term)
+                                if self.model_type == 'polynomial' or \
+                                    self.model_type == 'loglog':
+                                    mth_order_derivative_term = \
+                                        np.math.factorial(m+i) / \
+                                        np.math.factorial(i) * \
+                                        self.params[int(m)+i]*(self.x)**i
+                                    mth_order_derivative.append(
+                                        mth_order_derivative_term)
+                                if self.model_type == 'log_MSF_polynomial':
+                                    mth_order_derivative_term = \
+                                        np.math.factorial(m+i) / \
+                                        np.math.factorial(i) * \
+                                        self.params[int(m)+i]*np.log10(self.x/ \
+                                        self.x[self.mid_point])**i
+                                    mth_order_derivative.append(
+                                        mth_order_derivative_term)
+                                if self.model_type == 'MSF_2017_polynomial':
+                                    mth_order_derivative_term = \
+                                        np.math.factorial(m+i) / \
+                                        np.math.factorial(i) * \
+                                        self.params[int(m)+i] * \
+                                        (self.x-self.x[self.mid_point])**i
+                                    mth_order_derivative.append(
+                                        mth_order_derivative_term)
+
+            if self.derivatives_function is not None:
+                if self.args is None:
+                    derivatives = \
+                        self.derivatives_function(m,
+                            self.x, self.y, self.mid_point,
+                            self.params)
+                if self.args is not None:
+                    derivatives = \
+                        self.derivatives_function(m,
+                            self.x, self.y, self.mid_point,
+                            self.params, *self.args)
+                mth_order_derivative = derivatives
 
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
@@ -90,7 +91,21 @@ class derivative_class(object):
                     derivatives.append(((alps[h,:]*(-1)**(m))/(1-interval**2)**(m/2))
                         *self.params[h, 0])
                 mth_order_derivative = np.array(derivatives)
-            mth_order_derivative = np.array(mth_order_derivative).sum(axis=0)
+            if self.model_type == 'exponential':
+                derivatives = np.empty([self.N, len(self.x)])
+                for i in range(self.N):
+                    for h in range(len(self.x)):
+                        derivatives[i, h] = self.y[self.mid_point]*(self.params[i]*np.exp(-i*self.x[h]
+                            /self.x[self.mid_point]))*(-i/self.x[self.mid_point])**m
+                mth_order_derivative = np.array(derivatives)
+
+            if type(mth_order_derivative) == list:
+                mth_order_derivative = np.array(mth_order_derivative)
+            if mth_order_derivative.shape == (len(self.x), self.N):
+                    mth_order_derivative = mth_order_derivative.sum(axis=1)
+            else:
+                mth_order_derivative = mth_order_derivative.sum(axis=0)
+
             return mth_order_derivative
 
         m = np.arange(0, self.N, 1)
