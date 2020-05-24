@@ -46,18 +46,6 @@ class smooth(object):
         and functions can be found in the section `Designing A Basis Function`.
         **
 
-        data_matrix: *CVXOPT dense matrix of dimensions (len(y),1)* The data
-            matrix is a matrix of y values to be fitted by cvxopt.
-            The default data matrix used by *smooth* is,
-
-            .. code:: bash
-
-                b = matrix(y, (len(y), 1), 'd').
-
-            See CVXOPT documentation for details on building a dense matrix.
-            This will only need to be changed on rare occasions when the
-            fitting space is changed.
-
         basis_function: *function with parameters (x, y, mid_point, N)* This is
             a function of basis functions for the quadratic programming.
             The variable mid_point is the index at the middle of the datasets
@@ -122,29 +110,60 @@ class smooth(object):
         self.y = y
         self.N = N
 
+        for keys, values in kwargs.items():
+            if keys not in set(['fit_type', 'model_type', 'base_dir',
+                'all_output', 'cvxopt_maxiter', 'ifp_list', 'data_save',
+                'warnings', 'constraints', 'chi_squared_limit', 'cap',
+                'initial_params','basis_functions','der_pres', 'model',
+                'derivatives_function', 'args']):
+                print("Error: Unexpected keyword argument in smooth.")
+                sys.exit(1)
+
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
+        if self.fit_type not in set(['qp', 'qp-sign_flipping']):
+            print("Error: Invalid 'fit_type'. Valid entries include 'qp'\n" +
+                "'qp-sign_flipping'")
+            sys.exit(1)
+
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
-        self.model_type = kwargs.pop('model_type', 'log_MSF_polynomial')
-        self.all_output = kwargs.pop('all_output', False)
+        self.model_type = kwargs.pop('model_type', 'difference_polynomial')
+        if self.model_type not in set(['normalised_polynomial', 'polynomial',
+            'log_polynomial', 'loglog_polynomial', 'difference_polynomial',
+            'exponential', 'legendre']):
+            print("Error: Invalid 'model_type'. See documentation for built" +
+                "in models.")
+            sys.exit(1)
+
         self.cvxopt_maxiter = kwargs.pop('cvxopt_maxiter', 10000)
-        self.ifp_list = kwargs.pop('ifp_list', None)
+        if type(self.cvxopt_maxiter) is not int:
+            print("Error: 'cvxopt_maxiter' is not integer.")
+            sys.exit(1)
+
+        self.all_output = kwargs.pop('all_output', False)
         self.data_save = kwargs.pop('data_save', False)
         self.warnings = kwargs.pop('warnings', False)
+        boolean_kwargs = [self.warnings, self.data_save, self.all_output]
+        for i in range(len(boolean_kwargs)):
+            if type(boolean_kwargs[i]) is not bool:
+                print("Error: Boolean keyword argument with value "
+                    + str(boolean_kwargs[i]) +
+                    " is not True or False.")
+                sys.exit(1)
+
         self.constraints = kwargs.pop('constraints', 2)
-        self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
-        self.cap = kwargs.pop('cap', None)
+        if type(self.constraints) is not int:
+            print("Error: 'constraints' is not an integer")
+            sys.exit(1)
+        if self.constraints > self.N-1:
+            print("Error: 'constraints' exceeds the number of derivatives.")
+            sys.exit(1)
 
-        self.initial_params = kwargs.pop('initial_params', None)
-        self.basis_functions = kwargs.pop('basis_functions', None)
-        self.data_matrix = kwargs.pop('data_matrix', None)
-        self.der_pres = kwargs.pop('der_pres', None)
-        self.model = kwargs.pop('model', None)
-        self.derivatives_function = kwargs.pop('derivatives', None)
-        self.parameter_transforms = kwargs.pop('parameter_transforms', None)
-        self.args = kwargs.pop('args', None)
-
+        self.ifp_list = kwargs.pop('ifp_list', None)
         if self.ifp_list is not None:
             for i in range(len(self.ifp_list)):
+                if type(self.ifp_list[i]) is not int:
+                    print("Error: Entries in 'ifp_list' are not integer.")
+                    sys.exit(1)
                 if self.ifp_list[i] < self.constraints:
                     print('ERROR: One or more specified derivatives for' +
                         ' inflection points is less than the minimum constrained' +
@@ -152,26 +171,55 @@ class smooth(object):
                         ' Minimum Constrained Derivative = ' + str(self.constraints))
                     sys.exit(1)
 
-        self.basis_change = [
-            self.basis_functions, self.der_pres,
-            self.derivatives_function, self.model]
-        if np.any(self.basis_change) is None:
-            if np.any(self.basis_change) is not None:
-                print(
-                    'Error: Attempt to change basis functions failed.' +
-                    ' One or more functions not defined.' +
-                    ' Please consult documentation.')
-                sys.exit(1)
+        self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
+        self.cap = kwargs.pop('cap', None)
+        if self.chi_squared_limit is not None:
+            if type(self.chi_squared_limit) is not int:
+                    if type(self.chi_squared_limit) is not float:
+                        print("Error: Limit on maximum allowed increase in chi squared" +
+                            ", 'chi_squared_limit', is not an integer or float.")
+                        sys.exit(1)
+        if self.cap is not None:
+            if type(self.cap) is not int:
+                    print("Error: The cap on directional exploration" +
+                        ", 'cap', is not an integer.")
+                    sys.exit(1)
 
-        if np.all(self.basis_change) is not None:
-            self.model_type = 'User Defined'
-            if self.data_matrix is None:
-                if self.warnings is True:
-                    warnings.warn('Warning: Data matrix unchanged.')
+        self.initial_params = kwargs.pop('initial_params', None)
+        if self.initial_params is not None and len(self.initial_params) \
+            != self.N:
+            print("Error: Initial Parameters isnot equal to the number" +
+                "of terms in the polynomial, N.")
+            sys.exit(1)
 
-        if self.warnings is True and self.data_matrix is not None:
-            warnings.warn('Data matrix has been changed.', stacklevel=2)
+        self.basis_functions = kwargs.pop('basis_functions', None)
+        self.der_pres = kwargs.pop('der_pres', None)
+        self.model = kwargs.pop('model', None)
+        self.derivatives_function = kwargs.pop('derivatives', None)
+        self.args = kwargs.pop('args', None)
 
+        self.new_basis = {'basis_function':
+            self.basis_functions, 'der_pres': self.der_pres,
+            'derivatives_function': self.derivatives_function,
+            'model': self.model, 'args': self.args}
+        if np.all(value is None for value in self.new_basis.values()):
+            pass
+        else:
+            count = 0
+            for key, value in self.new_basis.items():
+                if value is None and key != 'args':
+                    print(
+                        'Error: Attempt to change basis functions failed.' +
+                        ' One or more functions not defined.' +
+                        ' Please consult documentation.')
+                    sys.exit(1)
+                if value is None and key == 'args':
+                    print('Warning: No additional arguments passed to new basis' +
+                        'functions')
+                count += 1
+
+            if count == len(self.new_basis):
+                self.model_type = 'user_defined'
 
         self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
             self.Optimum_chi, self.rms, self.Optimum_ifp_dict \
@@ -202,6 +250,7 @@ class smooth(object):
                 signs = signs_array([1]*(self.N-self.constraints-len(self.ifp_list)))
             else:
                 signs = signs_array([1]*(self.N-self.constraints))
+
             params, chi_squared, ifp_dict, passed_signs = [], [], [], []
             append_params, append_chi, append_ifp_dict, append_passed_signs = \
                 params.append, chi_squared.append, ifp_dict.append, \
@@ -211,10 +260,8 @@ class smooth(object):
                     x, y, self.N, signs[j, :], mid_point,
                     self.model_type, self.cvxopt_maxiter,
                     self.all_output, self.ifp_list,
-                    self.initial_params, self.basis_functions,
-                    self.data_matrix, self.der_pres, self.model,
-                    self.derivatives_function, self.args,
-                    self.warnings, self.constraints, self.parameter_transforms)
+                    self.initial_params,
+                    self.warnings, self.constraints, self.new_basis)
 
                 if self.all_output is True:
                     print(
@@ -235,12 +282,12 @@ class smooth(object):
                     print('Constraints: m >=', self.constraints)
                     if self.ifp_list is None:
                         print(
-                            'Inflection Points Used? (0 signifies Yes):',
+                            'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                             fit.ifp_dict)
                     if self.ifp_list is not None:
                         print('Inflection Point Derivatives:', self.ifp_list)
                         print(
-                            'Inflection Points Used? (0 signifies Yes):',
+                            'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                             fit.ifp_dict)
                     print(
                         '-----------------------------------------------' +
@@ -269,23 +316,21 @@ class smooth(object):
                 y_fit = Models_class(
                     Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
                     self.N, mid_point,
-                    self.model_type, self.model, self.args).y_sum
+                    self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
                     self.N,
-                    mid_point, self.model_type, self.ifp_list,
-                    self.derivatives_function, self.args, self.warnings,
-                    self.constraints)
+                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
             else:
                 y_fit = Models_class(
                     Optimum_params, x, y, self.N, mid_point,
-                    self.model_type, self.model, self.args).y_sum
+                    self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     x, y, Optimum_params, self.N,
-                    mid_point, self.model_type, self.ifp_list,
-                    self.derivatives_function, self.args, self.warnings,
-                    self.constraints)
+                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
@@ -312,12 +357,12 @@ class smooth(object):
             print('Constraints: m >=', self.constraints)
             if self.ifp_list is None:
                 print(
-                    'Inflection Points Used? (0 signifies Yes):',
+                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
-                    'Inflection Points Used? (0 signifies Yes):',
+                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             print(
                 '-------------------------------------------------------' +
@@ -360,10 +405,8 @@ class smooth(object):
                 x, y, self.N, signs, mid_point,
                 self.model_type, self.cvxopt_maxiter,
                 self.all_output, self.ifp_list,
-                self.initial_params, self.basis_functions,
-                self.data_matrix, self.der_pres, self.model,
-                self.derivatives_function, self.args,
-                self.warnings, self.constraints, self.parameter_transforms)
+                self.initial_params,
+                self.warnings, self.constraints, self.new_basis)
             chi_squared.append(fit.chi_squared)
             tested_signs.append(signs)
             parameters.append(fit.parameters)
@@ -389,7 +432,7 @@ class smooth(object):
                 print('Constraints: m >=', self.constraints)
                 if self.ifp_list is None:
                     print(
-                        'Inflection Points Used? (0 signifies Yes):',
+                        'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                         fit.ifp_dict)
                 if self.ifp_list is not None:
                     print(
@@ -397,7 +440,7 @@ class smooth(object):
                         self.ifp_list)
                     print(
                         'Inflection Points Used? (0 signifies' +
-                        'Yes):', fit.ifp_dict)
+                        'Yes\n in derivative order "i"):', fit.ifp_dict)
                 print(
                     '--------------------------------------' +
                     '--------------')
@@ -432,11 +475,7 @@ class smooth(object):
                             self.model_type, self.cvxopt_maxiter,
                             self.all_output,
                             self.ifp_list, self.initial_params,
-                            self.basis_functions,
-                            self.data_matrix, self.der_pres, self.model,
-                            self.derivatives_function, self.args,
-                            self.warnings, self.constraints,
-                            self.parameter_transforms)
+                            self.warnings, self.constraints, self.new_basis)
                         if fit.chi_squared < chi_squared_old:
                             chi_squared_new = fit.chi_squared
                             previous_signs = signs
@@ -463,7 +502,7 @@ class smooth(object):
                                 print('Constraints: m >=', self.constraints)
                                 if self.ifp_list is None:
                                     print(
-                                        'Inflection Points Used? (0 signifies Yes):',
+                                        'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                                         fit.ifp_dict)
                                 if self.ifp_list is not None:
                                     print(
@@ -471,7 +510,7 @@ class smooth(object):
                                         self.ifp_list)
                                     print(
                                         'Inflection Points Used? (0 signifies' +
-                                        'Yes):', fit.ifp_dict)
+                                        'Yes\n in derivative order "i"):', fit.ifp_dict)
                                 print(
                                     '--------------------------------------' +
                                     '--------------')
@@ -514,11 +553,7 @@ class smooth(object):
                         self.model_type, self.cvxopt_maxiter,
                         self.all_output,
                         self.ifp_list, self.initial_params,
-                        self.basis_functions,
-                        self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args,
-                        self.warnings, self.constraints,
-                        self.parameter_transforms)
+                        self.warnings, self.constraints, self.new_basis)
                     chi_down = fit.chi_squared
                     chi_squared.append(fit.chi_squared)
                     tested_signs.append(signs)
@@ -543,7 +578,7 @@ class smooth(object):
                         print('Constraints: m >=', self.constraints)
                         if self.ifp_list is None:
                             print(
-                                'Inflection Points Used? (0 signifies Yes):',
+                                'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                                 fit.ifp_dict)
                         if self.ifp_list is not None:
                             print(
@@ -551,7 +586,7 @@ class smooth(object):
                                 self.ifp_list)
                             print(
                                 'Inflection Points Used? (0 signifies' +
-                                'Yes):', fit.ifp_dict)
+                                'Yes\n in derivative order "i"):', fit.ifp_dict)
                         print(
                             '--------------------------------------' +
                             '--------------')
@@ -579,11 +614,7 @@ class smooth(object):
                         self.model_type, self.cvxopt_maxiter,
                         self.all_output,
                         self.ifp_list, self.initial_params,
-                        self.basis_functions,
-                        self.data_matrix, self.der_pres, self.model,
-                        self.derivatives_function, self.args,
-                        self.warnings, self.constraints,
-                        self.parameter_transforms)
+                        self.warnings, self.constraints, self.new_basis)
                     chi_up = fit.chi_squared
                     chi_squared.append(fit.chi_squared)
                     tested_signs.append(signs)
@@ -608,7 +639,7 @@ class smooth(object):
                         print('Constraints: m >=', self.constraints)
                         if self.ifp_list is None:
                             print(
-                                'Inflection Points Used? (0 signifies Yes):',
+                                'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                                 fit.ifp_dict)
                         if self.ifp_list is not None:
                             print(
@@ -616,7 +647,7 @@ class smooth(object):
                                 self.ifp_list)
                             print(
                                 'Inflection Points Used? (0 signifies' +
-                                'Yes):', fit.ifp_dict)
+                                'Yes\n in derivative order "i"):', fit.ifp_dict)
                         print(
                             '--------------------------------------' +
                             '--------------')
@@ -635,27 +666,25 @@ class smooth(object):
                     Optimum_sign_combination = tested_signs[i]
                     Optimum_chi_squared = chi_squared[i]
 
-            if self.model_type == 'loglog':
+            if self.model_type == 'loglog_polynomial':
                 y_fit = Models_class(
                     Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
                     self.N, mid_point,
-                    self.model_type, self.model, self.args).y_sum
+                    self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
                     self.N,
-                    mid_point, self.model_type, self.ifp_list,
-                    self.derivatives_function, self.args, self.warnings,
-                    self.constraints)
+                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
             else:
                 y_fit = Models_class(
                     Optimum_params, x, y, self.N, mid_point,
-                    self.model_type, self.model, self.args).y_sum
+                    self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     x, y, Optimum_params, self.N,
-                    mid_point, self.model_type, self.ifp_list,
-                    self.derivatives_function, self.args, self.warnings,
-                    self.constraints)
+                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
@@ -682,12 +711,12 @@ class smooth(object):
             print('Constraints: m >=', self.constraints)
             if self.ifp_list is None:
                 print(
-                    'Inflection Points Used? (0 signifies Yes):',
+                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
-                    'Inflection Points Used? (0 signifies Yes):',
+                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             print(
                 '----------------------------------------------------' +

@@ -10,7 +10,7 @@ The user should begin by importing the `setting` class from
     from maxsmooth.msf import smooth
 
 """
-from maxsmooth.msf import smooth
+from maxsmooth.DCP import smooth
 
 """
 The user should then import the data they wish to fit.
@@ -21,7 +21,7 @@ The user should then import the data they wish to fit.
     x = np.load('Data/x.npy')
     y = np.load('Data/y.npy')
 
-and define the polynomial orders they wish to fit as a list.
+and define the polynomial orders they wish to fit.
 
 .. code:: bash
 
@@ -31,7 +31,7 @@ or for example,
 
 .. code:: bash
 
-    N = [10]
+    N = 10
 
 """
 import numpy as np
@@ -39,7 +39,7 @@ import numpy as np
 x = np.load('Data/x.npy')
 y = np.load('Data/y.npy')
 
-N = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+N = 6
 
 """
 `smooth` can be called like so,
@@ -64,9 +64,10 @@ so,
 """
 
 result = smooth(x, y, N)
+print('Accessing Fit Attributes:')
 print('Objective Funtion Evaluations:\n', result.Optimum_chi)
 print('RMS:\n', result.rms)
-# print('Parameters:\n', result.Optimum_params)
-# print('Fitted y:\n', result.y_fit)
-# print('Sign Combinations:\n', result.Optimum_signs)
-# print('Derivatives:\n', result.derivatives)
+#print('Parameters:\n', result.Optimum_params)
+#print('Fitted y:\n', result.y_fit)
+print('Sign Combinations:\n', result.Optimum_signs)
+#print('Derivatives:\n', result.derivatives)

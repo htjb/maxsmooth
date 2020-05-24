@@ -9,7 +9,7 @@ warnings.simplefilter('always', UserWarning)
 class derivative_class(object):
     def __init__(
                 self, x, y, params, N, mid_point, model_type, ifp_list,
-                derivatives_function, args, warnings, constraints):
+                warnings, constraints, new_basis):
         self.x = x
         self.y = y
         self.N = N
@@ -17,8 +17,8 @@ class derivative_class(object):
         self.mid_point = mid_point
         self.model_type = model_type
         self.ifp_list = ifp_list
-        self.derivatives_function = derivatives_function
-        self.args = args
+        self.derivatives_function = new_basis['derivatives_function']
+        self.args = new_basis['args']
         self.warnings = warnings
         self.constraints = constraints
         self.derivatives, self.pass_fail, self.ifp_dict = \
@@ -43,14 +43,14 @@ class derivative_class(object):
                                     mth_order_derivative.append(
                                         mth_order_derivative_term)
                                 if self.model_type == 'polynomial' or \
-                                    self.model_type == 'loglog':
+                                    self.model_type == 'loglog_polynomial':
                                     mth_order_derivative_term = \
                                         np.math.factorial(m+i) / \
                                         np.math.factorial(i) * \
                                         self.params[int(m)+i]*(self.x)**i
                                     mth_order_derivative.append(
                                         mth_order_derivative_term)
-                                if self.model_type == 'log_MSF_polynomial':
+                                if self.model_type == 'log_polynomial':
                                     mth_order_derivative_term = \
                                         np.math.factorial(m+i) / \
                                         np.math.factorial(i) * \
@@ -58,7 +58,7 @@ class derivative_class(object):
                                         self.x[self.mid_point])**i
                                     mth_order_derivative.append(
                                         mth_order_derivative_term)
-                                if self.model_type == 'MSF_2017_polynomial':
+                                if self.model_type == 'difference_polynomial':
                                     mth_order_derivative_term = \
                                         np.math.factorial(m+i) / \
                                         np.math.factorial(i) * \

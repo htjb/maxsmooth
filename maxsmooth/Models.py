@@ -3,15 +3,15 @@ from scipy.special import legendre
 
 
 class Models_class(object):
-    def __init__(self, params, x, y, N, mid_point, model_type, model, args):
+    def __init__(self, params, x, y, N, mid_point, model_type, new_basis):
         self.x = x
         self.y = y
         self.N = N
         self.params = params
         self.mid_point = mid_point
         self.model_type = model_type
-        self.model = model
-        self.args = args
+        self.model = new_basis['model']
+        self.args = new_basis['args']
         self.y_sum = self.fit()
 
     def fit(self):
@@ -29,7 +29,7 @@ class Models_class(object):
                     [self.params[i]*(self.x)**i for i in range(self.N)],
                     axis=0)
 
-            if self.model_type == 'loglog':
+            if self.model_type == 'loglog_polynomial':
 
                 y_sum = 10**(np.sum(
                     [self.params[i]*(self.x)**i for i in range(self.N)],
@@ -42,13 +42,13 @@ class Models_class(object):
                     /self.x[self.mid_point]) for i in range(self.N)],
                     axis=0)
 
-            if self.model_type == 'log_MSF_polynomial':
+            if self.model_type == 'log_polynomial':
 
                 y_sum = np.sum(
                     [self.params[i]*np.log10(self.x/self.x[self.mid_point])**i for i in range(self.N)],
                     axis=0)
 
-            if self.model_type == 'MSF_2017_polynomial':
+            if self.model_type == 'difference_polynomial':
 
                 y_sum = np.sum([
                     self.params[i]*(self.x-self.x[self.mid_point])**i

@@ -86,6 +86,6 @@ class save_optimum(object):
         if self.ifp_list is not None:
             f.write('Inflection Point Derivatives:\n')
             np.savetxt(f, self.ifp_list)
-            f.write('Inflection Points Used? (0 signifies Yes):\n')
+            f.write('Inflection Points Used? (0 signifies Yes\n in derivative order "i"):\n')
             f.write(str(self.Optimum_ifp_dict))
         f.close()
