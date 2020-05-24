@@ -3,8 +3,7 @@ This section is designed to introduce the user to the software and the form
 in which it is run. In order to run the `maxsmooth` software using the built
 in MSFs the user can follow the simple structure detailed here.
 
-The user should begin by importing the `setting` class from
-`maxsmooth.settings` and the `smooth` class from `maxsmooth.msf`.
+The user should begin by importing the `smooth` class from `maxsmooth.DCP`.
 
 .. code:: bash
     from maxsmooth.msf import smooth
@@ -26,6 +25,8 @@ and define the polynomial orders they wish to fit.
 .. code:: bash
 
     N = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+    for i in range(len(N)):
+        `act on N[i]`
 
 or for example,
 
@@ -39,7 +40,7 @@ import numpy as np
 x = np.load('Data/x.npy')
 y = np.load('Data/y.npy')
 
-N = 6
+N = 10
 
 """
 `smooth` can be called like so,
@@ -63,7 +64,7 @@ so,
 
 """
 
-result = smooth(x, y, N)
+result = smooth(x, y, N, model_type='normalised_polynomial')
 print('Accessing Fit Attributes:')
 print('Objective Funtion Evaluations:\n', result.Optimum_chi)
 print('RMS:\n', result.rms)
@@ -71,3 +72,11 @@ print('RMS:\n', result.rms)
 #print('Fitted y:\n', result.y_fit)
 print('Sign Combinations:\n', result.Optimum_signs)
 #print('Derivatives:\n', result.derivatives)
+
+import matplotlib.pyplot as plt
+
+plt.plot(x, y - result.y_fit)
+plt.xlabel('x', fontsize=12)
+plt.ylabel(r'$\delta y$', fontsize=12)
+plt.tight_layout()
+plt.show()
