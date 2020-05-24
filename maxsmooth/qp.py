@@ -52,30 +52,29 @@ class qp_class(object):
                         if i <= m - 1:
                             derivatives.append([0]*len(self.x))
                     for i in range(self.N-m):
-                        if i <= (self.N-m):
-                                if self.model_type == 'normalised_polynomial':
-                                    mth_order_derivative_term = (
-                                        self.y[self.mid_point] /
-                                        self.x[self.mid_point]) \
-                                        * np.math.factorial(m + i) \
-                                        / np.math.factorial(i) * \
-                                        (self.x)**i/(self.x[self.mid_point])**(i + 1)
-                                    derivatives.append(mth_order_derivative_term)
-                                if self.model_type == 'polynomial' or \
-                                    self.model_type == 'loglog_polynomial':
-                                    mth_order_derivative_term = np.math.factorial(m+i)\
-                                        / np.math.factorial(i) * (self.x)**i
-                                    derivatives.append(mth_order_derivative_term)
-                                if self.model_type == 'log_polynomial':
-                                    mth_order_derivative_term = np.math.factorial(m+i)\
-                                        / np.math.factorial(i) * np.log10(self.x/ \
-                                        self.x[self.mid_point])**i
-                                    derivatives.append(mth_order_derivative_term)
-                                if self.model_type == 'difference_polynomial':
-                                    mth_order_derivative_term = np.math.factorial(m+i)\
-                                        / np.math.factorial(i) * (
-                                        self.x - self.x[self.mid_point])**i
-                                    derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'normalised_polynomial':
+                            mth_order_derivative_term = (
+                                self.y[self.mid_point] /
+                                self.x[self.mid_point]) \
+                                * np.math.factorial(m + i) \
+                                / np.math.factorial(i) * \
+                                (self.x)**i/(self.x[self.mid_point])**(i + 1)
+                            derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'polynomial' or \
+                            self.model_type == 'loglog_polynomial':
+                            mth_order_derivative_term = np.math.factorial(m+i)\
+                                / np.math.factorial(i) * (self.x)**i
+                            derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'log_polynomial':
+                            mth_order_derivative_term = np.math.factorial(m+i)\
+                                / np.math.factorial(i) * np.log10(self.x/ \
+                                self.x[self.mid_point])**i
+                            derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'difference_polynomial':
+                            mth_order_derivative_term = np.math.factorial(m+i)\
+                                / np.math.factorial(i) * (
+                                self.x - self.x[self.mid_point])**i
+                            derivatives.append(mth_order_derivative_term)
 
             if self.derivative_pres is not None:
                 if self.args is None:

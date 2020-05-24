@@ -115,7 +115,7 @@ class smooth(object):
                 'all_output', 'cvxopt_maxiter', 'ifp_list', 'data_save',
                 'warnings', 'constraints', 'chi_squared_limit', 'cap',
                 'initial_params','basis_functions','der_pres', 'model',
-                'derivatives_function', 'args']):
+                'derivatives', 'args']):
                 print("Error: Unexpected keyword argument in smooth.")
                 sys.exit(1)
 

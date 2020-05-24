@@ -31,41 +31,40 @@ class derivative_class(object):
                 if np.any(self.model_type != ['legendre', 'exponential']):
                     mth_order_derivative = []
                     for i in range(self.N-m):
-                        if i < (self.N-m) or i == (self.N-m):
-                                if self.model_type == 'normalised_polynomial':
-                                    mth_order_derivative_term = (
-                                        self.y[self.mid_point] /
-                                        self.x[self.mid_point]) * \
-                                        np.math.factorial(m+i) / \
-                                        np.math.factorial(i) * \
-                                        self.params[int(m)+i]*(self.x)**i / \
-                                        (self.x[self.mid_point])**(i+1)
-                                    mth_order_derivative.append(
-                                        mth_order_derivative_term)
-                                if self.model_type == 'polynomial' or \
-                                    self.model_type == 'loglog_polynomial':
-                                    mth_order_derivative_term = \
-                                        np.math.factorial(m+i) / \
-                                        np.math.factorial(i) * \
-                                        self.params[int(m)+i]*(self.x)**i
-                                    mth_order_derivative.append(
-                                        mth_order_derivative_term)
-                                if self.model_type == 'log_polynomial':
-                                    mth_order_derivative_term = \
-                                        np.math.factorial(m+i) / \
-                                        np.math.factorial(i) * \
-                                        self.params[int(m)+i]*np.log10(self.x/ \
-                                        self.x[self.mid_point])**i
-                                    mth_order_derivative.append(
-                                        mth_order_derivative_term)
-                                if self.model_type == 'difference_polynomial':
-                                    mth_order_derivative_term = \
-                                        np.math.factorial(m+i) / \
-                                        np.math.factorial(i) * \
-                                        self.params[int(m)+i] * \
-                                        (self.x-self.x[self.mid_point])**i
-                                    mth_order_derivative.append(
-                                        mth_order_derivative_term)
+                        if self.model_type == 'normalised_polynomial':
+                            mth_order_derivative_term = (
+                                self.y[self.mid_point] /
+                                self.x[self.mid_point]) * \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i]*(self.x)**i / \
+                                (self.x[self.mid_point])**(i+1)
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
+                        if self.model_type == 'polynomial' or \
+                            self.model_type == 'loglog_polynomial':
+                            mth_order_derivative_term = \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i]*(self.x)**i
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
+                        if self.model_type == 'log_polynomial':
+                            mth_order_derivative_term = \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i]*np.log10(self.x/ \
+                                self.x[self.mid_point])**i
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
+                        if self.model_type == 'difference_polynomial':
+                            mth_order_derivative_term = \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i] * \
+                                (self.x-self.x[self.mid_point])**i
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
 
             if self.derivatives_function is not None:
                 if self.args is None:
