@@ -312,7 +312,7 @@ class smooth(object):
                     Optimum_params = params[f, :]
                     Optimum_sign_combination = passed_signs[f, :]
 
-            if self.model_type == 'loglog':
+            if self.model_type == 'loglog_polynomial':
                 y_fit = Models_class(
                     Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
                     self.N, mid_point,
