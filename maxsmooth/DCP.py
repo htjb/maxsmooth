@@ -595,7 +595,7 @@ class smooth(object):
                             self.base_dir, fit.parameters, fit.chi_squared,
                             signs, self.N, self.fit_type)
 
-                    if chi_down - min(chi_squared) > lim:
+                    if chi_down > lim:
                         break
                 down_int += 1
 
@@ -656,7 +656,7 @@ class smooth(object):
                             self.base_dir, fit.parameters, fit.chi_squared,
                             signs, self.N, self.fit_type)
 
-                    if chi_up - min(chi_squared) > lim:
+                    if chi_up > lim:
                         break
                 up_int += 1
 
