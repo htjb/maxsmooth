@@ -174,11 +174,13 @@ class smooth(object):
         self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
         self.cap = kwargs.pop('cap', None)
         if self.chi_squared_limit is not None:
-            if type(self.chi_squared_limit) is not int:
-                    if type(self.chi_squared_limit) is not float:
-                        print("Error: Limit on maximum allowed increase in chi squared" +
-                            ", 'chi_squared_limit', is not an integer or float.")
-                        sys.exit(1)
+            if isinstance(self.chi_squared_limit, int) or \
+                isinstance(self.chi_squared_limit, float):
+                pass
+            else:
+                print("Error: Limit on maximum allowed increase in chi squared" +
+                    ", 'chi_squared_limit', is not an integer or float.")
+                sys.exit(1)
         if self.cap is not None:
             if type(self.cap) is not int:
                     print("Error: The cap on directional exploration" +
