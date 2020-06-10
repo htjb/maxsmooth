@@ -525,7 +525,7 @@ class smooth(object):
                         break
 
             if self.chi_squared_limit is not None:
-                lim = self.chi_squared_limit
+                lim = self.chi_squared_limit*min(chi_squared)
             else:
                 lim = 2*min(chi_squared)
 
