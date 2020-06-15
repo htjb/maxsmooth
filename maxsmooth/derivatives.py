@@ -8,13 +8,13 @@ warnings.simplefilter('always', UserWarning)
 
 class derivative_class(object):
     def __init__(
-                self, x, y, params, N, mid_point, model_type, ifp_list,
+                self, x, y, params, N, pivot_point, model_type, ifp_list,
                 warnings, constraints, new_basis):
         self.x = x
         self.y = y
         self.N = N
         self.params = params
-        self.mid_point = mid_point
+        self.pivot_point = pivot_point
         self.model_type = model_type
         self.ifp_list = ifp_list
         self.derivatives_function = new_basis['derivatives_function']
@@ -33,12 +33,12 @@ class derivative_class(object):
                     for i in range(self.N-m):
                         if self.model_type == 'normalised_polynomial':
                             mth_order_derivative_term = (
-                                self.y[self.mid_point] /
-                                self.x[self.mid_point]) * \
+                                self.y[self.pivot_point] /
+                                self.x[self.pivot_point]) * \
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
                                 self.params[int(m)+i]*(self.x)**i / \
-                                (self.x[self.mid_point])**(i+1)
+                                (self.x[self.pivot_point])**(i+1)
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'polynomial' or \
@@ -54,7 +54,7 @@ class derivative_class(object):
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
                                 self.params[int(m)+i]*np.log10(self.x/ \
-                                self.x[self.mid_point])**i
+                                self.x[self.pivot_point])**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'difference_polynomial':
@@ -62,7 +62,7 @@ class derivative_class(object):
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
                                 self.params[int(m)+i] * \
-                                (self.x-self.x[self.mid_point])**i
+                                (self.x-self.x[self.pivot_point])**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
 
@@ -70,12 +70,12 @@ class derivative_class(object):
                 if self.args is None:
                     derivatives = \
                         self.derivatives_function(m,
-                            self.x, self.y, self.mid_point,
+                            self.x, self.y, self.pivot_point,
                             self.params)
                 if self.args is not None:
                     derivatives = \
                         self.derivatives_function(m,
-                            self.x, self.y, self.mid_point,
+                            self.x, self.y, self.pivot_point,
                             self.params, *self.args)
                 mth_order_derivative = derivatives
 
@@ -94,8 +94,8 @@ class derivative_class(object):
                 derivatives = np.empty([self.N, len(self.x)])
                 for i in range(self.N):
                     for h in range(len(self.x)):
-                        derivatives[i, h] = self.y[self.mid_point]*(self.params[i]*np.exp(-i*self.x[h]
-                            /self.x[self.mid_point]))*(-i/self.x[self.mid_point])**m
+                        derivatives[i, h] = self.y[self.pivot_point]*(self.params[i]*np.exp(-i*self.x[h]
+                            /self.x[self.pivot_point]))*(-i/self.x[self.pivot_point])**m
                 mth_order_derivative = np.array(derivatives)
 
             if type(mth_order_derivative) == list:

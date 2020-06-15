@@ -46,20 +46,20 @@ class smooth(object):
         and functions can be found in the section `Designing A Basis Function`.
         **
 
-        basis_function: *function with parameters (x, y, mid_point, N)* This is
+        basis_function: *function with parameters (x, y, pivot_point, N)* This is
             a function of basis functions for the quadratic programming.
-            The variable mid_point is the index at the middle of the datasets
+            The variable pivot_point is the index at the middle of the datasets
             x and y.
 
-        model: *function with parameters (x, y, mid_point, N, params)* This is
+        model: *function with parameters (x, y, pivot_point, N, params)* This is
             a user defined function describing the model to be fitted to the
             data.
 
-        der_pres: *function with parameters (m, i, x, y, mid_point)*
+        der_pres: *function with parameters (m, i, x, y, pivot_point)*
             This function describes the prefactors on the ith term of the mth
             order derivative used in defining the constraint.
 
-        derivatives: *function with parameters (m, i, x, y, mid_point, params)*
+        derivatives: *function with parameters (m, i, x, y, pivot_point, params)*
             User defined function describing the ith term of the mth
             order derivative used to check that conditions are being met.
 
@@ -115,7 +115,7 @@ class smooth(object):
                 'all_output', 'cvxopt_maxiter', 'ifp_list', 'data_save',
                 'warnings', 'constraints', 'chi_squared_limit', 'cap',
                 'initial_params','basis_functions','der_pres', 'model',
-                'derivatives', 'args']):
+                'derivatives', 'args', 'pivot_point']):
                 print("Error: Unexpected keyword argument in smooth.")
                 sys.exit(1)
 
@@ -123,6 +123,11 @@ class smooth(object):
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
             print("Error: Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
+            sys.exit(1)
+
+        self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
+        if type(self.pivot_point) is not int:
+            print('Error: Pivot point is not an integer index.')
             sys.exit(1)
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
@@ -242,7 +247,7 @@ class smooth(object):
         if os.path.isdir(self.base_dir+'Output_Evaluation/'):
             shutil.rmtree(self.base_dir+'Output_Evaluation/')
 
-        def qp(x, y, mid_point): # Testing all signs
+        def qp(x, y, pivot_point): # Testing all signs
             print(
                 '######################################################' +
                 '#######')
@@ -259,7 +264,7 @@ class smooth(object):
                 passed_signs.append
             for j in range(signs.shape[0]):
                 fit = qp_class(
-                    x, y, self.N, signs[j, :], mid_point,
+                    x, y, self.N, signs[j, :], pivot_point,
                     self.model_type, self.cvxopt_maxiter,
                     self.all_output, self.ifp_list,
                     self.initial_params,
@@ -316,22 +321,22 @@ class smooth(object):
 
             if self.model_type == 'loglog_polynomial':
                 y_fit = Models_class(
-                    Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
-                    self.N, mid_point,
+                    Optimum_params, np.log10(x/x[pivot_point]), np.log10(y),
+                    self.N, pivot_point,
                     self.model_type, self.new_basis).y_sum
                 der = derivative_class(
-                    np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
+                    np.log10(x/x[pivot_point]), np.log10(y), Optimum_params,
                     self.N,
-                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    pivot_point, self.model_type, self.ifp_list, self.warnings,
                     self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
             else:
                 y_fit = Models_class(
-                    Optimum_params, x, y, self.N, mid_point,
+                    Optimum_params, x, y, self.N, pivot_point,
                     self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     x, y, Optimum_params, self.N,
-                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    pivot_point, self.model_type, self.ifp_list, self.warnings,
                     self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
@@ -382,7 +387,7 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict
 
-        def qp_sign_flipping(x, y, mid_point): # Steepest Descent
+        def qp_sign_flipping(x, y, pivot_point): # Steepest Descent
             print(
                 '######################################################' +
                 '#######')
@@ -404,7 +409,7 @@ class smooth(object):
                 if i == r:
                     tested_indices.append(i)
             fit = qp_class(
-                x, y, self.N, signs, mid_point,
+                x, y, self.N, signs, pivot_point,
                 self.model_type, self.cvxopt_maxiter,
                 self.all_output, self.ifp_list,
                 self.initial_params,
@@ -473,7 +478,7 @@ class smooth(object):
                     else:
                         tested_indices.append(ind)
                         fit = qp_class(
-                            x, y, self.N, signs, mid_point,
+                            x, y, self.N, signs, pivot_point,
                             self.model_type, self.cvxopt_maxiter,
                             self.all_output,
                             self.ifp_list, self.initial_params,
@@ -551,7 +556,7 @@ class smooth(object):
                     signs = array_signs[index-down_int]
                     tested_indices.append(index - down_int)
                     fit = qp_class(
-                        x, y, self.N, signs, mid_point,
+                        x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.all_output,
                         self.ifp_list, self.initial_params,
@@ -612,7 +617,7 @@ class smooth(object):
                     signs = array_signs[index+up_int]
                     tested_indices.append(index + up_int)
                     fit = qp_class(
-                        x, y, self.N, signs, mid_point,
+                        x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.all_output,
                         self.ifp_list, self.initial_params,
@@ -670,22 +675,22 @@ class smooth(object):
 
             if self.model_type == 'loglog_polynomial':
                 y_fit = Models_class(
-                    Optimum_params, np.log10(x/x[mid_point]), np.log10(y),
-                    self.N, mid_point,
+                    Optimum_params, np.log10(x/x[pivot_point]), np.log10(y),
+                    self.N, pivot_point,
                     self.model_type, self.new_basis).y_sum
                 der = derivative_class(
-                    np.log10(x/x[mid_point]), np.log10(y), Optimum_params,
+                    np.log10(x/x[pivot_point]), np.log10(y), Optimum_params,
                     self.N,
-                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    pivot_point, self.model_type, self.ifp_list, self.warnings,
                     self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
             else:
                 y_fit = Models_class(
-                    Optimum_params, x, y, self.N, mid_point,
+                    Optimum_params, x, y, self.N, pivot_point,
                     self.model_type, self.new_basis).y_sum
                 der = derivative_class(
                     x, y, Optimum_params, self.N,
-                    mid_point, self.model_type, self.ifp_list, self.warnings,
+                    pivot_point, self.model_type, self.ifp_list, self.warnings,
                     self.constraints, self.new_basis)
                 derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
@@ -736,15 +741,14 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict
 
-        mid_point = len(self.x)//2
         if self.fit_type == 'qp':
             y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict = \
-                qp(self.x, self.y, mid_point)
+                qp(self.x, self.y, self.pivot_point)
         if self.fit_type == 'qp-sign_flipping':
             y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict = \
-                qp_sign_flipping(self.x, self.y, mid_point)
+                qp_sign_flipping(self.x, self.y, self.pivot_point)
 
         rms = (np.sqrt(np.sum((self.y-y_fit)**2)/len(self.y)))
 

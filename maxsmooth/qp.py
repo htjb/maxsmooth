@@ -11,14 +11,14 @@ warnings.simplefilter('always', UserWarning)
 
 class qp_class(object):
     def __init__(
-            self, x, y, N, signs, mid_point, model_type, cvxopt_maxiter,
+            self, x, y, N, signs, pivot_point, model_type, cvxopt_maxiter,
             all_output, ifp_list, initial_params, warnings,
             constraints, new_basis):
         self.model_type = model_type
-        self.mid_point = mid_point
+        self.pivot_point = pivot_point
         if self.model_type == 'loglog_polynomial':
             self.y = np.log10(y)
-            self.x = np.log10(x/x[self.mid_point])
+            self.x = np.log10(x/x[self.pivot_point])
         else:
             self.y = y
             self.x = x
@@ -54,11 +54,11 @@ class qp_class(object):
                     for i in range(self.N-m):
                         if self.model_type == 'normalised_polynomial':
                             mth_order_derivative_term = (
-                                self.y[self.mid_point] /
-                                self.x[self.mid_point]) \
+                                self.y[self.pivot_point] /
+                                self.x[self.pivot_point]) \
                                 * np.math.factorial(m + i) \
                                 / np.math.factorial(i) * \
-                                (self.x)**i/(self.x[self.mid_point])**(i + 1)
+                                (self.x)**i/(self.x[self.pivot_point])**(i + 1)
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'polynomial' or \
                             self.model_type == 'loglog_polynomial':
@@ -68,21 +68,21 @@ class qp_class(object):
                         if self.model_type == 'log_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * np.log10(self.x/ \
-                                self.x[self.mid_point])**i
+                                self.x[self.pivot_point])**i
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'difference_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * (
-                                self.x - self.x[self.mid_point])**i
+                                self.x - self.x[self.pivot_point])**i
                             derivatives.append(mth_order_derivative_term)
 
             if self.derivative_pres is not None:
                 if self.args is None:
                     derivatives = self.derivative_pres(m,
-                        self.x, self.y, self.mid_point)
+                        self.x, self.y, self.pivot_point)
                 if self.args is not None:
                     derivatives = self.derivative_pres(m,
-                        self.x, self.y, self.mid_point,
+                        self.x, self.y, self.pivot_point,
                         *self.args)
 
             if self.model_type == 'legendre':
@@ -99,8 +99,8 @@ class qp_class(object):
                 derivatives = np.empty([self.N, len(self.x)])
                 for i in range(self.N):
                     for h in range(len(self.x)):
-                        derivatives[i, h] = self.y[self.mid_point]*(np.exp(-i*self.x[h]
-                            /self.x[self.mid_point]))*(-i/self.x[self.mid_point])**m
+                        derivatives[i, h] = self.y[self.pivot_point]*(np.exp(-i*self.x[h]
+                            /self.x[self.pivot_point]))*(-i/self.x[self.pivot_point])**m
                 derivatives = np.array(derivatives)
 
             derivatives = np.array(derivatives).astype(np.double)
@@ -137,17 +137,17 @@ class qp_class(object):
                 for h in range(len(self.x)):
                     for i in range(self.N):
                         if self.model_type == 'normalised_polynomial':
-                            phi[h, i] = self.y[self.mid_point] * (
-                                self.x[h] / self.x[self.mid_point])**i
+                            phi[h, i] = self.y[self.pivot_point] * (
+                                self.x[h] / self.x[self.pivot_point])**i
                         if self.model_type == 'polynomial' or \
                             self.model_type == 'loglog_polynomial':
                             phi[h, i] = (self.x[h])**i
                         if self.model_type == 'log_polynomial':
-                            phi[h, i] = np.log10(self.x[h]/self.x[self.mid_point])**i
+                            phi[h, i] = np.log10(self.x[h]/self.x[self.pivot_point])**i
                         if self.model_type == 'difference_polynomial':
-                            phi[h, i] = (self.x[h]-self.x[self.mid_point])**i
+                            phi[h, i] = (self.x[h]-self.x[self.pivot_point])**i
                         if self.model_type == 'exponential':
-                            phi[h, i] = self.y[self.mid_point]*np.exp(-i*self.x[h]/self.x[self.mid_point])
+                            phi[h, i] = self.y[self.pivot_point]*np.exp(-i*self.x[h]/self.x[self.pivot_point])
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 phi = []
@@ -159,11 +159,11 @@ class qp_class(object):
         if self.basis_functions is not None:
             if self.args is None:
                 phi = self.basis_functions(
-                    self.x, self.y, self.mid_point, self.N)
+                    self.x, self.y, self.pivot_point, self.N)
                 phi = matrix(phi)
             if self.args is not None:
                 phi = self.basis_functions(
-                    self.x, self.y, self.mid_point, self.N, *self.args)
+                    self.x, self.y, self.pivot_point, self.N, *self.args)
                 phi = matrix(phi)
 
         data_matrix = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
@@ -200,10 +200,10 @@ class qp_class(object):
                 ifp_dict = {}
         else:
             y = Models_class(
-                parameters, self.x, self.y, self.N, self.mid_point,
+                parameters, self.x, self.y, self.N, self.pivot_point,
                 self.model_type, self.new_basis).y_sum
             der = derivative_class(
-                self.x, self.y, parameters, self.N, self.mid_point,
+                self.x, self.y, parameters, self.N, self.pivot_point,
                 self.model_type, self.ifp_list,
                 self.warnings, self.constraints, self.new_basis)
             ifp_dict = der.ifp_dict
