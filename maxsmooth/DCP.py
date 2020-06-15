@@ -129,6 +129,9 @@ class smooth(object):
         if type(self.pivot_point) is not int:
             print('Error: Pivot point is not an integer index.')
             sys.exit(1)
+        elif self.pivot_point >= len(self.x) or self.pivot_point < 0:
+            print('Error: Pivot point must be in the range 0 - (len(x) - 1).')
+            sys.exit(1)
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
