@@ -152,6 +152,6 @@ class derivative_class(object):
             print(
                 'ERROR: "Condition Violated" Derivatives feature' +
                 ' crossing points.')
-            #sys.exit(1)
+            sys.exit(1)
 
         return derivatives, pass_fail, ifp_dict
