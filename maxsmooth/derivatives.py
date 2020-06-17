@@ -41,15 +41,15 @@ class derivative_class(object):
                                 (self.x[self.pivot_point])**(i+1)
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
-                        if self.model_type == 'polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'polynomial':
                             mth_order_derivative_term = \
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
                                 self.params[int(m)+i]*(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial':
+                        if self.model_type == 'log_polynomial' or \
+                            self.model_type == 'loglog_polynomial':
                             mth_order_derivative_term = \
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
@@ -152,6 +152,6 @@ class derivative_class(object):
             print(
                 'ERROR: "Condition Violated" Derivatives feature' +
                 ' crossing points.')
-            sys.exit(1)
+            #sys.exit(1)
 
         return derivatives, pass_fail, ifp_dict

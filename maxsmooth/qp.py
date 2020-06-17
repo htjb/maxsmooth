@@ -16,12 +16,8 @@ class qp_class(object):
             constraints, new_basis):
         self.model_type = model_type
         self.pivot_point = pivot_point
-        if self.model_type == 'loglog_polynomial':
-            self.y = np.log10(y)
-            self.x = np.log10(x/x[self.pivot_point])
-        else:
-            self.y = y
-            self.x = x
+        self.y = y
+        self.x = x
         self.N = N
         self.signs = signs
         self.cvxopt_maxiter = cvxopt_maxiter
@@ -60,12 +56,12 @@ class qp_class(object):
                                 / np.math.factorial(i) * \
                                 (self.x)**i/(self.x[self.pivot_point])**(i + 1)
                             derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * (self.x)**i
                             derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial':
+                        if self.model_type == 'log_polynomial' or \
+                            self.model_type == 'loglog_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * np.log10(self.x/ \
                                 self.x[self.pivot_point])**i
@@ -139,10 +135,10 @@ class qp_class(object):
                         if self.model_type == 'normalised_polynomial':
                             phi[h, i] = self.y[self.pivot_point] * (
                                 self.x[h] / self.x[self.pivot_point])**i
-                        if self.model_type == 'polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'polynomial':
                             phi[h, i] = (self.x[h])**i
-                        if self.model_type == 'log_polynomial':
+                        if self.model_type == 'log_polynomial' or \
+                            self.model_type == 'loglog_polynomial':
                             phi[h, i] = np.log10(self.x[h]/self.x[self.pivot_point])**i
                         if self.model_type == 'difference_polynomial':
                             phi[h, i] = (self.x[h]-self.x[self.pivot_point])**i
@@ -166,7 +162,10 @@ class qp_class(object):
                     self.x, self.y, self.pivot_point, self.N, *self.args)
                 phi = matrix(phi)
 
-        data_matrix = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
+        if self.model_type == 'loglog_polynomial':
+            data_matrix = matrix(np.log10(self.y).astype(np.double), (len(self.y), 1), 'd')
+        else:
+            data_matrix = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
 
         if self.ifp_list is None:
             h = matrix(0.0, ((self.N-self.constraints)*len(self.x), 1), 'd')
@@ -180,7 +179,8 @@ class qp_class(object):
         if self.initial_params is None:
             qpfit = solvers.qp(Q, q, G, h)
         if self.initial_params is not None:
-            qpfit = solvers.qp(Q, q, G, h, initvals=self.initial_params)
+            initvals = {'x': matrix(self.initial_params)}
+            qpfit = solvers.qp(Q, q, G, h, initvals=initvals)
 
         parameters = qpfit['x']
 
@@ -193,10 +193,7 @@ class qp_class(object):
                 sys.exit(1)
             else:
                 parameters = np.array(matrix(0, (self.N, 1), 'd'))
-                if self.model_type == 'loglog_polynomial':
-                    chi_squared = np.sum((10**self.y)**2)
-                else:
-                    chi_squared = np.sum((self.y)**2)
+                chi_squared = np.sum((self.y)**2)
                 ifp_dict = {}
         else:
             y = Models_class(
@@ -208,10 +205,7 @@ class qp_class(object):
                 self.warnings, self.constraints, self.new_basis)
             ifp_dict = der.ifp_dict
 
-            if self.model_type == 'loglog_polynomial':
-                chi_squared = np.sum((10**self.y-y)**2)
-            else:
-                chi_squared = np.sum((self.y-y)**2)
+            chi_squared = np.sum((self.y-y)**2)
             parameters = np.array(parameters)
 
         return parameters, chi_squared, ifp_dict

@@ -10,7 +10,6 @@ from maxsmooth.derivatives import derivative_class
 from maxsmooth.Data_save import save, save_optimum
 from itertools import product
 import numpy as np
-import pylab as pl
 import warnings
 import time
 import os
@@ -322,26 +321,14 @@ class smooth(object):
                     Optimum_params = params[f, :]
                     Optimum_sign_combination = passed_signs[f, :]
 
-            if self.model_type == 'loglog_polynomial':
-                y_fit = Models_class(
-                    Optimum_params, np.log10(x/x[pivot_point]), np.log10(y),
-                    self.N, pivot_point,
-                    self.model_type, self.new_basis).y_sum
-                der = derivative_class(
-                    np.log10(x/x[pivot_point]), np.log10(y), Optimum_params,
-                    self.N,
-                    pivot_point, self.model_type, self.ifp_list, self.warnings,
-                    self.constraints, self.new_basis)
-                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
-            else:
-                y_fit = Models_class(
-                    Optimum_params, x, y, self.N, pivot_point,
-                    self.model_type, self.new_basis).y_sum
-                der = derivative_class(
-                    x, y, Optimum_params, self.N,
-                    pivot_point, self.model_type, self.ifp_list, self.warnings,
-                    self.constraints, self.new_basis)
-                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            y_fit = Models_class(
+                Optimum_params, x, y, self.N, pivot_point,
+                self.model_type, self.new_basis).y_sum
+            der = derivative_class(
+                x, y, Optimum_params, self.N,
+                pivot_point, self.model_type, self.ifp_list, self.warnings,
+                self.constraints, self.new_basis)
+            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 
@@ -676,26 +663,14 @@ class smooth(object):
                     Optimum_sign_combination = tested_signs[i]
                     Optimum_chi_squared = chi_squared[i]
 
-            if self.model_type == 'loglog_polynomial':
-                y_fit = Models_class(
-                    Optimum_params, np.log10(x/x[pivot_point]), np.log10(y),
-                    self.N, pivot_point,
-                    self.model_type, self.new_basis).y_sum
-                der = derivative_class(
-                    np.log10(x/x[pivot_point]), np.log10(y), Optimum_params,
-                    self.N,
-                    pivot_point, self.model_type, self.ifp_list, self.warnings,
-                    self.constraints, self.new_basis)
-                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
-            else:
-                y_fit = Models_class(
-                    Optimum_params, x, y, self.N, pivot_point,
-                    self.model_type, self.new_basis).y_sum
-                der = derivative_class(
-                    x, y, Optimum_params, self.N,
-                    pivot_point, self.model_type, self.ifp_list, self.warnings,
-                    self.constraints, self.new_basis)
-                derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
+            y_fit = Models_class(
+                Optimum_params, x, y, self.N, pivot_point,
+                self.model_type, self.new_basis).y_sum
+            der = derivative_class(
+                x, y, Optimum_params, self.N,
+                pivot_point, self.model_type, self.ifp_list, self.warnings,
+                self.constraints, self.new_basis)
+            derivatives, Optimum_ifp_dict = der.derivatives, der.ifp_dict
 
             end = time.time()
 

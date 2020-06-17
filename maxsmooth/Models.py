@@ -32,7 +32,8 @@ class Models_class(object):
             if self.model_type == 'loglog_polynomial':
 
                 y_sum = 10**(np.sum(
-                    [self.params[i]*(self.x)**i for i in range(self.N)],
+                    [self.params[i]*np.log10(self.x/
+                    self.x[self.pivot_point])**i for i in range(self.N)],
                     axis=0))
 
             if self.model_type == 'exponential':
