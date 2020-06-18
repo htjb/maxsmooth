@@ -79,6 +79,9 @@ class plotter(object):
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
 
+        if not os.path.exists(self.base_dir):
+            os.mkdir(self.base_dir)
+            
         self.constraints = kwargs.pop('constraints', 2)
         if type(self.constraints) is not int:
             print("Error: 'constraints' is not an integer")
