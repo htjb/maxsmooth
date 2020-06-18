@@ -230,8 +230,8 @@ class smooth(object):
             if count == len(self.new_basis):
                 self.model_type = 'user_defined'
 
-        self.y_fit, self.Optimum_signs, self.Optimum_params, self.derivatives,\
-            self.Optimum_chi, self.rms, self.Optimum_ifp_dict \
+        self.y_fit, self.optimum_signs, self.optimum_params, self.derivatives,\
+            self.optimum_chi, self.rms, self.optimum_ifp_dict \
             = self.fitting()
 
     def fitting(self):

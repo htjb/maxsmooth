@@ -9,7 +9,7 @@ warnings.simplefilter('always', UserWarning)
 class derivative_class(object):
     def __init__(
                 self, x, y, params, N, pivot_point, model_type, ifp_list,
-                warnings, constraints, new_basis):
+                warnings, constraints, new_basis, **kwargs):
         self.x = x
         self.y = y
         self.N = N
@@ -21,6 +21,9 @@ class derivative_class(object):
         self.args = new_basis['args']
         self.warnings = warnings
         self.constraints = constraints
+
+        self.call_type = kwargs.pop('call_type', 'checking')
+
         self.derivatives, self.pass_fail, self.ifp_dict = \
             self.derivatives_func()
 
@@ -48,13 +51,19 @@ class derivative_class(object):
                                 self.params[int(m)+i]*(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'log_polynomial':
                             mth_order_derivative_term = \
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
-                                self.params[int(m)+i]*np.log10(self.x/ \
+                                self.params[int(m)+i]*np.log10(self.x/
                                 self.x[self.pivot_point])**i
+                            mth_order_derivative.append(
+                                mth_order_derivative_term)
+                        if self.model_type == 'loglog_polynomial':
+                            mth_order_derivative_term = \
+                                np.math.factorial(m+i) / \
+                                np.math.factorial(i) * \
+                                self.params[int(m)+i]*np.log10(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'difference_polynomial':
@@ -147,11 +156,12 @@ class derivative_class(object):
             else:
                 ifp_dict[str(ifp_orders[i])] = 0
 
-        if np.any(pass_fail == 0):
-            print('Pass or fail', pass_fail)
-            print(
-                'ERROR: "Condition Violated" Derivatives feature' +
-                ' crossing points.')
-            sys.exit(1)
+        if self.call_type == 'checking':
+            if np.any(pass_fail == 0):
+                print('Pass or fail', pass_fail)
+                print(
+                    'ERROR: "Condition Violated" Derivatives feature' +
+                    ' crossing points.')
+                sys.exit(1)
 
         return derivatives, pass_fail, ifp_dict

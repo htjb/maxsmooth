@@ -60,11 +60,14 @@ class qp_class(object):
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * (self.x)**i
                             derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'log_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
                                 / np.math.factorial(i) * np.log10(self.x/ \
                                 self.x[self.pivot_point])**i
+                            derivatives.append(mth_order_derivative_term)
+                        if self.model_type == 'loglog_polynomial':
+                            mth_order_derivative_term = np.math.factorial(m+i)\
+                                / np.math.factorial(i) * np.log10(self.x)**i
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'difference_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
@@ -137,9 +140,10 @@ class qp_class(object):
                                 self.x[h] / self.x[self.pivot_point])**i
                         if self.model_type == 'polynomial':
                             phi[h, i] = (self.x[h])**i
-                        if self.model_type == 'log_polynomial' or \
-                            self.model_type == 'loglog_polynomial':
+                        if self.model_type == 'log_polynomial':
                             phi[h, i] = np.log10(self.x[h]/self.x[self.pivot_point])**i
+                        if self.model_type == 'loglog_polynomial':
+                            phi[h, i] = np.log10(self.x[h])**i
                         if self.model_type == 'difference_polynomial':
                             phi[h, i] = (self.x[h]-self.x[self.pivot_point])**i
                         if self.model_type == 'exponential':
@@ -174,6 +178,7 @@ class qp_class(object):
                 *len(self.x), 1), 'd')
 
         Q = phi.T*phi
+
         q = -phi.T*data_matrix
 
         if self.initial_params is None:
@@ -193,7 +198,10 @@ class qp_class(object):
                 sys.exit(1)
             else:
                 parameters = np.array(matrix(0, (self.N, 1), 'd'))
-                chi_squared = np.sum((self.y)**2)
+                if self.model_type == 'loglog_polynomial':
+                    chi_squared = np.sum((np.log10(self.y))**2)
+                else:
+                    chi_squared = np.sum((self.y)**2)
                 ifp_dict = {}
         else:
             y = Models_class(
@@ -205,7 +213,10 @@ class qp_class(object):
                 self.warnings, self.constraints, self.new_basis)
             ifp_dict = der.ifp_dict
 
-            chi_squared = np.sum((self.y-y)**2)
+            if self.model_type == 'loglog_polynomial':
+                chi_squared = np.sum((np.log10(self.y)-np.log10(y))**2)
+            else:
+                chi_squared = np.sum((self.y-y)**2)
             parameters = np.array(parameters)
 
         return parameters, chi_squared, ifp_dict
