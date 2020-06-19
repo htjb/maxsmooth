@@ -23,22 +23,19 @@ class plotter(object):
                 'basis_functions','der_pres', 'model',
                 'derivatives', 'args', 'pivot_point', 'samples',
                 'width', 'warnings', 'gridlines']):
-                print("Error: Unexpected keyword argument in parameter plotter.")
-                sys.exit(1)
+                raise KeyError("Unexpected keyword argument in parameter plotter.")
 
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
-            print("Error: Invalid 'fit_type'. Valid entries include 'qp'\n" +
+            raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
-            sys.exit(1)
 
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
         if self.model_type not in set(['normalised_polynomial', 'polynomial',
             'log_polynomial', 'loglog_polynomial', 'difference_polynomial',
             'exponential', 'legendre']):
-            print("Error: Invalid 'model_type'. See documentation for built" +
+            raise KeyError("Invalid 'model_type'. See documentation for built" +
                 "in models.")
-            sys.exit(1)
 
         self.basis_functions = kwargs.pop('basis_functions', None)
         self.der_pres = kwargs.pop('der_pres', None)
@@ -56,73 +53,62 @@ class plotter(object):
             count = 0
             for key, value in self.new_basis.items():
                 if value is None and key != 'args':
-                    print(
-                        'Error: Attempt to change basis functions failed.' +
+                    raise KeyError(
+                        'Attempt to change basis functions failed.' +
                         ' One or more functions not defined.' +
                         ' Please consult documentation.')
-                    sys.exit(1)
                 if value is None and key == 'args':
-                    print('Warning: No additional arguments passed to new basis' +
+                    warn('Warning: No additional arguments passed to new basis' +
                         'functions')
                 count += 1
-
             if count == len(self.new_basis):
                 self.model_type = 'user_defined'
 
         self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
         if type(self.pivot_point) is not int:
-            print('Error: Pivot point is not an integer index.')
-            sys.exit(1)
+            raise TypeError('Pivot point is not an integer index.')
         elif self.pivot_point >= len(self.x) or self.pivot_point < 0:
-            print('Error: Pivot point must be in the range 0 - (len(x) - 1).')
-            sys.exit(1)
+            raise ValueError('Pivot point must be in the range 0 - (len(x) - 1).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
 
         if not os.path.exists(self.base_dir):
             os.mkdir(self.base_dir)
-            
+
         self.constraints = kwargs.pop('constraints', 2)
         if type(self.constraints) is not int:
-            print("Error: 'constraints' is not an integer")
-            sys.exit(1)
+            raise TypeError("'constraints' is not an integer")
         if self.constraints > self.N-1:
-            print("Error: 'constraints' exceeds the number of derivatives.")
-            sys.exit(1)
+            raise ValueError("'constraints' exceeds the number of derivatives.")
 
         self.ifp_list = kwargs.pop('ifp_list', None)
         if self.ifp_list is not None:
             for i in range(len(self.ifp_list)):
                 if type(self.ifp_list[i]) is not int:
-                    print("Error: Entries in 'ifp_list' are not integer.")
-                    sys.exit(1)
+                    raise TypeError("Entries in 'ifp_list' are not integer.")
                 if self.ifp_list[i] < self.constraints:
-                    print('ERROR: One or more specified derivatives for' +
+                    raise ValueError('One or more specified derivatives for' +
                         ' inflection points is less than the minimum constrained' +
                         ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
                         ' Minimum Constrained Derivative = ' + str(self.constraints))
-                    sys.exit(1)
 
         self.samples = kwargs.pop('samples', 51)
         if self.samples%1 != 0:
-            print('Error: Samples must be a whole number.')
-            sys.exit(1)
+            raise ValueError('Error: Samples must be a whole number.')
 
         self.width = kwargs.pop('width', 0.5)
         if type(self.width) is not int:
             if type(self.width) is not float:
-                print('Error: Width must be an integer or a float.')
-                sys.exit(1)
+                raise ValueError('Width must be an integer or a float.')
 
         self.warnings = kwargs.pop('warnings', True)
         self.gridlines = kwargs.pop('gridlines', False)
         boolean_kwargs = [self.warnings, self.gridlines]
         for i in range(len(boolean_kwargs)):
             if type(boolean_kwargs[i]) is not bool:
-                print("Error: Boolean keyword argument with value "
+                raise TypeError("Boolean keyword argument with value "
                     + str(boolean_kwargs[i]) +
                     " is not True or False.")
-                sys.exit(1)
 
         self.plot()
 
@@ -130,7 +116,6 @@ class plotter(object):
     def plot(self):
 
         def chi_squared(parameters):
-
             y_sum = Models.Models_class(parameters, self.x, self.y,
                 self.N, self.pivot_point, self.model_type,
                 self.new_basis).y_sum
@@ -222,6 +207,9 @@ class plotter(object):
                             parameters[id[h]] = comb[h]
                         parameters = np.array(parameters)
                         chi[j, a] = chi_squared(parameters)
+
+                        if self.model_type == 'legendre':
+                            parameters = np.array([parameters]).T
 
                         der = derivative_class(self.x, self.y,
                             parameters, self.N,

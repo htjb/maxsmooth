@@ -159,9 +159,8 @@ class derivative_class(object):
         if self.call_type == 'checking':
             if np.any(pass_fail == 0):
                 print('Pass or fail', pass_fail)
-                print(
-                    'ERROR: "Condition Violated" Derivatives feature' +
+                raise Exception(
+                    '"Condition Violated" Derivatives feature' +
                     ' crossing points.')
-                sys.exit(1)
 
         return derivatives, pass_fail, ifp_dict

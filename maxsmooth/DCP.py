@@ -115,68 +115,57 @@ class smooth(object):
                 'warnings', 'constraints', 'chi_squared_limit', 'cap',
                 'initial_params','basis_functions','der_pres', 'model',
                 'derivatives', 'args', 'pivot_point']):
-                print("Error: Unexpected keyword argument in smooth.")
-                sys.exit(1)
+                raise KeyError("Unexpected keyword argument in smooth.")
 
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
-            print("Error: Invalid 'fit_type'. Valid entries include 'qp'\n" +
+            raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
-            sys.exit(1)
 
         self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
         if type(self.pivot_point) is not int:
-            print('Error: Pivot point is not an integer index.')
-            sys.exit(1)
+            raise TypeError('Pivot point is not an integer index.')
         elif self.pivot_point >= len(self.x) or self.pivot_point < 0:
-            print('Error: Pivot point must be in the range 0 - (len(x) - 1).')
-            sys.exit(1)
+            raise ValueError('Pivot point must be in the range 0 - (len(x) - 1).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
         if self.model_type not in set(['normalised_polynomial', 'polynomial',
             'log_polynomial', 'loglog_polynomial', 'difference_polynomial',
             'exponential', 'legendre']):
-            print("Error: Invalid 'model_type'. See documentation for built" +
+            raise KeyError("Invalid 'model_type'. See documentation for built" +
                 "in models.")
-            sys.exit(1)
 
         self.cvxopt_maxiter = kwargs.pop('cvxopt_maxiter', 10000)
         if type(self.cvxopt_maxiter) is not int:
-            print("Error: 'cvxopt_maxiter' is not integer.")
-            sys.exit(1)
+            raise ValueError("'cvxopt_maxiter' is not integer.")
 
         self.all_output = kwargs.pop('all_output', False)
         self.data_save = kwargs.pop('data_save', False)
-        self.warnings = kwargs.pop('warnings', False)
+        self.warnings = kwargs.pop('warnings', True)
         boolean_kwargs = [self.warnings, self.data_save, self.all_output]
         for i in range(len(boolean_kwargs)):
             if type(boolean_kwargs[i]) is not bool:
-                print("Error: Boolean keyword argument with value "
+                raise TypeError("Boolean keyword argument with value "
                     + str(boolean_kwargs[i]) +
                     " is not True or False.")
-                sys.exit(1)
 
         self.constraints = kwargs.pop('constraints', 2)
         if type(self.constraints) is not int:
-            print("Error: 'constraints' is not an integer")
-            sys.exit(1)
+            raise TypeError("'constraints' is not an integer")
         if self.constraints > self.N-1:
-            print("Error: 'constraints' exceeds the number of derivatives.")
-            sys.exit(1)
+            raise ValueError("'constraints' exceeds the number of derivatives.")
 
         self.ifp_list = kwargs.pop('ifp_list', None)
         if self.ifp_list is not None:
             for i in range(len(self.ifp_list)):
                 if type(self.ifp_list[i]) is not int:
-                    print("Error: Entries in 'ifp_list' are not integer.")
-                    sys.exit(1)
+                    raise TypeError("Entries in 'ifp_list' are not integer.")
                 if self.ifp_list[i] < self.constraints:
-                    print('ERROR: One or more specified derivatives for' +
+                    raise ValueError('One or more specified derivatives for' +
                         ' inflection points is less than the minimum constrained' +
                         ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
                         ' Minimum Constrained Derivative = ' + str(self.constraints))
-                    sys.exit(1)
 
         self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
         self.cap = kwargs.pop('cap', None)
@@ -185,21 +174,18 @@ class smooth(object):
                 isinstance(self.chi_squared_limit, float):
                 pass
             else:
-                print("Error: Limit on maximum allowed increase in chi squared" +
+                raise TypeError("Limit on maximum allowed increase in chi squared" +
                     ", 'chi_squared_limit', is not an integer or float.")
-                sys.exit(1)
         if self.cap is not None:
             if type(self.cap) is not int:
-                    print("Error: The cap on directional exploration" +
+                    raise TypeError("The cap on directional exploration" +
                         ", 'cap', is not an integer.")
-                    sys.exit(1)
 
         self.initial_params = kwargs.pop('initial_params', None)
         if self.initial_params is not None and len(self.initial_params) \
             != self.N:
-            print("Error: Initial Parameters isnot equal to the number" +
+            raise ValueError("Initial Parameters is not equal to the number" +
                 "of terms in the polynomial, N.")
-            sys.exit(1)
 
         self.basis_functions = kwargs.pop('basis_functions', None)
         self.der_pres = kwargs.pop('der_pres', None)
@@ -217,16 +203,14 @@ class smooth(object):
             count = 0
             for key, value in self.new_basis.items():
                 if value is None and key != 'args':
-                    print(
-                        'Error: Attempt to change basis functions failed.' +
+                    raise KeyError(
+                        'Attempt to change basis functions failed.' +
                         ' One or more functions not defined.' +
                         ' Please consult documentation.')
-                    sys.exit(1)
                 if value is None and key == 'args':
-                    print('Warning: No additional arguments passed to new basis' +
+                    warn('Warning: No additional arguments passed to new basis' +
                         'functions')
                 count += 1
-
             if count == len(self.new_basis):
                 self.model_type = 'user_defined'
 
