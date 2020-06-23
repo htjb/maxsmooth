@@ -7,7 +7,7 @@ class save(object):
         self.base_dir = base_dir
         self.params = params
         self.chi_squared = chi_squared
-        self.signs = signs
+        self.signs = [signs]
         self.N = N
         self.fit_type = fit_type
 
@@ -26,7 +26,7 @@ class save(object):
         with open(
                 self.base_dir+'Output_Signs/'+str(self.N) +
                 '_'+self.fit_type+'.txt', 'a') as f:
-            np.savetxt(f, np.array(self.signs))
+            np.savetxt(f, self.signs)
             f.close()
 
         if not os.path.exists(self.base_dir+'Output_Evaluation/'):
