@@ -67,8 +67,8 @@ class plotter(object):
         self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
         if type(self.pivot_point) is not int:
             raise TypeError('Pivot point is not an integer index.')
-        elif self.pivot_point >= len(self.x) or self.pivot_point < 0:
-            raise ValueError('Pivot point must be in the range 0 - (len(x) - 1).')
+        elif self.pivot_point >= len(self.x) or self.pivot_point < -len(self.x):
+            raise ValueError('Pivot point must be in the range -len(x) - len(x).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
 
