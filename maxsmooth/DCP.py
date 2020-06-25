@@ -107,7 +107,13 @@ class smooth(object):
     def __init__(self, x, y, N, **kwargs):
         self.x = x
         self.y = y
+
         self.N = N
+        if type(self.N) is not int:
+            if type(self.N) is float and self.N%1!=0:
+                raise ValueError('N must be an integer or whole number float.')
+            else:
+                raise ValueError('N must be an integer or float.')
 
         for keys, values in kwargs.items():
             if keys not in set(['fit_type', 'model_type', 'base_dir',
@@ -129,6 +135,11 @@ class smooth(object):
             raise ValueError('Pivot point must be in the range -len(x) - len(x).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
+        if type(self.base_dir) is not str:
+            raise KeyError("'base_dir' must be a string ending in '/'.")
+        elif self.base_dir.endswith('/') is False:
+            raise KeyError("'base_dir' must end in '/'.")
+
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
         if self.model_type not in set(['normalised_polynomial', 'polynomial',
             'log_polynomial', 'loglog_polynomial', 'difference_polynomial',
@@ -141,7 +152,7 @@ class smooth(object):
             raise ValueError("'cvxopt_maxiter' is not integer.")
 
         self.all_output = kwargs.pop('all_output', False)
-        self.data_save = kwargs.pop('data_save', False)
+        self.data_save = kwargs.pop('data_save', True)
         self.warnings = kwargs.pop('warnings', True)
         boolean_kwargs = [self.warnings, self.data_save, self.all_output]
         for i in range(len(boolean_kwargs)):

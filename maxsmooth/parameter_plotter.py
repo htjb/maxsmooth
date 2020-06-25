@@ -9,13 +9,19 @@ from maxsmooth import Models
 from maxsmooth.derivatives import derivative_class
 import os
 
-class plotter(object):
+class param_plotter(object):
     def __init__(self, best_params, optimum_signs, x, y, N, **kwargs):
         self.best_params = best_params
         self.optimum_signs = optimum_signs
         self.x = x
         self.y = y
+
         self.N = N
+        if type(self.N) is not int:
+            if type(self.N) is float and self.N%1!=0:
+                raise ValueError('N must be an integer or whole number float.')
+            else:
+                raise ValueError('N must be an integer or float.')
 
         for keys, values in kwargs.items():
             if keys not in set(['fit_type', 'model_type', 'base_dir',
@@ -71,6 +77,10 @@ class plotter(object):
             raise ValueError('Pivot point must be in the range -len(x) - len(x).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
+        if type(self.base_dir) is not str:
+            raise KeyError("'base_dir' must be a string ending in '/'.")
+        elif self.base_dir.endswith('/') is False:
+            raise KeyError("'base_dir' must end in '/'.")
 
         if not os.path.exists(self.base_dir):
             os.mkdir(self.base_dir)
@@ -177,7 +187,7 @@ class plotter(object):
                 p = []
                 for i in range(self.N):
                     if i == i1 or i == i2 :
-                        p.append(np.linspace(self.best_params[i]*self.width,
+                        p.append(np.linspace(self.best_params[i]*(1 -self.width),
                             self.best_params[i]*(1 + self.width), self.samples))
                 p = np.array(p).T[0]
 
@@ -302,8 +312,8 @@ class plotter(object):
                         clb.ax.tick_params(labelcolor="none", bottom=False, left=False)
 
                 if self.gridlines is True:
-                    axes[i1 - 1, i2].vlines(best_params[i2], p[:,1].min(), p[:,1].max(), color='w', ls='--')
-                    axes[i1 - 1, i2].hlines(best_params[i1], p[:,0].min(), p[:,0].max(), color='w', ls='--')
+                    axes[i1 - 1, i2].vlines(self.best_params[i2], p[:,1].min(), p[:,1].max(), color='w', ls='--')
+                    axes[i1 - 1, i2].hlines(self.best_params[i1], p[:,0].min(), p[:,0].max(), color='w', ls='--')
         bar.finish()
 
         cbaxes = []
