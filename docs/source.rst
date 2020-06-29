@@ -11,7 +11,6 @@ Welcome to maxsmooth's documentation!
    :caption: Contents:
 
 
-
 Indices and tables
 ==================
 

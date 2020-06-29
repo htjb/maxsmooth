@@ -4,13 +4,17 @@
 \let\spxentry \sphinxstyleindexentry
 \let\spxextra \sphinxstyleindexextra
 
+  \bigletter C
+  \item \spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}, \hyperpage{9}
+
+  \indexspace
   \bigletter M
-  \item \spxentry{maxsmooth.msf}\spxextra{module}, \hyperpage{4}
-  \item \spxentry{maxsmooth.settings}\spxextra{module}, \hyperpage{5}
+  \item \spxentry{maxsmooth.best\_basis}\spxextra{module}, \hyperpage{9}
+  \item \spxentry{maxsmooth.chidist\_plotter}\spxextra{module}, \hyperpage{9}
+  \item \spxentry{maxsmooth.DCF}\spxextra{module}, \hyperpage{7}
 
   \indexspace
   \bigletter S
-  \item \spxentry{setting}\spxextra{class in maxsmooth.settings}, \hyperpage{5}
-  \item \spxentry{smooth}\spxextra{class in maxsmooth.msf}, \hyperpage{4}
+  \item \spxentry{smooth}\spxextra{class in maxsmooth.DCF}, \hyperpage{7}
 
 \end{sphinxtheindex}

@@ -1,4 +1,5 @@
-\indexentry{maxsmooth.msf (module)@\spxentry{maxsmooth.msf}\spxextra{module}|hyperpage}{4}
-\indexentry{smooth (class in maxsmooth.msf)@\spxentry{smooth}\spxextra{class in maxsmooth.msf}|hyperpage}{4}
-\indexentry{maxsmooth.settings (module)@\spxentry{maxsmooth.settings}\spxextra{module}|hyperpage}{5}
-\indexentry{setting (class in maxsmooth.settings)@\spxentry{setting}\spxextra{class in maxsmooth.settings}|hyperpage}{5}
+\indexentry{maxsmooth.DCF (module)@\spxentry{maxsmooth.DCF}\spxextra{module}|hyperpage}{7}
+\indexentry{smooth (class in maxsmooth.DCF)@\spxentry{smooth}\spxextra{class in maxsmooth.DCF}|hyperpage}{7}
+\indexentry{maxsmooth.best\_basis (module)@\spxentry{maxsmooth.best\_basis}\spxextra{module}|hyperpage}{9}
+\indexentry{maxsmooth.chidist\_plotter (module)@\spxentry{maxsmooth.chidist\_plotter}\spxextra{module}|hyperpage}{9}
+\indexentry{chi\_plotter (class in maxsmooth.chidist\_plotter)@\spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}|hyperpage}{9}
