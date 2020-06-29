@@ -1,9 +1,29 @@
+"""
+
+This function allows the user to produce plots of the :math:`{\chi^2}`
+distribution as a function of the available discrete sign spaces for the
+constrained derivatives. This can be used to identify whether or not the
+problem is `ill defined`, see the ``maxsmooth`` paper for a definition,
+and if it can be solved using the sign sampling approach.
+
+It can also be used to determine whether or not the 'cap' and maximum allowed
+increase on the value of :math:`{\chi^2}` during the directional exploration
+are sufficient to identify the global minimum for the problem.
+
+The function is reliant on the output of the ``maxsmooth`` 'smooth' function
+which can be saved using the 'data_save = True' kwarg when running 'smooth'.
+
+"""
+
 import numpy as np
 import os
 from itertools import product
 import matplotlib.pyplot as plt
 
 class chi_plotter(object):
+
+    r"""
+    """
     def __init__(self, N, **kwargs):
 
         self.N = N
