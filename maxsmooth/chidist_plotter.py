@@ -7,11 +7,15 @@ class chi_plotter(object):
     def __init__(self, N, **kwargs):
 
         self.N = N
-        if type(self.N) is not int:
-            if type(self.N) is float and self.N%1!=0:
-                raise ValueError('N must be an integer or whole number float.')
-            else:
-                raise ValueError('N must be an integer or float.')
+        if self.N%1!=0:
+            raise ValueError('N must be an integer or whole number float.')
+
+
+        for keys, values in kwargs.items():
+            if keys not in set(['chi','base_dir',
+                'ifp_list', 'constraints',
+                'fit_type', 'chi_squared_limit', 'cap', 'plot_limits']):
+                raise KeyError("Unexpected keyword argument in parameter plotter.")
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
         if type(self.base_dir) is not str:
@@ -56,6 +60,22 @@ class chi_plotter(object):
             raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
 
+        self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
+        self.cap = kwargs.pop('cap', None)
+        if self.chi_squared_limit is not None:
+            if isinstance(self.chi_squared_limit, int) or \
+                isinstance(self.chi_squared_limit, float):
+                pass
+            else:
+                raise TypeError("Limit on maximum allowed increase in chi squared" +
+                    ", 'chi_squared_limit', is not an integer or float.")
+        if self.cap is not None:
+            if type(self.cap) is not int:
+                    raise TypeError("The cap on directional exploration" +
+                        ", 'cap', is not an integer.")
+
+        self.plot_limits = kwargs.pop('plot_limits', False)
+
         self.plot()
 
     def plot(self):
@@ -82,7 +102,7 @@ class chi_plotter(object):
                         if np.all(signs[p] == possible_signs[i]):
                             index.append(i)
                 index, chi = zip(*sorted(zip(index, chi)))
-                plt.plot(index, chi, marker='.', ls='-')
+                plt.plot(index, chi, ls='-')
             else:
                 plt.plot(j, chi, marker='.', ls='-')
         else:
@@ -100,9 +120,19 @@ class chi_plotter(object):
             else:
                 plt.plot(j, chi, marker='.', ls='-')
 
+        if self.cap is None:
+            self.cap = (len(possible_signs)//self.N) + self.N
+        if self.chi_squared_limit is None:
+            self.chi_squared_limit = 2*min(chi)
+
         for i in range(len(chi)):
             if chi[i] == min(chi):
                 plt.plot(i, chi[i], marker='*')
+                if self.plot_limits is True:
+                    plt.vlines(i + self.cap, min(chi), max(chi), ls='--', label='Cap On Exp.', color='k', alpha=0.5)
+                    plt.vlines(i - self.cap,  min(chi), max(chi), ls='--', color='k', alpha=0.5)
+        if self.plot_limits is True:
+            plt.hlines(self.chi_squared_limit, 0, len(possible_signs), ls='-.', label=r'Max. Increase\n' + ' in $\chi^2$', color='k', alpha=0.5)
         plt.xlim([j[0], j[-1]])
         plt.grid()
         plt.yscale('log')

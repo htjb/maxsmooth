@@ -17,11 +17,8 @@ class param_plotter(object):
         self.y = y
 
         self.N = N
-        if type(self.N) is not int:
-            if type(self.N) is float and self.N%1!=0:
-                raise ValueError('N must be an integer or whole number float.')
-            else:
-                raise ValueError('N must be an integer or float.')
+        if self.N%1!=0:
+            raise ValueError('N must be an integer or whole number float.')
 
         for keys, values in kwargs.items():
             if keys not in set(['fit_type', 'model_type', 'base_dir',
@@ -272,7 +269,7 @@ class param_plotter(object):
 
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore')
-                    if self.N > 5:
+                    if self.N > 5 or self.constraints != 2:
                         cp = axes[i1 - 1, i2].contourf(X, Y, chi_masked,
                             np.linspace(chi.min(), chi.max(), 10),
                             cmap='autumn')

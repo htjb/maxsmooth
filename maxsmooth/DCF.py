@@ -109,11 +109,8 @@ class smooth(object):
         self.y = y
 
         self.N = N
-        if type(self.N) is not int:
-            if type(self.N) is float and self.N%1!=0:
-                raise ValueError('N must be an integer or whole number float.')
-            else:
-                raise ValueError('N must be an integer or float.')
+        if self.N%1!=0:
+            raise ValueError('N must be an integer or whole number float.')
 
         for keys, values in kwargs.items():
             if keys not in set(['fit_type', 'model_type', 'base_dir',
@@ -152,7 +149,7 @@ class smooth(object):
             raise ValueError("'cvxopt_maxiter' is not integer.")
 
         self.all_output = kwargs.pop('all_output', False)
-        self.data_save = kwargs.pop('data_save', True)
+        self.data_save = kwargs.pop('data_save', False)
         self.warnings = kwargs.pop('warnings', True)
         boolean_kwargs = [self.warnings, self.data_save, self.all_output]
         for i in range(len(boolean_kwargs)):
