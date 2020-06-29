@@ -9,7 +9,7 @@ The user should begin by importing the `smooth` class from `maxsmooth.DCP`.
     from maxsmooth.msf import smooth
 
 """
-from maxsmooth.DCP import smooth
+from maxsmooth.DCF import smooth
 
 """
 The user should then import the data they wish to fit.

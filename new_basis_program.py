@@ -1,5 +1,5 @@
 import numpy as np
-from maxsmooth.DCP import smooth
+from maxsmooth.DCF import smooth
 
 x = np.load('Data/x.npy')
 y = np.load('Data/y.npy')
