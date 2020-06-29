@@ -221,8 +221,7 @@ class param_plotter(object):
                         der = derivative_class(self.x, self.y,
                             parameters, self.N,
                             self.pivot_point, self.model_type,
-                            self.ifp_list,
-                            self.warnings, self.constraints,
+                            self.ifp_list,, self.constraints,
                             self.new_basis, call_type='plotter')
 
                         derivatives, pass_fail = der.derivatives, der.pass_fail

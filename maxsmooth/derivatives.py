@@ -1,15 +1,11 @@
 import numpy as np
 import sys
-import warnings
 from scipy.special import lpmv
-
-warnings.simplefilter('always', UserWarning)
-
 
 class derivative_class(object):
     def __init__(
                 self, x, y, params, N, pivot_point, model_type, ifp_list,
-                warnings, constraints, new_basis, **kwargs):
+                constraints, new_basis, **kwargs):
         self.x = x
         self.y = y
         self.N = N
@@ -19,7 +15,6 @@ class derivative_class(object):
         self.ifp_list = ifp_list
         self.derivatives_function = new_basis['derivatives_function']
         self.args = new_basis['args']
-        self.warnings = warnings
         self.constraints = constraints
 
         self.call_type = kwargs.pop('call_type', 'checking')

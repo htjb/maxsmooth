@@ -12,7 +12,7 @@ warnings.simplefilter('always', UserWarning)
 class qp_class(object):
     def __init__(
             self, x, y, N, signs, pivot_point, model_type, cvxopt_maxiter,
-            all_output, ifp_list, initial_params, warnings,
+            all_output, ifp_list, initial_params,
             constraints, new_basis):
         self.model_type = model_type
         self.pivot_point = pivot_point
@@ -30,7 +30,6 @@ class qp_class(object):
         self.derivatives_function = new_basis['derivatives_function']
         self.args = new_basis['args']
         self.new_basis = new_basis
-        self.warnings = warnings
         self.constraints = constraints
         self.parameters, self.chi_squared, self.ifp_dict = self.fit()
 
@@ -209,8 +208,7 @@ class qp_class(object):
                 self.model_type, self.new_basis).y_sum
             der = derivative_class(
                 self.x, self.y, parameters, self.N, self.pivot_point,
-                self.model_type, self.ifp_list,
-                self.warnings, self.constraints, self.new_basis)
+                self.model_type, self.ifp_list, self.constraints, self.new_basis)
             ifp_dict = der.ifp_dict
 
             if self.model_type == 'loglog_polynomial':
