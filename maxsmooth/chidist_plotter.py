@@ -10,9 +10,9 @@ It can also be used to determine whether or not the 'cap' and maximum allowed
 increase on the value of :math:`{\chi^2}` during the directional exploration
 are sufficient to identify the global minimum for the problem.
 
-The function is reliant on the output of the ``maxsmooth`` 'smooth' function
-which can be saved using the 'data_save = True' kwarg when running 'smooth'.
-
+The function is reliant on the output of the ``maxsmooth`` smooth() function.
+The required outputs can be saved when running smooth()
+using the 'data_save = True' kwarg.
 """
 
 import numpy as np
@@ -23,6 +23,71 @@ import matplotlib.pyplot as plt
 class chi_plotter(object):
 
     r"""
+
+    **Parameters:**
+
+        N: **int**
+            | The number of terms in the DCF.
+
+    **Kwargs:**
+
+        fit_type: **Default = 'qp-sign_flipping'**
+            | This kwarg is the same as
+                before. Here it allows the files to be read from the base directory.
+
+        base_dir: **Default = 'Fitted_Output/'**
+            | The location of the outputted
+                data from ``maxsmooth``. This must be a string and end in '/' and
+                must contain the files 'Output_Evaluations/' and 'Output_Signs/'
+                which can be obtained by running smooth() with data_save=True.
+
+        chi: **Default = None else list or numpy array**
+            | A list of
+                :math:`{\chi^2}` evaluations. If provided then this is used over
+                outputted data in the base directory. It must have the same length
+                as the ouputted signs in the file 'Output_Signs/' in the base
+                directory. It must also be ordered correctly otherwise the
+                returned graph will not be correct. A correct ordering is one for
+                which each entry in the array corresponds to the correct
+                sign combination in 'Output_Signs/'. Typically this will not be
+                needed but if the :math:`{\chi^2}` evaluation in
+                'Output_Evaluations/' in the base directory is not in the desired
+                parameter space this can be useful. For example the built in
+                logarithmic model calculates :math:`{\chi^2}` in logarithmic space.
+                To plot the distribution in linear space we can calculate
+                :math:`{\chi^2}` in linear space using a function for the model and
+                the tested parameters which are found in 'Output_Parameters/' in the
+                base directory.
+
+        constraints: **Default = 2 else an integer less than or equal to N - 1**
+            | The minimum constrained derivative order which is set by default to
+                2 for a Maximally Smooth Function. Used here to determine the
+                number of possible sign combinations available.
+
+        ifp_list: **Default = None else list of integers**
+            | Allows you to
+                specify if the conditions should be relaxed on any
+                of the derivatives between constraints and the highest order
+                derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
+                order derivative would have an ifp_list = [4, 5]. Again this is used
+                in determining the possible sign combinations available.
+
+        plot_limits: **Default = False**
+            | Determines whether the limits on
+                the directional exploration are plotted on top of the
+                :math:`{\chi^2}` distribution.
+
+        cap: **Default = (len(available_signs)//N) + N else an integer**
+            | Determines the maximum number of signs explored either side of the
+                minimum :math`{\chi^2}` value found after the decent algorithm
+                has terminated.
+
+        chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
+            | The maximum allowed increase in :math`{\chi^2}` during the
+                directional exploration. If this value is exceeded then the
+                exploration in one direction is terminated and started in the other.
+                For more details on this and 'cap' see the ``maxsmooth`` paper.
+
     """
     def __init__(self, N, **kwargs):
 
@@ -95,6 +160,9 @@ class chi_plotter(object):
                         ", 'cap', is not an integer.")
 
         self.plot_limits = kwargs.pop('plot_limits', False)
+        if type(self.plot_limits) is not bool:
+            raise TypeError("Boolean keyword argument with value "
+                + " 'plot_limits' is not True or False.")
 
         self.plot()
 

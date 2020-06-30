@@ -1,8 +1,9 @@
 
 """
-*smooth* is used to call the fitting routine. There are a number
+*smooth*, as demonstrated in the examples section,
+is used to call the fitting routine. There are a number
 of \*\*kwargs that can be assigned to the function which change how the fit is
-performed, the model that is fit and  various other attributes. These are
+performed, the model that is fit and various other attributes. These are
 detailed below.
 
 """
@@ -25,126 +26,139 @@ class smooth(object):
 
     **Parameters:**
 
-        x: **numpy.array** The x data points for the set being fitted.
+        x: **numpy.array**
+            | The x data points for the set being fitted.
 
-        y: **numpy.array** The y data points for fitting.
+        y: **numpy.array**
+            | The y data points for fitting.
 
-        N: **int** The number of terms in the MSF polynomial function.
+        N: **int**
+            | The number of terms in the DCF.
 
     **Kwargs:**
 
-        fit_type: **Default = 'qp-sign_flipping'** This kwarg allows the user to
-            switch between sampling the available discrete sign spaces (default)
-            or testing all sign combinations on the derivatives which can be
-            accessed by setting to 'qp'.
+        fit_type: **Default = 'qp-sign_flipping'**
+            | This kwarg allows the user to
+                switch between sampling the available discrete sign spaces (default)
+                or testing all sign combinations on the derivatives which can be
+                accessed by setting to 'qp'.
 
-        model_type: **Default = 'difference_polynomials'** Allows the user to
-            access default Derivative Constrained Functions built into the
-            software. Available options include the default, 'polynomial',
-            'normalised_polynomial', 'legendre', 'log_polynomial',
-            'loglog_polynomial' and 'exponential'. For more details on the
-            functional form of the built in basis see the ``maxsmooth`` paper.
+        model_type: **Default = 'difference_polynomials'**
+            | Allows the user to
+                access default Derivative Constrained Functions built into the
+                software. Available options include the default, 'polynomial',
+                'normalised_polynomial', 'legendre', 'log_polynomial',
+                'loglog_polynomial' and 'exponential'. For more details on the
+                functional form of the built in basis see the ``maxsmooth`` paper.
 
-        pivot_point: **Default = len(x)//2 else integer** Some of the built in
-            models rely on pivot points in the data sets which by defualt is
-            set as the middle index. This can be altered via this kwarg which
-            can occasionally lead to a better quality fit.
+        pivot_point: **Default = len(x)//2 else integer**
+            | Some of the built in
+                models rely on pivot points in the data sets which by defualt is
+                set as the middle index. This can be altered via this kwarg which
+                can occasionally lead to a better quality fit.
 
-        base_dir: **Default = 'Fitted_Output/'** The location of the outputted
-            data from ``maxsmooth``. This must be a string and end in '/'. If the
-            file does not exist then ``maxsmooth`` will creat it. By default the
-            only outputted data is a summary of the best fit but additional data
-            can be recorded by setting the keyword argument 'data_save = True'.
+        base_dir: **Default = 'Fitted_Output/'**
+            | The location of the outputted
+                data from ``maxsmooth``. This must be a string and end in '/'. If the
+                file does not exist then ``maxsmooth`` will create it. By default the
+                only outputted data is a summary of the best fit but additional data
+                can be recorded by setting the keyword argument 'data_save = True'.
 
-        data_save: **Default = False** By setting this to True the algorithm
-            will save every tested set of parameters, signs and objective
-            function evaluations into files in base_dir. Theses files will be
-            over written on repeated runs but they are needed to run the
-            'chidist_plotter'.
+        data_save: **Default = False**
+            | By setting this to True the algorithm
+                will save every tested set of parameters, signs and objective
+                function evaluations into files in base_dir. Theses files will be
+                over written on repeated runs but they are needed to run the
+                'chidist_plotter'.
 
-        all_output: **Default = False** If set to True this outputs to the
-            terminal every fit performed by the algorithm. By default the only
-            output is the optimal solution once the code is finished.
+        all_output: **Default = False**
+            | If set to True this outputs to the
+                terminal every fit performed by the algorithm. By default the only
+                output is the optimal solution once the code is finished.
 
-        cvxopt_maxiter: **Default = 10000 else integer** This shouldn't need
-            changing for most problems however if cvxopt fails with a 'maxiters
-            reached' error message this can be increased. Doing so arbitrarily
-            will however increase the run time of ``maxsmooth``.
+        cvxopt_maxiter: **Default = 10000 else integer**
+            | This shouldn't need
+                changing for most problems however if ``CVXOPT`` fails with a 'maxiters
+                reached' error message this can be increased. Doing so arbitrarily
+                will however increase the run time of ``maxsmooth``.
 
-        initial_params: **Default = None else list of length N** Allows the user
-            to overwrite the default initial parameters used by cvxopt.
+        initial_params: **Default = None else list of length N**
+            | Allows the user
+                to overwrite the default initial parameters used by ``CVXOPT``.
 
         constraints: **Default = 2 else an integer less than or equal to N - 1**
-            The minimum constrained derivative order which is set by default to
-            2 for a Maximally Smooth Function.
+            | The minimum constrained derivative order which is set by default to
+                2 for a Maximally Smooth Function.
 
-        ifp_list: **Default = None else list of integers** Allows you to
-            specify if the conditions should be relaxed on any
-            of the derivatives between constraints and the highest order
-            derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-            order derivative would have an ifp_list = [4, 5].
+        ifp_list: **Default = None else list of integers**
+            | Allows you to
+                specify if the conditions should be relaxed on any
+                of the derivatives between constraints and the highest order
+                derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
+                order derivative would have an ifp_list = [4, 5].
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
-            Determines the maximum number of signs explored either side of the
-            minimum :math`{\chi^2}` value found after the decent algorithm
-            has terminated.
+            | Determines the maximum number of signs explored either side of the
+                minimum :math`{\chi^2}` value found after the decent algorithm
+                has terminated.
 
         chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
-            The maximum allowed increase in :math`{\chi^2}` during the
-            directional exploration. If this value is exceeded then the
-            exploration in one direction is terminated and started in the other.
-            For more details on this and 'cap' see the ``maxsmooth`` paper.
+            | The maximum allowed increase in :math`{\chi^2}` during the
+                directional exploration. If this value is exceeded then the
+                exploration in one direction is terminated and started in the other.
+                For more details on this and 'cap' see the ``maxsmooth`` paper.
 
         The following Kwargs can be used by the user to define thier own basis
         function and will overwrite the 'model_type' kwarg.
 
-        basis_function: **Default = None else function with parameters**
-            **(x, y, pivot_point, N)** This is a function of basis functions
-            for the quadratic programming. The variable pivot_point is the
-            index at the middle of the datasets x and y by default but can
-            be adjusted.
+        **basis_function: Default = None else function with parameters**
+        **(x, y, pivot_point, N)**
+            | This is a function of basis functions
+                for the quadratic programming. The variable pivot_point is the
+                index at the middle of the datasets x and y by default but can
+                be adjusted.
 
-        model: **Default = None else function with parameters**
-            **(x, y, pivot_point, N, params)** This is
-            a user defined function describing the model to be fitted to the
-            data.
+        **model: Default = None else function with parameters**
+        **(x, y, pivot_point, N, params)**
+            | This is
+                a user defined function describing the model to be fitted to the
+                data.
 
-        der_pres: **Default = None else function with parameters**
-            **(m, i, x, y, pivot_point)**
-            This function describes the prefactors on the ith term of the mth
-            order derivative used in defining the constraint.
+        **der_pres: Default = None else function with parameters**
+        **(m, i, x, y, pivot_point)**
+            | This function describes the prefactors on the ith term of the mth
+                order derivative used in defining the constraint.
 
-        derivatives: **Default = None else function with parameters**
-            **(m, i, x, y, pivot_point, params)**
-            User defined function describing the ith term of the mth
-            order derivative used to check that conditions are being met.
+        **derivatives: Default = None else function with parameters**
+        **(m, i, x, y, pivot_point, params)**
+            | User defined function describing the ith term of the mth
+                order derivative used to check that conditions are being met.
 
-        args: **Default = None else list** of extra arguments for `smooth`
-            to pass to the functions detailed above.
+        **args: Default = None else list**
+            | Extra arguments for `smooth`
+                to pass to the functions detailed above.
 
     **Output**
 
         If N is a list with length greater than 1 then the outputs from smooth
         are lists and arrays with dimension 0 equal to len(N).
 
-        .y_fit:
-            *numpy.array* The fitted arrays of y data from `smooth`.
+        .y_fit: **numpy.array**
+            | The fitted arrays of y data from `smooth`.
 
-        .optimum_chi:
-            *numpy.array* The optimum chi squared values for the fit calculated
-            by,
+        .optimum_chi: **float**
+            | The optimum chi squared values for the fit calculated by,
 
             .. math::
 
                 {X^2=\sum(y-y_{fit})^2}.
 
-        .optimum_params:
-            *numpy.array* The set of parameters corresponding to the optimum
-            fits.
+        .optimum_params: **numpy.array**
+            | The set of parameters corresponding to the optimum fits.
 
-        .rms:
-            *list* The rms value of the residuals :math:`{y_{res}=y-y_{fit}}`
-            calculated by,
+        .rms: **float**
+            | The rms value of the residuals :math:`{y_{res}=y-y_{fit}}`
+                calculated by,
 
             .. math::
 
@@ -152,12 +166,12 @@ class smooth(object):
 
             where :math:`n` is the number of data points.
 
-        .derivatives:
-            *numpy.array* The :math:`m^{th}` order derivatives.
+        .derivatives: **numpy.array**
+            | The :math:`m^{th}` order derivatives.
 
-        .optimum_signs:
-            *numpy.array* The sign combinations corresponding to the
-            optimal results.
+        .optimum_signs: **numpy.array**
+            | The sign combinations corresponding to the
+                optimal results.
 
     """
 

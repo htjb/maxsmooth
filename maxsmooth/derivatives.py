@@ -74,12 +74,12 @@ class derivative_class(object):
                 if self.args is None:
                     derivatives = \
                         self.derivatives_function(m,
-                            self.x, self.y, self.pivot_point,
+                            self.x, self.y, self.N, self.pivot_point,
                             self.params)
                 if self.args is not None:
                     derivatives = \
                         self.derivatives_function(m,
-                            self.x, self.y, self.pivot_point,
+                            self.x, self.y, self.N, self.pivot_point,
                             self.params, *self.args)
                 mth_order_derivative = derivatives
 

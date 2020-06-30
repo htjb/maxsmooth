@@ -1,3 +1,9 @@
+"""
+This function allows you to plot the parameter space around the optimum
+solution found when running ``maxsmooth`` and visualise the constraints with
+contour lines given by :math:`{\chi^2}`.
+"""
+
 import warnings
 import sys
 import numpy as np
@@ -10,6 +16,105 @@ from maxsmooth.derivatives import derivative_class
 import os
 
 class param_plotter(object):
+
+    r"""
+
+    **Parameters:**
+
+        best_params: **numpy.array**
+            | The optimum parameters found when running
+                a DCF fit to the data.
+
+        optimum_signs: **numpy.array**
+            | The optimum signs for the DCF fit which
+                are used when the derivatives are equal to 0 across the band.
+
+        x: **numpy.array**
+            | The x data points.
+
+        y: **numpy.array**
+            | The y data points.
+
+        N: **int**
+            | The number of terms in the DCF.
+
+    **Kwargs:**
+
+        model_type: **Default = 'difference_polynomial'**
+            | The functional form of
+                the model being plotted. If a the user has defined their own basis
+                they can supply this with the Kwargs below and this will be
+                overwritten.
+
+        base_dir: **Default = 'Fitted_Output/'**
+            | The location in which the
+                parameter plot is saved.
+
+        constraints: **Default = 2 else an integer less than or equal to N - 1**
+            | The minimum constrained derivative order which is set by default to
+                2 for a Maximally Smooth Function. Used here to determine the
+                number of possible sign combinations available.
+
+        ifp_list: **Default = None else list of integers**
+            | Allows you to
+                specify if the conditions should be relaxed on any
+                of the derivatives between constraints and the highest order
+                derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
+                order derivative would have an ifp_list = [4, 5]. Again this is used
+                in determining the possible sign combinations available.
+
+        samples: **Default = 50**
+            | The sampling rate across the parameter ranges
+                defined with the optimum solution and width.
+
+        width: **Default = 0.5**
+            | The range of each parameter to explore. The
+                default value of 0.5 means that the :math:`{\chi^2}`
+                values for parameters ranging 50% either side of the optimum result
+                are tested.
+
+        warnings: **Default = True**
+            | Used to highlight when a derivative is
+                0 across the band and that in these instances the optimum signs are
+                assumed for the colourmap if :math:`{N \leq 5}`, constraints=2 and
+                the ifp_list is empty.
+
+        girdlines: **Default = False**
+            | Plots gridlines showing the central value
+                for each parameter in each panel of the plot.
+
+        The following Kwargs are used to plot the parameter space for a user
+        defined basis function and will overwrite the 'model_type' kwarg.
+
+        **basis_function: Default = None else function with parameters**
+        **(x, y, pivot_point, N)**
+            | This is a function of basis functions
+                for the quadratic programming. The variable pivot_point is the
+                index at the middle of the datasets x and y by default but can
+                be adjusted.
+
+        **model: Default = None else function with parameters**
+        **(x, y, pivot_point, N, params)**
+            | This is
+                a user defined function describing the model to be fitted to the
+                data.
+
+        **der_pres: Default = None else function with parameters**
+        **(m, i, x, y, pivot_point)**
+            | This function describes the prefactors on the ith term of the mth
+                order derivative used in defining the constraint.
+
+        **derivatives: Default = None else function with parameters**
+        **(m, i, x, y, pivot_point, params)**
+            | User defined function describing the ith term of the mth
+                order derivative used to check that conditions are being met.
+
+        **args: Default = None else list**
+            | Extra arguments for `smooth`
+                to pass to the functions detailed above.
+
+    """
+
     def __init__(self, best_params, optimum_signs, x, y, N, **kwargs):
         self.best_params = best_params
         self.optimum_signs = optimum_signs
@@ -21,17 +126,12 @@ class param_plotter(object):
             raise ValueError('N must be an integer or whole number float.')
 
         for keys, values in kwargs.items():
-            if keys not in set(['fit_type', 'model_type', 'base_dir',
+            if keys not in set(['model_type', 'base_dir',
                 'ifp_list', 'constraints',
                 'basis_functions','der_pres', 'model',
                 'derivatives', 'args', 'pivot_point', 'samples',
                 'width', 'warnings', 'gridlines']):
                 raise KeyError("Unexpected keyword argument in parameter plotter.")
-
-        self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
-        if self.fit_type not in set(['qp', 'qp-sign_flipping']):
-            raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
-                "'qp-sign_flipping'")
 
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
         if self.model_type not in set(['normalised_polynomial', 'polynomial',
@@ -99,7 +199,7 @@ class param_plotter(object):
                         ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
                         ' Minimum Constrained Derivative = ' + str(self.constraints))
 
-        self.samples = kwargs.pop('samples', 51)
+        self.samples = kwargs.pop('samples', 50)
         if self.samples%1 != 0:
             raise ValueError('Error: Samples must be a whole number.')
 
@@ -221,7 +321,7 @@ class param_plotter(object):
                         der = derivative_class(self.x, self.y,
                             parameters, self.N,
                             self.pivot_point, self.model_type,
-                            self.ifp_list,, self.constraints,
+                            self.ifp_list, self.constraints,
                             self.new_basis, call_type='plotter')
 
                         derivatives, pass_fail = der.derivatives, der.pass_fail

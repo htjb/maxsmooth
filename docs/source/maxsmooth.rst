@@ -1,8 +1,9 @@
-Maxsmooth Example Codes
------------------------
 
 .. toctree::
    :maxdepth: 6
+   
+Maxsmooth Example Codes
+-----------------------
 
 This section is designed to introduce the user to the software and the form
 in which it is run. It provides basic examples of data fitting with a built in
@@ -26,13 +27,17 @@ New Basis Example
 Best Basis Example
 ~~~~~~~~~~~~~~~~~~
 
+.. include:: best_basis.rst
+
 :math:`{\chi^2}` Distribution Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: chi_dist_example.rst
 
 Parameter Plotter Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: param_plotter_example.rst
 
 Maxsmooth Functions
 -------------------
@@ -41,7 +46,7 @@ This section details the specifics of the built in functions in ``maxsmooth`` in
 the relevant key word arguments and default parameters for all.
 
 smooth()
-~~~~~~
+~~~~~~~~
 
 .. automodule:: maxsmooth.DCF
    :members: smooth
@@ -63,6 +68,3 @@ parameter_plotter()
 
 .. automodule:: maxsmooth.parameter_plotter
   :members: param_plotter
-
-Errors and Warnings
-~~~~~~~~~~~~~~~~~~~
