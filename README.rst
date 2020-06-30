@@ -22,7 +22,7 @@ specific high order derivatives can be constrained.
 
 You can read more about MSFs here ..
 
-``maxsmooth`` uses quadratic programming implemented with ``cvxopt`` to fit
+``maxsmooth`` uses quadratic programming implemented with ``CVXOPT`` to fit
 data subject to a linear constraint. The constraint on an MSF can be codefied
 like so,
 
@@ -78,7 +78,7 @@ Basic requirements:
 - Python version..
 - `matplotlib <https://pypi.org/project/matplotlib/>`__
 - `numpy <https://pypi.org/project/numpy/>`__
-- `cvxopt <https://pypi.org/project/cvxopt/>`__
+- `CVXOPT <https://pypi.org/project/cvxopt/>`__
 
 Citation
 ~~~~~~~~
