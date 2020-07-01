@@ -61,8 +61,8 @@ class qp_class(object):
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'log_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i) * np.log10(self.x/ \
-                                self.x[self.pivot_point])**i
+                                / np.math.factorial(i) * \
+                                np.log10(self.x/self.x[self.pivot_point])**i
                             derivatives.append(mth_order_derivative_term)
                         if self.model_type == 'loglog_polynomial':
                             mth_order_derivative_term = np.math.factorial(m+i)\
@@ -76,29 +76,32 @@ class qp_class(object):
 
             if self.derivative_pres is not None:
                 if self.args is None:
-                    derivatives = self.derivative_pres(m,
-                        self.x, self.y, self.pivot_point)
+                    derivatives = self.derivative_pres(
+                        m, self.x, self.y, self.pivot_point)
                 if self.args is not None:
-                    derivatives = self.derivative_pres(m,
-                        self.x, self.y, self.pivot_point,
+                    derivatives = self.derivative_pres(
+                        m, self.x, self.y, self.pivot_point,
                         *self.args)
 
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 alps = []
-                for l in range(self.N):
-                    alps.append(lpmv(m, l, interval))
+                for i in range(self.N):
+                    alps.append(lpmv(m, i, interval))
                 alps = np.array(alps)
                 derivatives = []
                 for h in range(len(alps)):
-                    derivatives.append(((alps[h,:]*(-1)**(m))/(1-interval**2)**(m/2)))
+                    derivatives.append(
+                        ((alps[h, :]*(-1)**(m))/(1-interval**2)**(m/2)))
                 derivatives = np.array(derivatives)
             if self.model_type == 'exponential':
                 derivatives = np.empty([self.N, len(self.x)])
                 for i in range(self.N):
                     for h in range(len(self.x)):
-                        derivatives[i, h] = self.y[self.pivot_point]*(np.exp(-i*self.x[h]
-                            /self.x[self.pivot_point]))*(-i/self.x[self.pivot_point])**m
+                        derivatives[i, h] = \
+                            self.y[self.pivot_point] * \
+                            (np.exp(-i*self.x[h]/self.x[self.pivot_point])) * \
+                            (-i/self.x[self.pivot_point])**m
                 derivatives = np.array(derivatives)
 
             derivatives = np.array(derivatives).astype(np.double)
@@ -127,7 +130,7 @@ class qp_class(object):
         for i in range(len(derivatives)):
             derivatives[i] *= signs[i]
 
-        G = matrix(derivatives)  # Array of derivative prefactors for all m>=constraints
+        G = matrix(derivatives)
 
         if self.basis_functions is None:
             phi = np.empty([len(self.x), self.N])
@@ -140,18 +143,20 @@ class qp_class(object):
                         if self.model_type == 'polynomial':
                             phi[h, i] = (self.x[h])**i
                         if self.model_type == 'log_polynomial':
-                            phi[h, i] = np.log10(self.x[h]/self.x[self.pivot_point])**i
+                            phi[h, i] = \
+                                np.log10(self.x[h]/self.x[self.pivot_point])**i
                         if self.model_type == 'loglog_polynomial':
                             phi[h, i] = np.log10(self.x[h])**i
                         if self.model_type == 'difference_polynomial':
                             phi[h, i] = (self.x[h]-self.x[self.pivot_point])**i
                         if self.model_type == 'exponential':
-                            phi[h, i] = self.y[self.pivot_point]*np.exp(-i*self.x[h]/self.x[self.pivot_point])
+                            phi[h, i] = self.y[self.pivot_point] * \
+                                np.exp(-i*self.x[h]/self.x[self.pivot_point])
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 phi = []
-                for l in range(self.N):
-                    P = legendre(l)
+                for i in range(self.N):
+                    P = legendre(i)
                     phi.append(P(interval))
                 phi = np.array(phi).T
             phi = matrix(phi)
@@ -166,15 +171,21 @@ class qp_class(object):
                 phi = matrix(phi)
 
         if self.model_type == 'loglog_polynomial':
-            data_matrix = matrix(np.log10(self.y).astype(np.double), (len(self.y), 1), 'd')
+            data_matrix = matrix(
+                np.log10(self.y).astype(np.double), (len(self.y), 1),
+                'd')
         else:
-            data_matrix = matrix(self.y.astype(np.double), (len(self.y), 1), 'd')
+            data_matrix = matrix(
+                self.y.astype(np.double), (len(self.y), 1),
+                'd')
 
         if self.ifp_list is None:
             h = matrix(0.0, ((self.N-self.constraints)*len(self.x), 1), 'd')
         else:
-            h = matrix(0.0, ((self.N-self.constraints-len(self.ifp_list))
-                *len(self.x), 1), 'd')
+            h = matrix(
+                0.0, (
+                    (self.N-self.constraints-len(self.ifp_list))
+                    * len(self.x), 1), 'd')
 
         Q = phi.T*phi
 
@@ -208,7 +219,8 @@ class qp_class(object):
                 self.model_type, self.new_basis).y_sum
             der = derivative_class(
                 self.x, self.y, parameters, self.N, self.pivot_point,
-                self.model_type, self.ifp_list, self.constraints, self.new_basis)
+                self.model_type, self.ifp_list,
+                self.constraints, self.new_basis)
             ifp_dict = der.ifp_dict
 
             if self.model_type == 'loglog_polynomial':

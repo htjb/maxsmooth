@@ -31,21 +31,25 @@ class Models_class(object):
 
             if self.model_type == 'loglog_polynomial':
 
-                y_sum = 10**(np.sum(
-                    [self.params[i]*np.log10(self.x)**i for i in range(self.N)],
+                y_sum = 10**(np.sum([
+                    self.params[i]*np.log10(self.x)**i
+                    for i in range(self.N)],
                     axis=0))
 
             if self.model_type == 'exponential':
 
-                y_sum = self.y[self.pivot_point]*np.sum(
-                    [self.params[i]*np.exp(-i*self.x
-                    /self.x[self.pivot_point]) for i in range(self.N)],
+                y_sum = self.y[self.pivot_point]*np.sum([
+                    self.params[i] *
+                    np.exp(-i*self.x/self.x[self.pivot_point])
+                    for i in range(self.N)],
                     axis=0)
 
             if self.model_type == 'log_polynomial':
 
-                y_sum = np.sum(
-                    [self.params[i]*np.log10(self.x/self.x[self.pivot_point])**i for i in range(self.N)],
+                y_sum = np.sum([
+                    self.params[i] *
+                    np.log10(self.x/self.x[self.pivot_point])**i
+                    for i in range(self.N)],
                     axis=0)
 
             if self.model_type == 'difference_polynomial':
@@ -58,11 +62,12 @@ class Models_class(object):
 
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 lps = []
-                for l in range(self.N):
-                    P = legendre(l)
+                for n in range(self.N):
+                    P = legendre(n)
                     lps.append(P(interval))
-                lps=np.array(lps)
-                y_sum = np.sum([self.params[i]*lps[i] for i in range(self.N)], axis=0)
+                lps = np.array(lps)
+                y_sum = np.sum([
+                    self.params[i] * lps[i] for i in range(self.N)], axis=0)
 
         if self.model is not None:
             if self.args is None:

@@ -1,6 +1,6 @@
 import numpy as np
-import sys
 from scipy.special import lpmv
+
 
 class derivative_class(object):
     def __init__(
@@ -50,8 +50,8 @@ class derivative_class(object):
                             mth_order_derivative_term = \
                                 np.math.factorial(m+i) / \
                                 np.math.factorial(i) * \
-                                self.params[int(m)+i]*np.log10(self.x/
-                                self.x[self.pivot_point])**i
+                                self.params[int(m) + i] * \
+                                np.log10(self.x/self.x[self.pivot_point])**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'loglog_polynomial':
@@ -73,39 +73,43 @@ class derivative_class(object):
             if self.derivatives_function is not None:
                 if self.args is None:
                     derivatives = \
-                        self.derivatives_function(m,
-                            self.x, self.y, self.N, self.pivot_point,
+                        self.derivatives_function(
+                            m, self.x, self.y, self.N, self.pivot_point,
                             self.params)
                 if self.args is not None:
                     derivatives = \
-                        self.derivatives_function(m,
-                            self.x, self.y, self.N, self.pivot_point,
+                        self.derivatives_function(
+                            m, self.x, self.y, self.N, self.pivot_point,
                             self.params, *self.args)
                 mth_order_derivative = derivatives
 
             if self.model_type == 'legendre':
                 interval = np.linspace(-0.999, 0.999, len(self.x))
                 alps = []
-                for l in range(self.N):
-                    alps.append(lpmv(m, l, interval))
+                for i in range(self.N):
+                    alps.append(lpmv(m, i, interval))
                 alps = np.array(alps)
                 derivatives = []
                 for h in range(len(alps)):
-                    derivatives.append(((alps[h,:]*(-1)**(m))/(1-interval**2)**(m/2))
-                        *self.params[h, 0])
+                    derivatives.append(
+                        ((alps[h, :]*(-1)**(m))/(1-interval**2)**(m/2))
+                        * self.params[h, 0])
                 mth_order_derivative = np.array(derivatives)
             if self.model_type == 'exponential':
                 derivatives = np.empty([self.N, len(self.x)])
                 for i in range(self.N):
                     for h in range(len(self.x)):
-                        derivatives[i, h] = self.y[self.pivot_point]*(self.params[i]*np.exp(-i*self.x[h]
-                            /self.x[self.pivot_point]))*(-i/self.x[self.pivot_point])**m
+                        derivatives[i, h] = \
+                            self.y[self.pivot_point] * (
+                            self.params[i] *
+                            np.exp(-i * self.x[h]/self.x[self.pivot_point])) \
+                            * (-i/self.x[self.pivot_point])**m
                 mth_order_derivative = np.array(derivatives)
 
             if type(mth_order_derivative) == list:
                 mth_order_derivative = np.array(mth_order_derivative)
             if mth_order_derivative.shape == (len(self.x), self.N):
-                    mth_order_derivative = mth_order_derivative.sum(axis=1)
+                mth_order_derivative = mth_order_derivative.sum(axis=1)
             else:
                 mth_order_derivative = mth_order_derivative.sum(axis=0)
 
@@ -136,7 +140,8 @@ class derivative_class(object):
         # Check constrained derivatives
         pass_fail = []
         for i in range(derivatives.shape[0]):
-            if np.all(derivatives[i, :] >= -1e-6) or np.all(derivatives[i, :] <= 1e-6):
+            if np.all(derivatives[i, :] >= -1e-6) or \
+                    np.all(derivatives[i, :] <= 1e-6):
                 pass_fail.append(1)
             else:
                 pass_fail.append(0)
@@ -146,7 +151,8 @@ class derivative_class(object):
         # points
         ifp_dict = {}
         for i in range(ifp_derivatives.shape[0]):
-            if np.all(ifp_derivatives[i, :] >= -1e-6) or np.all(ifp_derivatives[i, :] <= 1e-6):
+            if np.all(ifp_derivatives[i, :] >= -1e-6) or \
+                    np.all(ifp_derivatives[i, :] <= 1e-6):
                 ifp_dict[str(ifp_orders[i])] = 1
             else:
                 ifp_dict[str(ifp_orders[i])] = 0

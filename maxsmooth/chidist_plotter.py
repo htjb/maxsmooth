@@ -20,6 +20,7 @@ import os
 from itertools import product
 import matplotlib.pyplot as plt
 
+
 class chi_plotter(object):
 
     r"""
@@ -33,44 +34,49 @@ class chi_plotter(object):
 
         fit_type: **Default = 'qp-sign_flipping'**
             | This kwarg is the same as
-                before. Here it allows the files to be read from the base directory.
+                before. Here it allows the files to be read from the base
+                directory.
 
         base_dir: **Default = 'Fitted_Output/'**
             | The location of the outputted
-                data from ``maxsmooth``. This must be a string and end in '/' and
-                must contain the files 'Output_Evaluations/' and 'Output_Signs/'
-                which can be obtained by running smooth() with data_save=True.
+                data from ``maxsmooth``. This must be a string and end in '/'
+                and must contain the files 'Output_Evaluations/' and
+                'Output_Signs/' which can be obtained by running smooth() with
+                data_save=True.
 
         chi: **Default = None else list or numpy array**
             | A list of
-                :math:`{\chi^2}` evaluations. If provided then this is used over
-                outputted data in the base directory. It must have the same length
-                as the ouputted signs in the file 'Output_Signs/' in the base
-                directory. It must also be ordered correctly otherwise the
-                returned graph will not be correct. A correct ordering is one for
-                which each entry in the array corresponds to the correct
-                sign combination in 'Output_Signs/'. Typically this will not be
-                needed but if the :math:`{\chi^2}` evaluation in
-                'Output_Evaluations/' in the base directory is not in the desired
-                parameter space this can be useful. For example the built in
-                logarithmic model calculates :math:`{\chi^2}` in logarithmic space.
-                To plot the distribution in linear space we can calculate
-                :math:`{\chi^2}` in linear space using a function for the model and
-                the tested parameters which are found in 'Output_Parameters/' in the
-                base directory.
+                :math:`{\chi^2}` evaluations. If provided then this is used
+                over outputted data in the base directory. It must have the
+                same length as the ouputted signs in the file 'Output_Signs/'
+                in the base directory. It must also be ordered correctly
+                otherwise the returned graph will not be correct. A correct
+                ordering is one for which each entry in the array corresponds
+                to the correct sign combination in 'Output_Signs/'.
+                Typically this will not be needed but if the :math:`{\chi^2}`
+                evaluation in 'Output_Evaluations/' in the base directory
+                is not in the desired parameter space this can be useful.
+                For example the built in logarithmic model calculates
+                :math:`{\chi^2}` in logarithmic space. To plot the distribution
+                in linear space we can calculate
+                :math:`{\chi^2}` in linear space using a function for the model
+                and the tested parameters which are found in
+                'Output_Parameters/' in the base directory.
 
-        constraints: **Default = 2 else an integer less than or equal to N - 1**
-            | The minimum constrained derivative order which is set by default to
-                2 for a Maximally Smooth Function. Used here to determine the
-                number of possible sign combinations available.
+        constraints: **Default = 2 else an integer less than or equal**
+        **to N - 1**
+            | The minimum constrained derivative order which is set by default
+                to 2 for a Maximally Smooth Function. Used here to determine
+                the number of possible sign combinations available.
 
         ifp_list: **Default = None else list of integers**
             | Allows you to
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
-                derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-                order derivative would have an ifp_list = [4, 5]. Again this is used
-                in determining the possible sign combinations available.
+                derivative. e.g. a 6th order fit with just a constrained 2nd
+                and 3rd order derivative would have an ifp_list = [4, 5].
+                Again this is used in determining the possible sign
+                combinations available.
 
         plot_limits: **Default = False**
             | Determines whether the limits on
@@ -78,29 +84,30 @@ class chi_plotter(object):
                 :math:`{\chi^2}` distribution.
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
-            | Determines the maximum number of signs explored either side of the
-                minimum :math`{\chi^2}` value found after the decent algorithm
-                has terminated.
+            | Determines the maximum number of signs explored either side of
+                the minimum :math`{\chi^2}` value found after the
+                decent algorithm has terminated.
 
         chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
             | The maximum allowed increase in :math`{\chi^2}` during the
                 directional exploration. If this value is exceeded then the
-                exploration in one direction is terminated and started in the other.
-                For more details on this and 'cap' see the ``maxsmooth`` paper.
+                exploration in one direction is terminated and started in the
+                other. For more details on this and 'cap' see the ``maxsmooth``
+                paper.
 
     """
     def __init__(self, N, **kwargs):
 
         self.N = N
-        if self.N%1!=0:
+        if self.N % 1 != 0:
             raise ValueError('N must be an integer or whole number float.')
 
-
         for keys, values in kwargs.items():
-            if keys not in set(['chi','base_dir',
-                'ifp_list', 'constraints',
-                'fit_type', 'chi_squared_limit', 'cap', 'plot_limits']):
-                raise KeyError("Unexpected keyword argument in parameter plotter.")
+            if keys not in set([
+                    'chi', 'base_dir',
+                    'ifp_list', 'constraints',
+                    'fit_type', 'chi_squared_limit', 'cap', 'plot_limits']):
+                raise KeyError("Unexpected keyword argument in chi_plotter().")
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
         if type(self.base_dir) is not str:
@@ -109,16 +116,19 @@ class chi_plotter(object):
             raise KeyError("'base_dir' must end in '/'.")
 
         if not os.path.exists(self.base_dir):
-            raise Exception("'base_dir' must exist and contain the outputted"
+            raise Exception(
+                "'base_dir' must exist and contain the outputted"
                 + " evaluations and sign combinations from a maxsmooth fit."
                 + " These can be obtained by running maxsmooth with"
                 + " 'data_save=True'.")
         else:
             if not os.path.exists(self.base_dir + 'Output_Evaluation/'):
-                raise Exception("No 'Output_Evaluation/' directory found in"
+                raise Exception(
+                    "No 'Output_Evaluation/' directory found in"
                     + " 'base_dir'.")
             if not os.path.exists(self.base_dir + 'Output_Signs/'):
-                raise Exception("No 'Output_Signs/' directory found in"
+                raise Exception(
+                    "No 'Output_Signs/' directory found in"
                     + " 'base_dir'.")
 
         self.chi = kwargs.pop('chi', None)
@@ -127,7 +137,9 @@ class chi_plotter(object):
         if type(self.constraints) is not int:
             raise TypeError("'constraints' is not an integer")
         if self.constraints > self.N-1:
-            raise ValueError("'constraints' exceeds the number of derivatives.")
+            raise ValueError(
+                "'constraints' exceeds the number" +
+                " of derivatives.")
 
         self.ifp_list = kwargs.pop('ifp_list', None)
         if self.ifp_list is not None:
@@ -135,33 +147,40 @@ class chi_plotter(object):
                 if type(self.ifp_list[i]) is not int:
                     raise TypeError("Entries in 'ifp_list' are not integer.")
                 if self.ifp_list[i] < self.constraints:
-                    raise ValueError('One or more specified derivatives for' +
-                        ' inflection points is less than the minimum constrained' +
-                        ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
-                        ' Minimum Constrained Derivative = ' + str(self.constraints))
+                    raise ValueError(
+                        'One or more specified derivatives for' +
+                        ' inflection points is less than the minimum' +
+                        ' constrained' +
+                        ' derivative.\n ifp_list = ' + str(self.ifp_list)
+                        + '\n' + ' Minimum Constrained Derivative = '
+                        + str(self.constraints))
 
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
-            raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
+            raise KeyError(
+                "Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
 
         self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
         self.cap = kwargs.pop('cap', None)
         if self.chi_squared_limit is not None:
             if isinstance(self.chi_squared_limit, int) or \
-                isinstance(self.chi_squared_limit, float):
+                    isinstance(self.chi_squared_limit, float):
                 pass
             else:
-                raise TypeError("Limit on maximum allowed increase in chi squared" +
+                raise TypeError(
+                    "Limit on maximum allowed increase in chi squared" +
                     ", 'chi_squared_limit', is not an integer or float.")
         if self.cap is not None:
             if type(self.cap) is not int:
-                    raise TypeError("The cap on directional exploration" +
-                        ", 'cap', is not an integer.")
+                raise TypeError(
+                    "The cap on directional exploration" +
+                    ", 'cap', is not an integer.")
 
         self.plot_limits = kwargs.pop('plot_limits', False)
         if type(self.plot_limits) is not bool:
-            raise TypeError("Boolean keyword argument with value "
+            raise TypeError(
+                "Boolean keyword argument with value "
                 + " 'plot_limits' is not True or False.")
 
         self.plot()
@@ -172,17 +191,20 @@ class chi_plotter(object):
             return np.array(list(product(*((x, -x) for x in nums))))
 
         if self.ifp_list is not None:
-            possible_signs = signs_array([1]*(self.N-self.constraints-len(self.ifp_list)))
+            possible_signs = signs_array([1]*(
+                self.N-self.constraints-len(self.ifp_list)))
         else:
             possible_signs = signs_array([1]*(self.N-self.constraints))
 
         plt.figure()
-        j = np.arange(0, len(possible_signs),1)
+        j = np.arange(0, len(possible_signs), 1)
         if self.chi is None:
-            chi = np.loadtxt(self.base_dir + 'Output_Evaluation/'
-                + str(self.N) +'_' + str(self.fit_type) + '.txt')
-            signs = np.loadtxt(self.base_dir + 'Output_Signs/'
-                + str(self.N) +'_' + str(self.fit_type) + '.txt')
+            chi = np.loadtxt(
+                self.base_dir + 'Output_Evaluation/'
+                + str(self.N) + '_' + str(self.fit_type) + '.txt')
+            signs = np.loadtxt(
+                self.base_dir + 'Output_Signs/'
+                + str(self.N) + '_' + str(self.fit_type) + '.txt')
             if len(signs) != len(possible_signs):
                 index = []
                 for p in range(len(signs)):
@@ -195,8 +217,9 @@ class chi_plotter(object):
                 plt.plot(j, chi, marker='.', ls='-')
         else:
             chi = self.chi
-            signs = np.loadtxt(self.base_dir + 'Output_Signs/'
-                + str(self.N) +'_' + str(self.fit_type) + '.txt')
+            signs = np.loadtxt(
+                self.base_dir + 'Output_Signs/'
+                + str(self.N) + '_' + str(self.fit_type) + '.txt')
             if len(signs) != len(possible_signs):
                 index = []
                 for p in range(len(signs)):
@@ -217,10 +240,17 @@ class chi_plotter(object):
             if chi[i] == min(chi):
                 plt.plot(i, chi[i], marker='*')
                 if self.plot_limits is True:
-                    plt.vlines(i + self.cap, min(chi), max(chi), ls='--', label='Cap On Exp.', color='k', alpha=0.5)
-                    plt.vlines(i - self.cap,  min(chi), max(chi), ls='--', color='k', alpha=0.5)
+                    plt.vlines(
+                        i + self.cap, min(chi), max(chi), ls='--',
+                        label='Cap On Exp.', color='k', alpha=0.5)
+                    plt.vlines(
+                        i - self.cap,  min(chi), max(chi),
+                        ls='--', color='k', alpha=0.5)
         if self.plot_limits is True:
-            plt.hlines(self.chi_squared_limit, 0, len(possible_signs), ls='-.', label=r'Max. Increase\n' + ' in $\chi^2$', color='k', alpha=0.5)
+            plt.hlines(
+                self.chi_squared_limit, 0, len(possible_signs),
+                ls='-.', label=r'Max. Increase\n' + ' in $\chi^2$',
+                color='k', alpha=0.5)
         plt.xlim([j[0], j[-1]])
         plt.grid()
         plt.yscale('log')

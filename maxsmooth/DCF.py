@@ -13,10 +13,10 @@ from maxsmooth.Models import Models_class
 from maxsmooth.derivatives import derivative_class
 from maxsmooth.Data_save import save, save_optimum
 from itertools import product
+import warnings
 import numpy as np
 import time
 import os
-import sys
 import shutil
 
 
@@ -39,9 +39,9 @@ class smooth(object):
 
         fit_type: **Default = 'qp-sign_flipping'**
             | This kwarg allows the user to
-                switch between sampling the available discrete sign spaces (default)
-                or testing all sign combinations on the derivatives which can be
-                accessed by setting to 'qp'.
+                switch between sampling the available discrete sign spaces
+                (default) or testing all sign combinations on the derivatives
+                which can be accessed by setting to 'qp'.
 
         model_type: **Default = 'difference_polynomials'**
             | Allows the user to
@@ -49,64 +49,69 @@ class smooth(object):
                 software. Available options include the default, 'polynomial',
                 'normalised_polynomial', 'legendre', 'log_polynomial',
                 'loglog_polynomial' and 'exponential'. For more details on the
-                functional form of the built in basis see the ``maxsmooth`` paper.
+                functional form of the built in basis see the ``maxsmooth``
+                paper.
 
         pivot_point: **Default = len(x)//2 else integer**
             | Some of the built in
-                models rely on pivot points in the data sets which by defualt is
-                set as the middle index. This can be altered via this kwarg which
-                can occasionally lead to a better quality fit.
+                models rely on pivot points in the data sets which by defualt
+                is set as the middle index. This can be altered via
+                this kwarg which can occasionally lead to a better quality fit.
 
         base_dir: **Default = 'Fitted_Output/'**
             | The location of the outputted
-                data from ``maxsmooth``. This must be a string and end in '/'. If the
-                file does not exist then ``maxsmooth`` will create it. By default the
-                only outputted data is a summary of the best fit but additional data
-                can be recorded by setting the keyword argument 'data_save = True'.
+                data from ``maxsmooth``. This must be a string and end in '/'.
+                If the file does not exist then ``maxsmooth`` will create it.
+                By default the only outputted data is a summary of the best
+                fit but additional data can be recorded by setting the keyword
+                argument 'data_save = True'.
 
         data_save: **Default = False**
             | By setting this to True the algorithm
                 will save every tested set of parameters, signs and objective
-                function evaluations into files in base_dir. Theses files will be
-                over written on repeated runs but they are needed to run the
+                function evaluations into files in base_dir. Theses files will
+                be over written on repeated runs but they are needed to run the
                 'chidist_plotter'.
 
         all_output: **Default = False**
             | If set to True this outputs to the
-                terminal every fit performed by the algorithm. By default the only
-                output is the optimal solution once the code is finished.
+                terminal every fit performed by the algorithm. By default the
+                only output is the optimal solution once the code is finished.
 
         cvxopt_maxiter: **Default = 10000 else integer**
             | This shouldn't need
-                changing for most problems however if ``CVXOPT`` fails with a 'maxiters
-                reached' error message this can be increased. Doing so arbitrarily
-                will however increase the run time of ``maxsmooth``.
+                changing for most problems however if ``CVXOPT`` fails with a
+                'maxiters reached' error message this can be increased.
+                Doing so arbitrarily will however increase the run time of
+                ``maxsmooth``.
 
         initial_params: **Default = None else list of length N**
             | Allows the user
                 to overwrite the default initial parameters used by ``CVXOPT``.
 
-        constraints: **Default = 2 else an integer less than or equal to N - 1**
-            | The minimum constrained derivative order which is set by default to
-                2 for a Maximally Smooth Function.
+        constraints: **Default = 2 else an integer less than or equal**
+        **to N - 1**
+            | The minimum constrained derivative order which is set by default
+                to 2 for a Maximally Smooth Function.
 
         ifp_list: **Default = None else list of integers**
             | Allows you to
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
-                derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-                order derivative would have an ifp_list = [4, 5].
+                derivative. e.g. a 6th order fit with just a constrained 2nd
+                and 3rd order derivative would have an ifp_list = [4, 5].
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
-            | Determines the maximum number of signs explored either side of the
-                minimum :math`{\chi^2}` value found after the decent algorithm
-                has terminated.
+            | Determines the maximum number of signs explored either side of
+                the minimum :math`{\chi^2}` value found after the decent
+                algorithm has terminated.
 
         chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
             | The maximum allowed increase in :math`{\chi^2}` during the
                 directional exploration. If this value is exceeded then the
-                exploration in one direction is terminated and started in the other.
-                For more details on this and 'cap' see the ``maxsmooth`` paper.
+                exploration in one direction is terminated and started in the
+                other. For more details on this and 'cap' see the ``maxsmooth``
+                paper.
 
         The following Kwargs can be used by the user to define thier own basis
         function and will overwrite the 'model_type' kwarg.
@@ -121,13 +126,13 @@ class smooth(object):
         **model: Default = None else function with parameters**
         **(x, y, pivot_point, N, params)**
             | This is
-                a user defined function describing the model to be fitted to the
-                data.
+                a user defined function describing the model to be fitted to
+                the data.
 
         **der_pres: Default = None else function with parameters**
         **(m, i, x, y, pivot_point)**
-            | This function describes the prefactors on the ith term of the mth
-                order derivative used in defining the constraint.
+            | This function describes the prefactors on the ith term of the
+                mth order derivative used in defining the constraint.
 
         **derivatives: Default = None else function with parameters**
         **(m, i, x, y, pivot_point, params)**
@@ -180,27 +185,33 @@ class smooth(object):
         self.y = y
 
         self.N = N
-        if self.N%1!=0:
+        if self.N % 1 != 0:
             raise ValueError('N must be an integer or whole number float.')
 
         for keys, values in kwargs.items():
-            if keys not in set(['fit_type', 'model_type', 'base_dir',
-                'all_output', 'cvxopt_maxiter', 'ifp_list', 'data_save',
-                'constraints', 'chi_squared_limit', 'cap',
-                'initial_params','basis_functions','der_pres', 'model',
-                'derivatives', 'args', 'pivot_point']):
-                raise KeyError("Unexpected keyword argument in smooth.")
+            if keys not in set(
+                    ['fit_type', 'model_type', 'base_dir',
+                        'all_output', 'cvxopt_maxiter', 'ifp_list',
+                        'data_save',
+                        'constraints', 'chi_squared_limit', 'cap',
+                        'initial_params', 'basis_functions',
+                        'der_pres', 'model',
+                        'derivatives', 'args', 'pivot_point']):
+                raise KeyError("Unexpected keyword argument in smooth().")
 
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
-            raise KeyError("Invalid 'fit_type'. Valid entries include 'qp'\n" +
+            raise KeyError(
+                "Invalid 'fit_type'. Valid entries include 'qp'\n" +
                 "'qp-sign_flipping'")
 
         self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
         if type(self.pivot_point) is not int:
             raise TypeError('Pivot point is not an integer index.')
-        elif self.pivot_point >= len(self.x) or self.pivot_point < -len(self.x):
-            raise ValueError('Pivot point must be in the range -len(x) - len(x).')
+        elif self.pivot_point >= len(self.x) or \
+                self.pivot_point < -len(self.x):
+            raise ValueError(
+                'Pivot point must be in the range -len(x) - len(x).')
 
         self.base_dir = kwargs.pop('base_dir', 'Fitted_Output/')
         if type(self.base_dir) is not str:
@@ -209,10 +220,13 @@ class smooth(object):
             raise KeyError("'base_dir' must end in '/'.")
 
         self.model_type = kwargs.pop('model_type', 'difference_polynomial')
-        if self.model_type not in set(['normalised_polynomial', 'polynomial',
-            'log_polynomial', 'loglog_polynomial', 'difference_polynomial',
-            'exponential', 'legendre']):
-            raise KeyError("Invalid 'model_type'. See documentation for built" +
+        if self.model_type not in set(
+                ['normalised_polynomial', 'polynomial',
+                    'log_polynomial', 'loglog_polynomial',
+                    'difference_polynomial',
+                    'exponential', 'legendre']):
+            raise KeyError(
+                "Invalid 'model_type'. See documentation for built" +
                 "in models.")
 
         self.cvxopt_maxiter = kwargs.pop('cvxopt_maxiter', 10000)
@@ -224,7 +238,8 @@ class smooth(object):
         boolean_kwargs = [self.data_save, self.all_output]
         for i in range(len(boolean_kwargs)):
             if type(boolean_kwargs[i]) is not bool:
-                raise TypeError("Boolean keyword argument with value "
+                raise TypeError(
+                    "Boolean keyword argument with value "
                     + str(boolean_kwargs[i]) +
                     " is not True or False.")
 
@@ -232,7 +247,8 @@ class smooth(object):
         if type(self.constraints) is not int:
             raise TypeError("'constraints' is not an integer")
         if self.constraints > self.N-1:
-            raise ValueError("'constraints' exceeds the number of derivatives.")
+            raise ValueError(
+                "'constraints' exceeds the number of derivatives.")
 
         self.ifp_list = kwargs.pop('ifp_list', None)
         if self.ifp_list is not None:
@@ -240,29 +256,35 @@ class smooth(object):
                 if type(self.ifp_list[i]) is not int:
                     raise TypeError("Entries in 'ifp_list' are not integer.")
                 if self.ifp_list[i] < self.constraints:
-                    raise ValueError('One or more specified derivatives for' +
-                        ' inflection points is less than the minimum constrained' +
-                        ' derivative.\n ifp_list = ' + str(self.ifp_list) + '\n' +
-                        ' Minimum Constrained Derivative = ' + str(self.constraints))
+                    raise ValueError(
+                        'One or more specified derivatives for' +
+                        ' inflection points is less than the minimum' +
+                        ' constrained' +
+                        ' derivative.\n ifp_list = ' + str(self.ifp_list)
+                        + '\n' + ' Minimum Constrained Derivative = '
+                        + str(self.constraints))
 
         self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
         self.cap = kwargs.pop('cap', None)
         if self.chi_squared_limit is not None:
             if isinstance(self.chi_squared_limit, int) or \
-                isinstance(self.chi_squared_limit, float):
+                    isinstance(self.chi_squared_limit, float):
                 pass
             else:
-                raise TypeError("Limit on maximum allowed increase in chi squared" +
+                raise TypeError(
+                    "Limit on maximum allowed increase in chi squared" +
                     ", 'chi_squared_limit', is not an integer or float.")
         if self.cap is not None:
             if type(self.cap) is not int:
-                    raise TypeError("The cap on directional exploration" +
-                        ", 'cap', is not an integer.")
+                raise TypeError(
+                    "The cap on directional exploration" +
+                    ", 'cap', is not an integer.")
 
         self.initial_params = kwargs.pop('initial_params', None)
         if self.initial_params is not None and len(self.initial_params) \
-            != self.N:
-            raise ValueError("Initial Parameters is not equal to the number" +
+                != self.N:
+            raise ValueError(
+                "Initial Parameters is not equal to the number" +
                 "of terms in the polynomial, N.")
 
         self.basis_functions = kwargs.pop('basis_functions', None)
@@ -271,7 +293,8 @@ class smooth(object):
         self.derivatives_function = kwargs.pop('derivatives', None)
         self.args = kwargs.pop('args', None)
 
-        self.new_basis = {'basis_function':
+        self.new_basis = {
+            'basis_function':
             self.basis_functions, 'der_pres': self.der_pres,
             'derivatives_function': self.derivatives_function,
             'model': self.model, 'args': self.args}
@@ -286,8 +309,9 @@ class smooth(object):
                         ' One or more functions not defined.' +
                         ' Please consult documentation.')
                 if value is None and key == 'args':
-                    warn('Warning: No additional arguments passed to new basis' +
-                        'functions')
+                    warnings.warn(
+                        'Warning: No additional arguments passed to' +
+                        ' new basis functions')
                 count += 1
             if count == len(self.new_basis):
                 self.model_type = 'user_defined'
@@ -311,14 +335,15 @@ class smooth(object):
         if os.path.isdir(self.base_dir+'Output_Evaluation/'):
             shutil.rmtree(self.base_dir+'Output_Evaluation/')
 
-        def qp(x, y, pivot_point): # Testing all signs
+        def qp(x, y, pivot_point):  # Testing all signs
             print(
                 '######################################################' +
                 '#######')
             start = time.time()
 
             if self.ifp_list is not None:
-                signs = signs_array([1]*(self.N-self.constraints-len(self.ifp_list)))
+                signs = signs_array([1]*(
+                    self.N-self.constraints-len(self.ifp_list)))
             else:
                 signs = signs_array([1]*(self.N-self.constraints))
 
@@ -339,10 +364,12 @@ class smooth(object):
                         '-----')
                     print('Polynomial Order:', self.N)
                     if self.ifp_list is not None:
-                        print('Number of Constrained Derivatives:',
+                        print(
+                            'Number of Constrained Derivatives:',
                             self.N-self.constraints-len(self.ifp_list))
                     else:
-                        print('Number of Constrained Derivatives:',
+                        print(
+                            'Number of Constrained Derivatives:',
                             self.N-self.constraints)
                     print('Signs :', signs[j, :])
                     print('Objective Function Value:', fit.chi_squared)
@@ -352,12 +379,14 @@ class smooth(object):
                     print('Constraints: m >=', self.constraints)
                     if self.ifp_list is None:
                         print(
-                            'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                            'Inflection Points Used?' +
+                            ' (0 signifies Yes\n in derivative order "i"):',
                             fit.ifp_dict)
                     if self.ifp_list is not None:
                         print('Inflection Point Derivatives:', self.ifp_list)
                         print(
-                            'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                            'Inflection Points Used?' +
+                            ' (0 signifies Yes\n in derivative order "i"):',
                             fit.ifp_dict)
                     print(
                         '-----------------------------------------------' +
@@ -402,10 +431,12 @@ class smooth(object):
             print('Time:', end-start)
             print('Polynomial Order:', self.N)
             if self.ifp_list is not None:
-                print('Number of Constrained Derivatives:',
+                print(
+                    'Number of Constrained Derivatives:',
                     self.N-self.constraints-len(self.ifp_list))
             else:
-                print('Number of Constrained Derivatives:',
+                print(
+                    'Number of Constrained Derivatives:',
                     self.N-self.constraints)
             print('Signs :', Optimum_sign_combination)
             print('Objective Function Value:', Optimum_chi_squared)
@@ -415,12 +446,14 @@ class smooth(object):
             print('Constraints: m >=', self.constraints)
             if self.ifp_list is None:
                 print(
-                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                    'Inflection Points Used?' +
+                    ' (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
-                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                    'Inflection Points Used?' +
+                    ' (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             print(
                 '-------------------------------------------------------' +
@@ -438,14 +471,15 @@ class smooth(object):
             return y_fit, derivatives, Optimum_chi_squared, Optimum_params, \
                 Optimum_sign_combination, Optimum_ifp_dict
 
-        def qp_sign_flipping(x, y, pivot_point): # Steepest Descent
+        def qp_sign_flipping(x, y, pivot_point):  # Sign Sampling
             print(
                 '######################################################' +
                 '#######')
             start = time.time()
 
             if self.ifp_list is not None:
-                array_signs = signs_array([1]*(self.N-self.constraints-len(self.ifp_list)))
+                array_signs = signs_array([1]*(
+                    self.N-self.constraints-len(self.ifp_list)))
             else:
                 array_signs = signs_array([1]*(self.N-self.constraints))
 
@@ -454,7 +488,7 @@ class smooth(object):
 
             tested_indices = []
             chi_squared = []
-            parameters =[]
+            parameters = []
             tested_signs = []
             for i in range(len(array_signs)):
                 if i == r:
@@ -476,10 +510,12 @@ class smooth(object):
                     '--------------')
                 print('Polynomial Order:', self.N)
                 if self.ifp_list is not None:
-                    print('Number of Constrained Derivatives:',
+                    print(
+                        'Number of Constrained Derivatives:',
                         self.N-self.constraints-len(self.ifp_list))
                 else:
-                    print('Number of Constrained Derivatives:',
+                    print(
+                        'Number of Constrained Derivatives:',
                         self.N-self.constraints)
                 print('Signs :', signs)
                 print('Objective Function Value:', chi_squared_old)
@@ -489,7 +525,8 @@ class smooth(object):
                 print('Constraints: m >=', self.constraints)
                 if self.ifp_list is None:
                     print(
-                        'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                        'Inflection Points Used?' +
+                        ' (0 signifies Yes\n in derivative order "i"):',
                         fit.ifp_dict)
                 if self.ifp_list is not None:
                     print(
@@ -546,34 +583,44 @@ class smooth(object):
                                     '--------------')
                                 print('Polynomial Order:', self.N)
                                 if self.ifp_list is not None:
-                                    print('Number of Constrained Derivatives:',
-                                        self.N-self.constraints-len(self.ifp_list))
+                                    print(
+                                        'Number of Constrained Derivatives:',
+                                        self.N - self.constraints -
+                                        len(self.ifp_list))
                                 else:
-                                    print('Number of Constrained Derivatives:',
+                                    print(
+                                        'Number of Constrained Derivatives:',
                                         self.N-self.constraints)
                                 print('Signs :', signs)
-                                print('Objective Function Value:', fit.chi_squared)
+                                print(
+                                    'Objective Function Value:',
+                                    fit.chi_squared)
                                 print('Parameters:', fit.parameters.T)
                                 print('Method:', self.fit_type)
                                 print('Model:', self.model_type)
                                 print('Constraints: m >=', self.constraints)
                                 if self.ifp_list is None:
                                     print(
-                                        'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                                        'Inflection Points Used?' +
+                                        ' (0 signifies Yes\n in derivative' +
+                                        ' order "i"):',
                                         fit.ifp_dict)
                                 if self.ifp_list is not None:
                                     print(
                                         'Inflection Point Derivatives:',
                                         self.ifp_list)
                                     print(
-                                        'Inflection Points Used? (0 signifies' +
-                                        'Yes\n in derivative order "i"):', fit.ifp_dict)
+                                        'Inflection Points Used?' +
+                                        ' (0 signifies' +
+                                        'Yes\n in derivative order "i"):',
+                                        fit.ifp_dict)
                                 print(
                                     '--------------------------------------' +
                                     '--------------')
                             if self.data_save is True:
                                 save(
-                                    self.base_dir, fit.parameters, fit.chi_squared,
+                                    self.base_dir, fit.parameters,
+                                    fit.chi_squared,
                                     signs, self.N, self.fit_type)
 
                             break
@@ -622,10 +669,12 @@ class smooth(object):
                             '--------------')
                         print('Polynomial Order:', self.N)
                         if self.ifp_list is not None:
-                            print('Number of Constrained Derivatives:',
+                            print(
+                                'Number of Constrained Derivatives:',
                                 self.N-self.constraints-len(self.ifp_list))
                         else:
-                            print('Number of Constrained Derivatives:',
+                            print(
+                                'Number of Constrained Derivatives:',
                                 self.N-self.constraints)
                         print('Signs :', signs)
                         print('Objective Function Value:', fit.chi_squared)
@@ -635,7 +684,9 @@ class smooth(object):
                         print('Constraints: m >=', self.constraints)
                         if self.ifp_list is None:
                             print(
-                                'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                                'Inflection Points Used?' +
+                                ' (0 signifies Yes\n in derivative' +
+                                ' order "i"):',
                                 fit.ifp_dict)
                         if self.ifp_list is not None:
                             print(
@@ -643,7 +694,8 @@ class smooth(object):
                                 self.ifp_list)
                             print(
                                 'Inflection Points Used? (0 signifies' +
-                                'Yes\n in derivative order "i"):', fit.ifp_dict)
+                                'Yes\n in derivative order "i"):',
+                                fit.ifp_dict)
                         print(
                             '--------------------------------------' +
                             '--------------')
@@ -683,10 +735,12 @@ class smooth(object):
                             '--------------')
                         print('Polynomial Order:', self.N)
                         if self.ifp_list is not None:
-                            print('Number of Constrained Derivatives:',
+                            print(
+                                'Number of Constrained Derivatives:',
                                 self.N-self.constraints-len(self.ifp_list))
                         else:
-                            print('Number of Constrained Derivatives:',
+                            print(
+                                'Number of Constrained Derivatives:',
                                 self.N-self.constraints)
                         print('Signs :', signs)
                         print('Objective Function Value:', fit.chi_squared)
@@ -696,7 +750,9 @@ class smooth(object):
                         print('Constraints: m >=', self.constraints)
                         if self.ifp_list is None:
                             print(
-                                'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                                'Inflection Points Used?' +
+                                ' (0 signifies Yes\n in derivative' +
+                                ' order "i"):',
                                 fit.ifp_dict)
                         if self.ifp_list is not None:
                             print(
@@ -704,7 +760,8 @@ class smooth(object):
                                 self.ifp_list)
                             print(
                                 'Inflection Points Used? (0 signifies' +
-                                'Yes\n in derivative order "i"):', fit.ifp_dict)
+                                'Yes\n in derivative order "i"):',
+                                fit.ifp_dict)
                         print(
                             '--------------------------------------' +
                             '--------------')
@@ -743,10 +800,12 @@ class smooth(object):
             print('Time:', end-start)
             print('Polynomial Order:', self.N)
             if self.ifp_list is not None:
-                print('Number of Constrained Derivatives:',
+                print(
+                    'Number of Constrained Derivatives:',
                     self.N-self.constraints-len(self.ifp_list))
             else:
-                print('Number of Constrained Derivatives:',
+                print(
+                    'Number of Constrained Derivatives:',
                     self.N-self.constraints)
             print('Signs :', Optimum_sign_combination)
             print('Objective Function Value:', Optimum_chi_squared)
@@ -756,12 +815,14 @@ class smooth(object):
             print('Constraints: m >=', self.constraints)
             if self.ifp_list is None:
                 print(
-                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                    'Inflection Points Used?' +
+                    ' (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             if self.ifp_list is not None:
                 print('Inflection Point Derivatives:', self.ifp_list)
                 print(
-                    'Inflection Points Used? (0 signifies Yes\n in derivative order "i"):',
+                    'Inflection Points Used?' +
+                    ' (0 signifies Yes\n in derivative order "i"):',
                     Optimum_ifp_dict)
             print(
                 '----------------------------------------------------' +
@@ -789,7 +850,6 @@ class smooth(object):
                 qp_sign_flipping(self.x, self.y, self.pivot_point)
 
         rms = (np.sqrt(np.sum((self.y-y_fit)**2)/len(self.y)))
-
 
         return y_fit, Optimum_sign_combination, Optimum_params, derivatives, \
             Optimum_chi_squared, rms, Optimum_ifp_dict

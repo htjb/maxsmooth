@@ -17,8 +17,8 @@ class save(object):
         with open(
                 self.base_dir+'Output_Parameters/'+str(self.N) +
                 '_'+self.fit_type+'.txt', 'a') as f:
-                np.savetxt(f, np.array(self.params).T)
-                f.close()
+            np.savetxt(f, np.array(self.params).T)
+            f.close()
 
         if not os.path.exists(self.base_dir+'Output_Signs/'):
             os.mkdir(self.base_dir+'Output_Signs/')
@@ -67,7 +67,8 @@ class save_optimum(object):
         if self.ifp_list is None:
             np.savetxt(f, np.array([self.N-self.constraints]))
         else:
-            np.savetxt(f, np.array([self.N-self.constraints-len(self.ifp_list)]))
+            np.savetxt(f, np.array(
+                [self.N-self.constraints-len(self.ifp_list)]))
         f.write('Signs:\n')
         np.savetxt(f, self.Optimum_signs)
         f.write('Objective Function Value:\n')
@@ -86,6 +87,8 @@ class save_optimum(object):
         if self.ifp_list is not None:
             f.write('Inflection Point Derivatives:\n')
             np.savetxt(f, self.ifp_list)
-            f.write('Inflection Points Used? (0 signifies Yes\n in derivative order "i"):\n')
+            f.write(
+                'Inflection Points Used? (0 signifies' +
+                ' Yes\n in derivative order "i"):\n')
             f.write(str(self.Optimum_ifp_dict))
         f.close()
