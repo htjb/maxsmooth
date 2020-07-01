@@ -70,15 +70,14 @@ Documentation
 ~~~~~~~~~~~~~
 The documentation can be compiled from the git repository by...
 
-Dependencies
+Requirements
 ~~~~~~~~~~~~
-
-Basic requirements:
 
 - Python version..
 - `matplotlib <https://pypi.org/project/matplotlib/>`__
 - `numpy <https://pypi.org/project/numpy/>`__
 - `CVXOPT <https://pypi.org/project/cvxopt/>`__
+- `scipy <https://pypi.org/project/scipy/>`__
 
 Citation
 ~~~~~~~~
