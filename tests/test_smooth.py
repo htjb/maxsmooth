@@ -217,7 +217,7 @@ def test_new_basis():
 
         return mth_order_derivative
 
-    def derivative_pre(m, x, y, pivot_point, *args):
+    def derivative_pre(m, x, y, N, pivot_point, *args):
 
         mth_order_derivative = []
         for i in range(N):
@@ -285,7 +285,7 @@ def test_new_basis_without_args():
 
         return mth_order_derivative
 
-    def derivative_pre(m, x, y, pivot_point, *args):
+    def derivative_pre(m, x, y, N, pivot_point, *args):
 
         mth_order_derivative = []
         for i in range(N):
