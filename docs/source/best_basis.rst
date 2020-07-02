@@ -23,7 +23,7 @@ To call the function we use,
   basis_test(x, y, base_dir='examples/')
 
 The function only requires the data but we can provide it with a base directory,
-fit type and range of DCF orders to test. By defualt it uses the sign sampling
+fit type and range of DCF orders to test. By default it uses the sign sampling
 algorithm and tests :math:`{N = 3 - 13}`. The resultant graph is saved in the
 base directory and the example generated here is shown below.
 

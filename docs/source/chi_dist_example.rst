@@ -1,5 +1,5 @@
 This example will show you how to generate a plot of the :math:`{\chi^2}`
-distribution as a function of the descrete sign combinations on the constrained
+distribution as a function of the discrete sign combinations on the constrained
 derivatives.
 
 First you will need to import your data and fit this using ``maxsmooth`` as
@@ -45,7 +45,7 @@ We pass the same 'base_dir' as before so that the plotter can find the correct o
 files. We also give the function the same 'fit_type' used for the fitting which
 ensures that the files can be read.
 
-The reultant plot is shown below and the yellow star shows the global minimum.
+The resultant plot is shown below and the yellow star shows the global minimum.
 This can be used to determine how well
 the sign sampling approach using a descent and directional exploration
 can find the global minimum. If the distribution looks like noise then it is

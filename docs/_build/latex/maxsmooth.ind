@@ -13,10 +13,19 @@
 
   \indexspace
   \bigletter M
-  \item \spxentry{maxsmooth.best\_basis}\spxextra{module}, \hyperpage{13}
-  \item \spxentry{maxsmooth.chidist\_plotter}\spxextra{module}, \hyperpage{14}
-  \item \spxentry{maxsmooth.DCF}\spxextra{module}, \hyperpage{11}
-  \item \spxentry{maxsmooth.parameter\_plotter}\spxextra{module}, \hyperpage{15}
+  \item \spxentry{maxsmooth.best\_basis}
+    \subitem \spxentry{module}, \hyperpage{13}
+  \item \spxentry{maxsmooth.chidist\_plotter}
+    \subitem \spxentry{module}, \hyperpage{14}
+  \item \spxentry{maxsmooth.DCF}
+    \subitem \spxentry{module}, \hyperpage{11}
+  \item \spxentry{maxsmooth.parameter\_plotter}
+    \subitem \spxentry{module}, \hyperpage{15}
+  \item \spxentry{module}
+    \subitem \spxentry{maxsmooth.best\_basis}, \hyperpage{13}
+    \subitem \spxentry{maxsmooth.chidist\_plotter}, \hyperpage{14}
+    \subitem \spxentry{maxsmooth.DCF}, \hyperpage{11}
+    \subitem \spxentry{maxsmooth.parameter\_plotter}, \hyperpage{15}
 
   \indexspace
   \bigletter P

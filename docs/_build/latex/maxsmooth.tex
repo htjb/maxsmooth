@@ -65,6 +65,7 @@
 \usepackage{hypcap}% it must be loaded after hyperref.
 % Set up styles of URL: it should be placed after hyperref.
 \urlstyle{same}
+
 \addto\captionsenglish{\renewcommand{\contentsname}{Contents:}}
 
 \usepackage{sphinxmessages}
@@ -73,7 +74,7 @@
 
 
 \title{maxsmooth Documentation}
-\date{Jun 30, 2020}
+\date{Jul 02, 2020}
 \release{1.0.0}
 \author{Harry Thomas Jones Bevins}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -119,8 +120,8 @@ specific high order derivatives can be constrained.
 You can read more about MSFs here ..
 
 \sphinxcode{\sphinxupquote{maxsmooth}} uses quadratic programming implemented with \sphinxcode{\sphinxupquote{CVXOPT}} to fit
-data subject to a linear constraint. The constraint on an MSF can be codefied
-like so,
+data subject to a linear constraint. The constraint on an MSF can be
+summarized like so,
 \begin{equation*}
 \begin{split}\frac{d^m~y}{d~x^m}~\geq~0~~\textnormal{or}~~\frac{d^m~y}{d~x^m}~\leq~0.\end{split}
 \end{equation*}
@@ -129,10 +130,10 @@ constraint,
 \begin{equation*}
 \begin{split}\pm \frac{d^m~y}{d~x^m}~\leq~0\end{split}
 \end{equation*}
-where a positive sign infront of the \(m^{th}\) order derivative forces the derivative
+where a positive sign in front of the \(m^{th}\) order derivative forces the derivative
 to be negative for all x. For an \(N^{th}\) order polynomial \sphinxcode{\sphinxupquote{maxsmooth}} can test
-every available sign combination but by default it implements a ‘sign\sphinxhyphen{}smapling’
-algorithm. This is detailed in the \sphinxcode{\sphinxupquote{maxsmooth}} paper (see citation) but is summarised
+every available sign combination but by default it implements a \textquotesingle{}sign\sphinxhyphen{}sampling\textquotesingle{}/\textquotesingle{}sign\sphinxhyphen{}flipping\textquotesingle{}
+algorithm. This is detailed in the \sphinxcode{\sphinxupquote{maxsmooth}} paper (see citation) but is summarized
 below.
 
 The available sign combinations act as discrete parameter spaces all with
@@ -144,10 +145,10 @@ of the sign combinations in the neighbourhood
 of that minimum. The searched region is limited by factors
 that encapsulate enough of the neighbourhood to confidently return the global minimum.
 
-The sign sampling method is reliant on the problem being ‘well defined’ but this
+The sign sampling method is reliant on the problem being \textquotesingle{}well defined\textquotesingle{} but this
 is not always the case and it is in these instances possible to run the code testing
 every available sign combination on the constrained derivatives. For a definition of
-a ‘well defined’ problem and it’s counter part see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
+a \textquotesingle{}well defined\textquotesingle{} problem and it\textquotesingle{}s counter part see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
 
 \sphinxcode{\sphinxupquote{maxsmooth}} features a built in library of DCFs or
 allows the user to define their own. The addition of possible inflection points
@@ -156,21 +157,21 @@ The software has been designed with these two
 applications in mind and is a simple interface.
 
 
-\section{Instalation}
-\label{\detokenize{source/intro:instalation}}
+\section{Installation}
+\label{\detokenize{source/intro:installation}}
 
 \section{Documentation}
 \label{\detokenize{source/intro:documentation}}
-The documentation can be compiled from the git repository by…
+The documentation can be compiled from the git repository by...
 
 
-\section{Dependencies}
-\label{\detokenize{source/intro:dependencies}}
-Basic requirements:
+\section{Requirements}
+\label{\detokenize{source/intro:requirements}}
+The code was written in Python 3.6 but should be backward compatible with
+Python 2 although this has not been thoroughly tested.
+
+To run the code you will need the following additional packages,
 \begin{itemize}
-\item {} 
-Python version..
-
 \item {} 
 \sphinxhref{https://pypi.org/project/matplotlib/}{matplotlib}
 
@@ -179,6 +180,9 @@ Python version..
 
 \item {} 
 \sphinxhref{https://pypi.org/project/cvxopt/}{CVXOPT}
+
+\item {} 
+\sphinxhref{https://pypi.org/project/scipy/}{scipy}
 
 \end{itemize}
 
@@ -239,7 +243,7 @@ or for example,
 \PYG{n}{result} \PYG{o}{=} \PYG{n}{smooth}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{,} \PYG{n}{N}\PYG{p}{,} \PYG{o}{*}\PYG{o}{*}\PYG{n}{kwargs}\PYG{p}{)}
 \end{sphinxVerbatim}
 
-where the kwargs are detailed below. It’s resulting attributes can be accessed by writing
+where the kwargs are detailed below. It\textquotesingle{}s resulting attributes can be accessed by writing
 \sphinxcode{\sphinxupquote{result.attribute\_name}}. For example printing the outputs is done like
 so,
 
@@ -257,7 +261,7 @@ so,
 \label{\detokenize{source/maxsmooth:new-basis-example}}
 This example code illustrates how to define your own basis function for the
 DCF model.
-It implements a modified version of the built in normalised polynomial model
+It implements a modified version of the built in normalized polynomial model
 but the structure is the same for more elaborate models.
 
 As always we need to import the data, define an order \({N}\)
@@ -274,30 +278,33 @@ and import the function fitting routine, smooth().
 \end{sphinxVerbatim}
 
 There are several requirements needed to define a new basis function completely
-for \sphinxcode{\sphinxupquote{maxsmooth}} to be able to fit it. They are as summarised below and then
+for \sphinxcode{\sphinxupquote{maxsmooth}} to be able to fit it. They are as summarized below and then
 examples of each are given in more detail,
 \begin{itemize}
 \item {} 
-\sphinxstylestrong{args} Additional non\sphinxhyphen{}standard  arguments needed in the definition of the
-basis. The standard arguments are the data (x and y), the order of the fit N
-the pivot\_point, the derivative order \({m}\) and the params. While the
+\sphinxstylestrong{args:} Additional non\sphinxhyphen{}standard  arguments needed in the definition of the
+basis. The standard arguments are the data (x and y), the order of the fit N,
+the pivot point about which a model can be fit,
+the derivative order \({m}\) and the params. While the
 pivot point is not strictly needed it is a required argument for the
 functions defining a new basis to help the user in their definition.
 
 \item {} 
-\sphinxstylestrong{basis\_functions} This function defined the basis of the DCF model
+\sphinxstylestrong{basis\_functions:} This function defines the basis of the DCF model,
 \({\phi}\) where the model can be generally defined as,
 \begin{equation*}
 \begin{split}y = \sum_{k = 0}^N a_k \phi_k(x)\end{split}
 \end{equation*}
-\item {} 
-\sphinxstylestrong{model} This is the function described by the equation above.
+where \({a_k}\) are the fit parameters.
 
 \item {} 
-\sphinxstylestrong{derivative} This function defines the \({m^{th}}\) order derivative.
+\sphinxstylestrong{model:} This is the function described by the equation above.
 
 \item {} 
-\sphinxstylestrong{derivative\_pre} This function defines the prefactors,
+\sphinxstylestrong{derivative:} This function defines the \({m^{th}}\) order derivative.
+
+\item {} 
+\sphinxstylestrong{derivative\_pre:} This function defines the prefactors,
 \({\mathbf{G}}\) on the derivatives where \sphinxcode{\sphinxupquote{CVXOPT}}, the quadratic
 programming routine used, evaluates the constraints as,
 \begin{equation*}
@@ -309,7 +316,7 @@ paper.
 
 \end{itemize}
 
-We can begin defining our new basis function by defining the aditional arguments
+We can begin defining our new basis function by defining the additional arguments
 needed to fit the model as a list,
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
@@ -317,7 +324,7 @@ needed to fit the model as a list,
 \end{sphinxVerbatim}
 
 The next step is to define the basis functions \({\phi}\). This needs to be
-done in a function that has the arguments \sphinxstyleemphasis{(x, y, pivot\_point, N, *args)}. ‘args’
+done in a function that has the arguments \sphinxstyleemphasis{(x, y, pivot\_point, N, *args)}. \textquotesingle{}args\textquotesingle{}
 is optional but since we need them for this basis we are passing it in.
 
 The basis functions, \({\phi}\), should be an array of dimensions len(x)
@@ -337,8 +344,8 @@ by N and consequently evaluated at each N and x data point as shown below.
 We can define the model that we are fitting in a function like that shown below.
 This is used for evaluating \({\chi^2}\) and returning the optimum fitted model
 once the code has finished running. It requires the arguments
-\sphinxstyleemphasis{(x, y, pivot\_point, N, params, *args)} in that order and again where ‘args’ is optional.
-‘params’ is the parameters of the fit \({\mathbf{a}}\) which should have length
+\sphinxstyleemphasis{(x, y, pivot\_point, N, params, *args)} in that order and again where \textquotesingle{}args\textquotesingle{} is optional.
+\textquotesingle{}params\textquotesingle{} is the parameters of the fit, \({\mathbf{a}}\) which should have length
 \({N}\).
 
 The function should return the fitted estimate of y.
@@ -379,13 +386,13 @@ met and returning the derivatives of the optimum fit to the user.
 
 Finally we have to define \({\mathbf{G}}\) which is used by \sphinxcode{\sphinxupquote{CVXOPT}} to
 build the derivatives and constrain the functions. It takes arguments
-\sphinxstyleemphasis{(m, x, y, pivot\_point, *args)} and should return the prefactor on the
+\sphinxstyleemphasis{(m, x, y, N, pivot\_point, *args)} and should return the prefactor on the
 \({m^{th}}\) order derivative. For a more thorough definition of the
-prefactor on the derivative and an explination of how the problem is
+prefactor on the derivative and an explanation of how the problem is
 constrained in quadratic programming see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k}{def} \PYG{n+nf}{derivative\PYGZus{}pre}\PYG{p}{(}\PYG{n}{m}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{,} \PYG{n}{pivot\PYGZus{}point}\PYG{p}{,} \PYG{o}{*}\PYG{n}{args}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def} \PYG{n+nf}{derivative\PYGZus{}pre}\PYG{p}{(}\PYG{n}{m}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{,} \PYG{n}{N}\PYG{p}{,} \PYG{n}{pivot\PYGZus{}point}\PYG{p}{,} \PYG{o}{*}\PYG{n}{args}\PYG{p}{)}\PYG{p}{:}
 
     \PYG{n}{mth\PYGZus{}order\PYGZus{}derivative} \PYG{o}{=} \PYG{p}{[}\PYG{p}{]}
     \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n}{N}\PYG{p}{)}\PYG{p}{:}
@@ -452,7 +459,7 @@ To call the function we use,
 \end{sphinxVerbatim}
 
 The function only requires the data but we can provide it with a base directory,
-fit type and range of DCF orders to test. By defualt it uses the sign sampling
+fit type and range of DCF orders to test. By default it uses the sign sampling
 algorithm and tests \({N = 3 - 13}\). The resultant graph is saved in the
 base directory and the example generated here is shown below.
 
@@ -462,7 +469,7 @@ base directory and the example generated here is shown below.
 \section{\protect\({\chi^2}\protect\) Distribution Example}
 \label{\detokenize{source/maxsmooth:chi-2-distribution-example}}
 This example will show you how to generate a plot of the \({\chi^2}\)
-distribution as a function of the descrete sign combinations on the constrained
+distribution as a function of the discrete sign combinations on the constrained
 derivatives.
 
 First you will need to import your data and fit this using \sphinxcode{\sphinxupquote{maxsmooth}} as
@@ -481,17 +488,17 @@ was done in the simple example code.
   \PYG{n}{data\PYGZus{}save}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{fit\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{qp}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
 \end{sphinxVerbatim}
 
-Here we have used some additional keyword arguments for the ‘smooth’ fitting
-function. ‘data\_save’ ensures that the files containing the tested sign combinations
+Here we have used some additional keyword arguments for the \textquotesingle{}smooth\textquotesingle{} fitting
+function. \textquotesingle{}data\_save\textquotesingle{} ensures that the files containing the tested sign combinations
 and the corresponding objective function evaluations exist in the base directory
-which we have changed to ‘base\_dir=’examples/’’. These files are essential for
+which we have changed to \textquotesingle{}base\_dir=\textquotesingle{}examples/\textquotesingle{}\textquotesingle{}. These files are essential for
 the plotting the \({\chi^2}\) distribution and are not saved by \sphinxcode{\sphinxupquote{maxsmooth}}
-without ‘data\_save=True’. We have also set the ‘fit\_type’ to ‘qp’ rather than the
-default ‘qp\sphinxhyphen{}sign\_flipping’. This ensures that all of the available sign
+without \textquotesingle{}data\_save=True\textquotesingle{}. We have also set the \textquotesingle{}fit\_type\textquotesingle{} to \textquotesingle{}qp\textquotesingle{} rather than the
+default \textquotesingle{}qp\sphinxhyphen{}sign\_flipping\textquotesingle{}. This ensures that all of the available sign
 combinations are tested rather than a sampled set giving us a full picture of the
 distribution when we plot it. We have used the default DCF model to fit this data.
 
-We can import the ‘chi\_plotter’ like so,
+We can import the \textquotesingle{}chi\_plotter\textquotesingle{} like so,
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{k+kn}{from} \PYG{n+nn}{maxsmooth}\PYG{n+nn}{.}\PYG{n+nn}{chidist\PYGZus{}plotter} \PYG{k+kn}{import} \PYG{n}{chi\PYGZus{}plotter}
@@ -504,17 +511,17 @@ code,
 \PYG{n}{chi\PYGZus{}plotter}\PYG{p}{(}\PYG{n}{N}\PYG{p}{,} \PYG{n}{base\PYGZus{}dir}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{examples/}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{fit\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{qp}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
 \end{sphinxVerbatim}
 
-We pass the same ‘base\_dir’ as before so that the plotter can find the correct output
-files. We also give the function the same ‘fit\_type’ used for the fitting which
+We pass the same \textquotesingle{}base\_dir\textquotesingle{} as before so that the plotter can find the correct output
+files. We also give the function the same \textquotesingle{}fit\_type\textquotesingle{} used for the fitting which
 ensures that the files can be read.
 
-The reultant plot is shown below and the yellow star shows the global minimum.
+The resultant plot is shown below and the yellow star shows the global minimum.
 This can be used to determine how well
 the sign sampling approach using a descent and directional exploration
 can find the global minimum. If the distribution looks like noise then it is
 unlikely the sign sampling algorithm will consistently find the global minimum.
 Rather it will likely repeatedly return the local minima found after the descent
-algorithm and you should use the ‘qp’ method testing all available sign combinations
+algorithm and you should use the \textquotesingle{}qp\textquotesingle{} method testing all available sign combinations
 in any future fits to the data with this DCF model.
 
 \noindent{\hspace*{\fill}\sphinxincludegraphics[width=400\sphinxpxdimen]{{chi_distribution}.png}\hspace*{\fill}}
@@ -566,10 +573,10 @@ and access it using,
 \end{sphinxVerbatim}
 
 The function takes in the optimum parameters and signs found after the fit
-aswell as the data and order of the fit. There are a number of keyword arguments
+as well as the data and order of the fit. There are a number of keyword arguments
 detailed in the following section and the resultant fit is shown below. The
 function by default samples the parameter ranges 50\% either side of the optimum
-and calculates 50 spamples for each parameter. In each panel the two
+and calculates 50 samples for each parameter. In each panel the two
 labelled parameters are varied while the others are maintained at their optimum
 values.
 
@@ -579,20 +586,21 @@ values.
 \chapter{Maxsmooth Functions}
 \label{\detokenize{source/maxsmooth:maxsmooth-functions}}
 This section details the specifics of the built in functions in \sphinxcode{\sphinxupquote{maxsmooth}} including
-the relevant key word arguments and default parameters for all.
+the relevant keyword arguments and default parameters for all. Where keyword arguments
+are essential for the functions to run this is stated.
 
 
 \section{smooth()}
-\label{\detokenize{source/maxsmooth:module-maxsmooth.DCF}}\label{\detokenize{source/maxsmooth:smooth}}\index{maxsmooth.DCF (module)@\spxentry{maxsmooth.DCF}\spxextra{module}}
+\label{\detokenize{source/maxsmooth:module-maxsmooth.DCF}}\label{\detokenize{source/maxsmooth:smooth}}\index{module@\spxentry{module}!maxsmooth.DCF@\spxentry{maxsmooth.DCF}}\index{maxsmooth.DCF@\spxentry{maxsmooth.DCF}!module@\spxentry{module}}
 \sphinxstyleemphasis{smooth}, as demonstrated in the examples section,
 is used to call the fitting routine. There are a number
-of **kwargs that can be assigned to the function which change how the fit is
-performed, the model that is fit and various other attributes. These are
-detailed below.
+of \({^{**}}\) kwargs that can be assigned to the function which change how
+the fit is performed, the model that is fit and various other attributes.
+These are detailed below.
 \index{smooth (class in maxsmooth.DCF)@\spxentry{smooth}\spxextra{class in maxsmooth.DCF}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.DCF.smooth}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.DCF.}}\sphinxbfcode{\sphinxupquote{smooth}}}{\emph{x}, \emph{y}, \emph{N}, \emph{**kwargs}}{}
+\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.DCF.smooth}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.DCF.}}\sphinxbfcode{\sphinxupquote{smooth}}}{\emph{\DUrole{n}{x}}, \emph{\DUrole{n}{y}}, \emph{\DUrole{n}{N}}, \emph{\DUrole{o}{**}\DUrole{n}{kwargs}}}{}
 \sphinxstylestrong{Parameters:}
 \begin{quote}
 \begin{description}
@@ -617,63 +625,72 @@ detailed below.
 \sphinxstylestrong{Kwargs:}
 \begin{quote}
 \begin{description}
-\item[{fit\_type: \sphinxstylestrong{Default = ‘qp\sphinxhyphen{}sign\_flipping’}}] \leavevmode
+\item[{fit\_type: \sphinxstylestrong{Default = \textquotesingle{}qp\sphinxhyphen{}sign\_flipping\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] This kwarg allows the user to
-switch between sampling the available discrete sign spaces (default)
-or testing all sign combinations on the derivatives which can be
-accessed by setting to ‘qp’.
+switch between sampling the available discrete sign spaces
+(default) or testing all sign combinations on the derivatives
+which can be accessed by setting to \textquotesingle{}qp\textquotesingle{}.
 \end{DUlineblock}
 
-\item[{model\_type: \sphinxstylestrong{Default = ‘difference\_polynomials’}}] \leavevmode
+\item[{model\_type: \sphinxstylestrong{Default = \textquotesingle{}difference\_polynomial\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] Allows the user to
 access default Derivative Constrained Functions built into the
-software. Available options include the default, ‘polynomial’,
-‘normalised\_polynomial’, ‘legendre’, ‘log\_polynomial’,
-‘loglog\_polynomial’ and ‘exponential’. For more details on the
-functional form of the built in basis see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
+software. Available options include the default, \textquotesingle{}polynomial\textquotesingle{},
+\textquotesingle{}normalised\_polynomial\textquotesingle{}, \textquotesingle{}legendre\textquotesingle{}, \textquotesingle{}log\_polynomial\textquotesingle{},
+\textquotesingle{}loglog\_polynomial\textquotesingle{} and \textquotesingle{}exponential\textquotesingle{}. For more details on the
+functional form of the built in basis see the \sphinxcode{\sphinxupquote{maxsmooth}}
+paper.
 \end{DUlineblock}
 
-\item[{pivot\_point: \sphinxstylestrong{Default = len(x)//2 else integer}}] \leavevmode
+\end{description}
+
+\sphinxstylestrong{pivot\_point: Default = len(x)//2 otherwise an integer between}
+\sphinxstylestrong{\sphinxhyphen{}len(x) and len(x)}
+\begin{quote}
+
 \begin{DUlineblock}{0em}
 \item[] Some of the built in
-models rely on pivot points in the data sets which by defualt is
-set as the middle index. This can be altered via this kwarg which
-can occasionally lead to a better quality fit.
+models rely on pivot points in the data sets which by defualt
+is set as the middle index. This can be altered via
+this kwarg which can occasionally lead to a better quality fit.
 \end{DUlineblock}
-
-\item[{base\_dir: \sphinxstylestrong{Default = ‘Fitted\_Output/’}}] \leavevmode
+\end{quote}
+\begin{description}
+\item[{base\_dir: \sphinxstylestrong{Default = \textquotesingle{}Fitted\_Output/\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The location of the outputted
-data from \sphinxcode{\sphinxupquote{maxsmooth}}. This must be a string and end in ‘/’. If the
-file does not exist then \sphinxcode{\sphinxupquote{maxsmooth}} will create it. By default the
-only outputted data is a summary of the best fit but additional data
-can be recorded by setting the keyword argument ‘data\_save = True’.
+data from \sphinxcode{\sphinxupquote{maxsmooth}}. This must be a string and end in \textquotesingle{}/\textquotesingle{}.
+If the file does not exist then \sphinxcode{\sphinxupquote{maxsmooth}} will create it.
+By default the only outputted data is a summary of the best
+fit but additional data can be recorded by setting the keyword
+argument \textquotesingle{}data\_save = True\textquotesingle{}.
 \end{DUlineblock}
 
 \item[{data\_save: \sphinxstylestrong{Default = False}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] By setting this to True the algorithm
 will save every tested set of parameters, signs and objective
-function evaluations into files in base\_dir. Theses files will be
-over written on repeated runs but they are needed to run the
-‘chidist\_plotter’.
+function evaluations into files in base\_dir. Theses files will
+be over written on repeated runs but they are needed to run the
+\textquotesingle{}chidist\_plotter\textquotesingle{}.
 \end{DUlineblock}
 
 \item[{all\_output: \sphinxstylestrong{Default = False}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] If set to True this outputs to the
-terminal every fit performed by the algorithm. By default the only
-output is the optimal solution once the code is finished.
+terminal every fit performed by the algorithm. By default the
+only output is the optimal solution once the code is finished.
 \end{DUlineblock}
 
 \item[{cvxopt\_maxiter: \sphinxstylestrong{Default = 10000 else integer}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] This shouldn’t need
-changing for most problems however if \sphinxcode{\sphinxupquote{CVXOPT}} fails with a ‘maxiters
-reached’ error message this can be increased. Doing so arbitrarily
-will however increase the run time of \sphinxcode{\sphinxupquote{maxsmooth}}.
+\item[] This shouldn\textquotesingle{}t need
+changing for most problems however if \sphinxcode{\sphinxupquote{CVXOPT}} fails with a
+\textquotesingle{}maxiters reached\textquotesingle{} error message this can be increased.
+Doing so arbitrarily will however increase the run time of
+\sphinxcode{\sphinxupquote{maxsmooth}}.
 \end{DUlineblock}
 
 \item[{initial\_params: \sphinxstylestrong{Default = None else list of length N}}] \leavevmode
@@ -682,40 +699,47 @@ will however increase the run time of \sphinxcode{\sphinxupquote{maxsmooth}}.
 to overwrite the default initial parameters used by \sphinxcode{\sphinxupquote{CVXOPT}}.
 \end{DUlineblock}
 
-\item[{constraints: \sphinxstylestrong{Default = 2 else an integer less than or equal to N \sphinxhyphen{} 1}}] \leavevmode
-\begin{DUlineblock}{0em}
-\item[] The minimum constrained derivative order which is set by default to
-2 for a Maximally Smooth Function.
-\end{DUlineblock}
+\end{description}
 
-\item[{ifp\_list: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
+\sphinxstylestrong{constraints: Default = 2 else an integer less than or equal}
+\sphinxstylestrong{to N \sphinxhyphen{} 1}
+\begin{quote}
+
+\begin{DUlineblock}{0em}
+\item[] The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function.
+\end{DUlineblock}
+\end{quote}
+\begin{description}
+\item[{zero\_crossings: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] Allows you to
 specify if the conditions should be relaxed on any
 of the derivatives between constraints and the highest order
-derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-order derivative would have an ifp\_list = {[}4, 5{]}.
+derivative. e.g. a 6th order fit with just a constrained 2nd
+and 3rd order derivative would have zero\_crossings = {[}4, 5{]}.
 \end{DUlineblock}
 
 \item[{cap: \sphinxstylestrong{Default = (len(available\_signs)//N) + N else an integer}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] Determines the maximum number of signs explored either side of the
-minimum :math\textasciigrave{}\{chi\textasciicircum{}2\}\textasciigrave{} value found after the decent algorithm
-has terminated.
+\item[] Determines the maximum number of signs explored either side of
+the minimum \({\chi^2}\) value found after the decent
+algorithm has terminated.
 \end{DUlineblock}
 
 \item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2*min(chi\_squared) else float or int}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The maximum allowed increase in :math\textasciigrave{}\{chi\textasciicircum{}2\}\textasciigrave{} during the
+\item[] The maximum allowed increase in \({\chi^2}\) during the
 directional exploration. If this value is exceeded then the
-exploration in one direction is terminated and started in the other.
-For more details on this and ‘cap’ see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
+exploration in one direction is terminated and started in the
+other. For more details on this and \textquotesingle{}cap\textquotesingle{} see the \sphinxcode{\sphinxupquote{maxsmooth}}
+paper.
 \end{DUlineblock}
 
 \end{description}
 
-The following Kwargs can be used by the user to define thier own basis
-function and will overwrite the ‘model\_type’ kwarg.
+The following Kwargs can be used by the user to define their own basis
+function and will overwrite the \textquotesingle{}model\_type\textquotesingle{} kwarg.
 
 \sphinxstylestrong{basis\_function: Default = None else function with parameters}
 \sphinxstylestrong{(x, y, pivot\_point, N)}
@@ -735,27 +759,27 @@ be adjusted.
 
 \begin{DUlineblock}{0em}
 \item[] This is
-a user defined function describing the model to be fitted to the
-data.
+a user defined function describing the model to be fitted to
+the data.
 \end{DUlineblock}
 \end{quote}
 
 \sphinxstylestrong{der\_pres: Default = None else function with parameters}
-\sphinxstylestrong{(m, i, x, y, pivot\_point)}
+\sphinxstylestrong{(m, x, y, N, pivot\_point)}
 \begin{quote}
 
 \begin{DUlineblock}{0em}
-\item[] This function describes the prefactors on the ith term of the mth
-order derivative used in defining the constraint.
+\item[] This function describes the prefactors on the
+mth order derivative used in defining the constraint.
 \end{DUlineblock}
 \end{quote}
 
 \sphinxstylestrong{derivatives: Default = None else function with parameters}
-\sphinxstylestrong{(m, i, x, y, pivot\_point, params)}
+\sphinxstylestrong{(m, x, y, N, pivot\_point, params)}
 \begin{quote}
 
 \begin{DUlineblock}{0em}
-\item[] User defined function describing the ith term of the mth
+\item[] User defined function describing the mth
 order derivative used to check that conditions are being met.
 \end{DUlineblock}
 \end{quote}
@@ -771,25 +795,22 @@ to pass to the functions detailed above.
 
 \sphinxstylestrong{Output}
 \begin{quote}
-
-If N is a list with length greater than 1 then the outputs from smooth
-are lists and arrays with dimension 0 equal to len(N).
 \begin{description}
 \item[{.y\_fit: \sphinxstylestrong{numpy.array}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The fitted arrays of y data from \sphinxtitleref{smooth}.
+\item[] The fitted array of y data from smooth().
 \end{DUlineblock}
 
 \item[{.optimum\_chi: \sphinxstylestrong{float}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The optimum chi squared values for the fit calculated by,
+\item[] The optimum \({\chi^2}\) value for the fit calculated by,
 \end{DUlineblock}
 \begin{equation*}
 \begin{split}{X^2=\sum(y-y_{fit})^2}.\end{split}
 \end{equation*}
 \item[{.optimum\_params: \sphinxstylestrong{numpy.array}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The set of parameters corresponding to the optimum fits.
+\item[] The set of parameters corresponding to the optimum fit.
 \end{DUlineblock}
 
 \item[{.rms: \sphinxstylestrong{float}}] \leavevmode
@@ -810,7 +831,9 @@ where \(n\) is the number of data points.
 \item[{.optimum\_signs: \sphinxstylestrong{numpy.array}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The sign combinations corresponding to the
-optimal results.
+optimal result. The nature of the constraint means that a
+negative \sphinxcode{\sphinxupquote{maxsmooth}} sign implies a positive \({m^{th}}\)
+order derivative and visa versa.
 \end{DUlineblock}
 
 \end{description}
@@ -821,14 +844,16 @@ optimal results.
 
 
 \section{best\_basis()}
-\label{\detokenize{source/maxsmooth:module-maxsmooth.best_basis}}\label{\detokenize{source/maxsmooth:best-basis}}\index{maxsmooth.best\_basis (module)@\spxentry{maxsmooth.best\_basis}\spxextra{module}}
-This function allows you to test the built in basis and their ability to
+\label{\detokenize{source/maxsmooth:module-maxsmooth.best_basis}}\label{\detokenize{source/maxsmooth:best-basis}}\index{module@\spxentry{module}!maxsmooth.best\_basis@\spxentry{maxsmooth.best\_basis}}\index{maxsmooth.best\_basis@\spxentry{maxsmooth.best\_basis}!module@\spxentry{module}}
+As demonstrated, this function allows you to test the built in basis and their
+ability to
 fit the data. It produces a plot that shows \({\chi^2}\) as a function of
-\({N}\) for the 7 built in models and saves the figure to the base directory.
+\({N}\) for the 7 built in models and saves the figure to the base
+directory.
 \index{basis\_test (class in maxsmooth.best\_basis)@\spxentry{basis\_test}\spxextra{class in maxsmooth.best\_basis}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.best_basis.basis_test}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.best\_basis.}}\sphinxbfcode{\sphinxupquote{basis\_test}}}{\emph{x}, \emph{y}, \emph{**kwargs}}{}
+\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.best_basis.basis_test}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.best\_basis.}}\sphinxbfcode{\sphinxupquote{basis\_test}}}{\emph{\DUrole{n}{x}}, \emph{\DUrole{n}{y}}, \emph{\DUrole{o}{**}\DUrole{n}{kwargs}}}{}
 \sphinxstylestrong{Parameters:}
 \begin{quote}
 \begin{description}
@@ -848,32 +873,32 @@ fit the data. It produces a plot that shows \({\chi^2}\) as a function of
 \sphinxstylestrong{Kwargs:}
 \begin{quote}
 \begin{description}
-\item[{fit\_type: \sphinxstylestrong{Default = ‘qp\sphinxhyphen{}sign\_flipping’}}] \leavevmode
+\item[{fit\_type: \sphinxstylestrong{Default = \textquotesingle{}qp\sphinxhyphen{}sign\_flipping\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] This kwarg allows the user to switch between sampling the
 available discrete sign spaces (default)
-or testing all sign combinations on the derivatives which can be
-accessed by setting to ‘qp’.
+or testing all sign combinations on the derivatives which can
+be accessed by setting to \textquotesingle{}qp\textquotesingle{}.
 \end{DUlineblock}
 
-\item[{base\_dir: \sphinxstylestrong{Default = ‘Fitted\_Output/’}}] \leavevmode
+\item[{base\_dir: \sphinxstylestrong{Default = \textquotesingle{}Fitted\_Output/\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The location of the outputted
-graph from function. This must be a string and end in ‘/’. If the
-file does not exist then the function will create it.
+graph from function. This must be a string and end in \textquotesingle{}/\textquotesingle{}. If
+the file does not exist then the function will create it.
 \end{DUlineblock}
 
 \end{description}
 
-N: \sphinxstylestrong{Default = {[}3, .., 13{]} in steps of 1 else list or numpy array}
+\sphinxstylestrong{N: Default = {[}3, .., 13{]} in steps of 1 else list or numpy array}
 \sphinxstylestrong{of integers}
 \begin{quote}
 
 \begin{DUlineblock}{0em}
 \item[] The DCF orders to test each basis function with. In
-some instances the basis function may fail for a given \({N}\)
-and higher orders due to overflow/underflow errors or \sphinxcode{\sphinxupquote{CVXOPT}}
-errors.
+some instances the basis function may fail for a given
+\({N}\) and higher orders due to overflow/underflow
+errors or \sphinxcode{\sphinxupquote{CVXOPT}} errors.
 \end{DUlineblock}
 \end{quote}
 \end{quote}
@@ -883,24 +908,24 @@ errors.
 
 
 \section{chidist\_plotter()}
-\label{\detokenize{source/maxsmooth:module-maxsmooth.chidist_plotter}}\label{\detokenize{source/maxsmooth:chidist-plotter}}\index{maxsmooth.chidist\_plotter (module)@\spxentry{maxsmooth.chidist\_plotter}\spxextra{module}}
+\label{\detokenize{source/maxsmooth:module-maxsmooth.chidist_plotter}}\label{\detokenize{source/maxsmooth:chidist-plotter}}\index{module@\spxentry{module}!maxsmooth.chidist\_plotter@\spxentry{maxsmooth.chidist\_plotter}}\index{maxsmooth.chidist\_plotter@\spxentry{maxsmooth.chidist\_plotter}!module@\spxentry{module}}
 This function allows the user to produce plots of the \({\chi^2}\)
 distribution as a function of the available discrete sign spaces for the
 constrained derivatives. This can be used to identify whether or not the
 problem is \sphinxtitleref{ill defined}, see the \sphinxcode{\sphinxupquote{maxsmooth}} paper for a definition,
 and if it can be solved using the sign sampling approach.
 
-It can also be used to determine whether or not the ‘cap’ and maximum allowed
+It can also be used to determine whether or not the \textquotesingle{}cap\textquotesingle{} and maximum allowed
 increase on the value of \({\chi^2}\) during the directional exploration
 are sufficient to identify the global minimum for the problem.
 
 The function is reliant on the output of the \sphinxcode{\sphinxupquote{maxsmooth}} smooth() function.
 The required outputs can be saved when running smooth()
-using the ‘data\_save = True’ kwarg.
+using the \textquotesingle{}data\_save = True\textquotesingle{} kwarg.
 \index{chi\_plotter (class in maxsmooth.chidist\_plotter)@\spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.chidist_plotter.chi_plotter}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.chidist\_plotter.}}\sphinxbfcode{\sphinxupquote{chi\_plotter}}}{\emph{N}, \emph{**kwargs}}{}
+\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.chidist_plotter.chi_plotter}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.chidist\_plotter.}}\sphinxbfcode{\sphinxupquote{chi\_plotter}}}{\emph{\DUrole{n}{N}}, \emph{\DUrole{o}{**}\DUrole{n}{kwargs}}}{}
 \sphinxstylestrong{Parameters:}
 \begin{quote}
 \begin{description}
@@ -915,55 +940,65 @@ using the ‘data\_save = True’ kwarg.
 \sphinxstylestrong{Kwargs:}
 \begin{quote}
 \begin{description}
-\item[{fit\_type: \sphinxstylestrong{Default = ‘qp\sphinxhyphen{}sign\_flipping’}}] \leavevmode
+\item[{fit\_type: \sphinxstylestrong{Default = \textquotesingle{}qp\sphinxhyphen{}sign\_flipping\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] This kwarg is the same as
-before. Here it allows the files to be read from the base directory.
+\item[] This kwarg is the same as for the smooth() function.
+Here it allows the files to be read from the base
+directory.
 \end{DUlineblock}
 
-\item[{base\_dir: \sphinxstylestrong{Default = ‘Fitted\_Output/’}}] \leavevmode
+\item[{base\_dir: \sphinxstylestrong{Default = \textquotesingle{}Fitted\_Output/\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The location of the outputted
-data from \sphinxcode{\sphinxupquote{maxsmooth}}. This must be a string and end in ‘/’ and
-must contain the files ‘Output\_Evaluations/’ and ‘Output\_Signs/’
-which can be obtained by running smooth() with data\_save=True.
+data from \sphinxcode{\sphinxupquote{maxsmooth}}. This must be a string and end in \textquotesingle{}/\textquotesingle{}
+and must contain the files \textquotesingle{}Output\_Evaluations/\textquotesingle{} and
+\textquotesingle{}Output\_Signs/\textquotesingle{} which can be obtained by running smooth() with
+data\_save=True.
 \end{DUlineblock}
 
 \item[{chi: \sphinxstylestrong{Default = None else list or numpy array}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] A list of
-\({\chi^2}\) evaluations. If provided then this is used over
-outputted data in the base directory. It must have the same length
-as the ouputted signs in the file ‘Output\_Signs/’ in the base
-directory. It must also be ordered correctly otherwise the
-returned graph will not be correct. A correct ordering is one for
-which each entry in the array corresponds to the correct
-sign combination in ‘Output\_Signs/’. Typically this will not be
-needed but if the \({\chi^2}\) evaluation in
-‘Output\_Evaluations/’ in the base directory is not in the desired
-parameter space this can be useful. For example the built in
-logarithmic model calculates \({\chi^2}\) in logarithmic space.
-To plot the distribution in linear space we can calculate
-\({\chi^2}\) in linear space using a function for the model and
-the tested parameters which are found in ‘Output\_Parameters/’ in the
-base directory.
+\({\chi^2}\) evaluations. If provided then this is used
+over outputted data in the base directory. It must have the
+same length as the ouputted signs in the file \textquotesingle{}Output\_Signs/\textquotesingle{}
+in the base directory. It must also be ordered correctly
+otherwise the returned graph will not be correct. A correct
+ordering is one for which each entry in the array corresponds
+to the correct sign combination in \textquotesingle{}Output\_Signs/\textquotesingle{}.
+Typically this will not be needed but if the \({\chi^2}\)
+evaluation in \textquotesingle{}Output\_Evaluations/\textquotesingle{} in the base directory
+is not in the desired parameter space this can be useful.
+For example the built in logarithmic model calculates
+\({\chi^2}\) in logarithmic space. To plot the distribution
+in linear space we can calculate
+\({\chi^2}\) in linear space using a function for the model
+and the tested parameters which are found in
+\textquotesingle{}Output\_Parameters/\textquotesingle{} in the base directory.
 \end{DUlineblock}
 
-\item[{constraints: \sphinxstylestrong{Default = 2 else an integer less than or equal to N \sphinxhyphen{} 1}}] \leavevmode
+\end{description}
+
+\sphinxstylestrong{constraints: Default = 2 else an integer less than or equal}
+\sphinxstylestrong{to N \sphinxhyphen{} 1}
+\begin{quote}
+
 \begin{DUlineblock}{0em}
-\item[] The minimum constrained derivative order which is set by default to
-2 for a Maximally Smooth Function. Used here to determine the
-number of possible sign combinations available.
+\item[] The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function. Used here to determine
+the number of possible sign combinations available.
 \end{DUlineblock}
-
-\item[{ifp\_list: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
+\end{quote}
+\begin{description}
+\item[{zero\_crossings: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] Allows you to
 specify if the conditions should be relaxed on any
 of the derivatives between constraints and the highest order
-derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-order derivative would have an ifp\_list = {[}4, 5{]}. Again this is used
-in determining the possible sign combinations available.
+derivative. e.g. a 6th order fit with just a constrained 2nd
+and 3rd order derivative would have a zero\_crossings = {[}4, 5{]}.
+Again this is used in determining the possible sign
+combinations available.
 \end{DUlineblock}
 
 \item[{plot\_limits: \sphinxstylestrong{Default = False}}] \leavevmode
@@ -975,17 +1010,20 @@ the directional exploration are plotted on top of the
 
 \item[{cap: \sphinxstylestrong{Default = (len(available\_signs)//N) + N else an integer}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] Determines the maximum number of signs explored either side of the
-minimum :math\textasciigrave{}\{chi\textasciicircum{}2\}\textasciigrave{} value found after the decent algorithm
-has terminated.
+\item[] Determines the maximum number of signs explored either side of
+the minimum \({\chi^2}\) value found after the
+decent algorithm has terminated when running smooth(). Here
+it is used when plot\_limits=True.
 \end{DUlineblock}
 
 \item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2*min(chi\_squared) else float or int}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The maximum allowed increase in :math\textasciigrave{}\{chi\textasciicircum{}2\}\textasciigrave{} during the
+\item[] The maximum allowed increase in \({\chi^2}\) during the
 directional exploration. If this value is exceeded then the
-exploration in one direction is terminated and started in the other.
-For more details on this and ‘cap’ see the \sphinxcode{\sphinxupquote{maxsmooth}} paper.
+exploration in one direction is terminated and started in the
+other when runing smooth(). For more details on this and
+\textquotesingle{}cap\textquotesingle{} see the \sphinxcode{\sphinxupquote{maxsmooth}} paper. Again this is used here
+when plot\_limits=True.
 \end{DUlineblock}
 
 \end{description}
@@ -996,14 +1034,14 @@ For more details on this and ‘cap’ see the \sphinxcode{\sphinxupquote{maxsmo
 
 
 \section{parameter\_plotter()}
-\label{\detokenize{source/maxsmooth:module-maxsmooth.parameter_plotter}}\label{\detokenize{source/maxsmooth:parameter-plotter}}\index{maxsmooth.parameter\_plotter (module)@\spxentry{maxsmooth.parameter\_plotter}\spxextra{module}}
+\label{\detokenize{source/maxsmooth:module-maxsmooth.parameter_plotter}}\label{\detokenize{source/maxsmooth:parameter-plotter}}\index{module@\spxentry{module}!maxsmooth.parameter\_plotter@\spxentry{maxsmooth.parameter\_plotter}}\index{maxsmooth.parameter\_plotter@\spxentry{maxsmooth.parameter\_plotter}!module@\spxentry{module}}
 This function allows you to plot the parameter space around the optimum
 solution found when running \sphinxcode{\sphinxupquote{maxsmooth}} and visualise the constraints with
 contour lines given by \({\chi^2}\).
 \index{param\_plotter (class in maxsmooth.parameter\_plotter)@\spxentry{param\_plotter}\spxextra{class in maxsmooth.parameter\_plotter}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.parameter_plotter.param_plotter}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.parameter\_plotter.}}\sphinxbfcode{\sphinxupquote{param\_plotter}}}{\emph{best\_params}, \emph{optimum\_signs}, \emph{x}, \emph{y}, \emph{N}, \emph{**kwargs}}{}
+\phantomsection\label{\detokenize{source/maxsmooth:maxsmooth.parameter_plotter.param_plotter}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{maxsmooth.parameter\_plotter.}}\sphinxbfcode{\sphinxupquote{param\_plotter}}}{\emph{\DUrole{n}{best\_params}}, \emph{\DUrole{n}{optimum\_signs}}, \emph{\DUrole{n}{x}}, \emph{\DUrole{n}{y}}, \emph{\DUrole{n}{N}}, \emph{\DUrole{o}{**}\DUrole{n}{kwargs}}}{}
 \sphinxstylestrong{Parameters:}
 \begin{quote}
 \begin{description}
@@ -1040,35 +1078,43 @@ are used when the derivatives are equal to 0 across the band.
 \sphinxstylestrong{Kwargs:}
 \begin{quote}
 \begin{description}
-\item[{model\_type: \sphinxstylestrong{Default = ‘difference\_polynomial’}}] \leavevmode
+\item[{model\_type: \sphinxstylestrong{Default = \textquotesingle{}difference\_polynomial\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The functional form of
-the model being plotted. If a the user has defined their own basis
-they can supply this with the Kwargs below and this will be
-overwritten.
+the model being plotted. If a the user has defined their own
+basis they can supply this with the Kwargs below and this
+will be overwritten.
 \end{DUlineblock}
 
-\item[{base\_dir: \sphinxstylestrong{Default = ‘Fitted\_Output/’}}] \leavevmode
+\item[{base\_dir: \sphinxstylestrong{Default = \textquotesingle{}Fitted\_Output/\textquotesingle{}}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] The location in which the
 parameter plot is saved.
 \end{DUlineblock}
 
-\item[{constraints: \sphinxstylestrong{Default = 2 else an integer less than or equal to N \sphinxhyphen{} 1}}] \leavevmode
-\begin{DUlineblock}{0em}
-\item[] The minimum constrained derivative order which is set by default to
-2 for a Maximally Smooth Function. Used here to determine the
-number of possible sign combinations available.
-\end{DUlineblock}
+\end{description}
 
-\item[{ifp\_list: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
+\sphinxstylestrong{constraints: Default = 2 else an integer less than or equal}
+\sphinxstylestrong{to N \sphinxhyphen{} 1}
+\begin{quote}
+
+\begin{DUlineblock}{0em}
+\item[] The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function. Used here to
+determine the number of possible sign combinations available.
+\end{DUlineblock}
+\end{quote}
+\begin{description}
+\item[{zero\_crossings: \sphinxstylestrong{Default = None else list of integers}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] Allows you to
 specify if the conditions should be relaxed on any
 of the derivatives between constraints and the highest order
-derivative. e.g. a 6th order fit with just a constrained 2nd and 3rd
-order derivative would have an ifp\_list = {[}4, 5{]}. Again this is used
-in determining the possible sign combinations available.
+derivative. e.g. a 6th order fit with just a constrained
+2nd and 3rd order derivative would have an
+zero\_crossings = {[}4, 5{]}.
+Again this is used in determining the possible sign
+combinations available.
 \end{DUlineblock}
 
 \item[{samples: \sphinxstylestrong{Default = 50}}] \leavevmode
@@ -1081,16 +1127,16 @@ defined with the optimum solution and width.
 \begin{DUlineblock}{0em}
 \item[] The range of each parameter to explore. The
 default value of 0.5 means that the \({\chi^2}\)
-values for parameters ranging 50\% either side of the optimum result
-are tested.
+values for parameters ranging 50\% either side of the optimum
+result are tested.
 \end{DUlineblock}
 
 \item[{warnings: \sphinxstylestrong{Default = True}}] \leavevmode
 \begin{DUlineblock}{0em}
 \item[] Used to highlight when a derivative is
-0 across the band and that in these instances the optimum signs are
-assumed for the colourmap if \({N \leq 5}\), constraints=2 and
-the ifp\_list is empty.
+0 across the band and that in these instances the optimum
+signs are assumed for the colourmap if \({N \leq 5}\),
+constraints=2 and the zero\_crossings is empty.
 \end{DUlineblock}
 
 \item[{girdlines: \sphinxstylestrong{Default = False}}] \leavevmode
@@ -1102,7 +1148,7 @@ for each parameter in each panel of the plot.
 \end{description}
 
 The following Kwargs are used to plot the parameter space for a user
-defined basis function and will overwrite the ‘model\_type’ kwarg.
+defined basis function and will overwrite the \textquotesingle{}model\_type\textquotesingle{} kwarg.
 
 \sphinxstylestrong{basis\_function: Default = None else function with parameters}
 \sphinxstylestrong{(x, y, pivot\_point, N)}
@@ -1122,27 +1168,27 @@ be adjusted.
 
 \begin{DUlineblock}{0em}
 \item[] This is
-a user defined function describing the model to be fitted to the
-data.
+a user defined function describing the model to be fitted to
+the data.
 \end{DUlineblock}
 \end{quote}
 
 \sphinxstylestrong{der\_pres: Default = None else function with parameters}
-\sphinxstylestrong{(m, i, x, y, pivot\_point)}
+\sphinxstylestrong{(m, x, y, N, pivot\_point)}
 \begin{quote}
 
 \begin{DUlineblock}{0em}
-\item[] This function describes the prefactors on the ith term of the mth
-order derivative used in defining the constraint.
+\item[] This function describes the prefactors on the
+mth order derivative used in defining the constraint.
 \end{DUlineblock}
 \end{quote}
 
 \sphinxstylestrong{derivatives: Default = None else function with parameters}
-\sphinxstylestrong{(m, i, x, y, pivot\_point, params)}
+\sphinxstylestrong{(m, x, y, N, pivot\_point, params)}
 \begin{quote}
 
 \begin{DUlineblock}{0em}
-\item[] User defined function describing the ith term of the mth
+\item[] User defined function describing the mth
 order derivative used to check that conditions are being met.
 \end{DUlineblock}
 \end{quote}

@@ -1,8 +1,12 @@
-\indexentry{maxsmooth.DCF (module)@\spxentry{maxsmooth.DCF}\spxextra{module}|hyperpage}{11}
+\indexentry{module@\spxentry{module}!maxsmooth.DCF@\spxentry{maxsmooth.DCF}|hyperpage}{11}
+\indexentry{maxsmooth.DCF@\spxentry{maxsmooth.DCF}!module@\spxentry{module}|hyperpage}{11}
 \indexentry{smooth (class in maxsmooth.DCF)@\spxentry{smooth}\spxextra{class in maxsmooth.DCF}|hyperpage}{11}
-\indexentry{maxsmooth.best\_basis (module)@\spxentry{maxsmooth.best\_basis}\spxextra{module}|hyperpage}{13}
+\indexentry{module@\spxentry{module}!maxsmooth.best\_basis@\spxentry{maxsmooth.best\_basis}|hyperpage}{13}
+\indexentry{maxsmooth.best\_basis@\spxentry{maxsmooth.best\_basis}!module@\spxentry{module}|hyperpage}{13}
 \indexentry{basis\_test (class in maxsmooth.best\_basis)@\spxentry{basis\_test}\spxextra{class in maxsmooth.best\_basis}|hyperpage}{13}
-\indexentry{maxsmooth.chidist\_plotter (module)@\spxentry{maxsmooth.chidist\_plotter}\spxextra{module}|hyperpage}{14}
+\indexentry{module@\spxentry{module}!maxsmooth.chidist\_plotter@\spxentry{maxsmooth.chidist\_plotter}|hyperpage}{14}
+\indexentry{maxsmooth.chidist\_plotter@\spxentry{maxsmooth.chidist\_plotter}!module@\spxentry{module}|hyperpage}{14}
 \indexentry{chi\_plotter (class in maxsmooth.chidist\_plotter)@\spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}|hyperpage}{14}
-\indexentry{maxsmooth.parameter\_plotter (module)@\spxentry{maxsmooth.parameter\_plotter}\spxextra{module}|hyperpage}{15}
+\indexentry{module@\spxentry{module}!maxsmooth.parameter\_plotter@\spxentry{maxsmooth.parameter\_plotter}|hyperpage}{15}
+\indexentry{maxsmooth.parameter\_plotter@\spxentry{maxsmooth.parameter\_plotter}!module@\spxentry{module}|hyperpage}{15}
 \indexentry{param\_plotter (class in maxsmooth.parameter\_plotter)@\spxentry{param\_plotter}\spxextra{class in maxsmooth.parameter\_plotter}|hyperpage}{15}

@@ -1,7 +1,7 @@
 
 .. toctree::
    :maxdepth: 6
-   
+
 Maxsmooth Example Codes
 -----------------------
 
@@ -43,7 +43,8 @@ Maxsmooth Functions
 -------------------
 
 This section details the specifics of the built in functions in ``maxsmooth`` including
-the relevant key word arguments and default parameters for all.
+the relevant keyword arguments and default parameters for all. Where keyword arguments
+are essential for the functions to run this is stated.
 
 smooth()
 ~~~~~~~~

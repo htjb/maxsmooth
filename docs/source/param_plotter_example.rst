@@ -42,10 +42,10 @@ and access it using,
       x, y, N, base_dir='examples/')
 
 The function takes in the optimum parameters and signs found after the fit
-aswell as the data and order of the fit. There are a number of keyword arguments
+as well as the data and order of the fit. There are a number of keyword arguments
 detailed in the following section and the resultant fit is shown below. The
 function by default samples the parameter ranges 50% either side of the optimum
-and calculates 50 spamples for each parameter. In each panel the two
+and calculates 50 samples for each parameter. In each panel the two
 labelled parameters are varied while the others are maintained at their optimum
 values.
 
