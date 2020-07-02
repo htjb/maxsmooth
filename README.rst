@@ -23,8 +23,8 @@ specific high order derivatives can be constrained.
 You can read more about MSFs here ..
 
 ``maxsmooth`` uses quadratic programming implemented with ``CVXOPT`` to fit
-data subject to a linear constraint. The constraint on an MSF can be codefied
-like so,
+data subject to a linear constraint. The constraint on an MSF can be
+summarized like so,
 
 .. math::
 
@@ -37,10 +37,10 @@ constraint,
 
   \pm \frac{d^m~y}{d~x^m}~\leq~0
 
-where a positive sign infront of the :math:`m^{th}` order derivative forces the derivative
+where a positive sign in front of the :math:`m^{th}` order derivative forces the derivative
 to be negative for all x. For an :math:`N^{th}` order polynomial ``maxsmooth`` can test
-every available sign combination but by default it implements a 'sign-smapling'
-algorithm. This is detailed in the ``maxsmooth`` paper (see citation) but is summarised
+every available sign combination but by default it implements a 'sign-sampling'/'sign-flipping'
+algorithm. This is detailed in the ``maxsmooth`` paper (see citation) but is summarized
 below.
 
 The available sign combinations act as discrete parameter spaces all with
@@ -63,7 +63,7 @@ and zero crossings in higher order derivatives is also available to the user.
 The software has been designed with these two
 applications in mind and is a simple interface.
 
-Instalation
+Installation
 ~~~~~~~~~~~
 
 Documentation
@@ -73,7 +73,11 @@ The documentation can be compiled from the git repository by...
 Requirements
 ~~~~~~~~~~~~
 
-- Python version..
+The code was written in Python 3.6 but should be backward compatible with
+Python 2 although this has not been thoroughly tested.
+
+To run the code you will need the following additional packages,
+
 - `matplotlib <https://pypi.org/project/matplotlib/>`__
 - `numpy <https://pypi.org/project/numpy/>`__
 - `CVXOPT <https://pypi.org/project/cvxopt/>`__
