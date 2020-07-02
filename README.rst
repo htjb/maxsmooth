@@ -1,5 +1,5 @@
 ============================================
-maxsmooth: maximally smooth function fitting
+maxsmooth: Derivative Constrained Function Fitting
 ============================================
 
 Introduction
@@ -68,6 +68,20 @@ allows the user to define their own. The addition of possible inflection points
 and zero crossings in higher order derivatives is also available to the user.
 The software has been designed with these two
 applications in mind and is a simple interface.
+
+Example Fit
+~~~~~~~~~~~
+
+Shown below is an example MSF fit performed with ``maxsmooth`` to data that
+follows a :math:`{y = x^{-2.5}}` power law with a randomly generated Gaussian
+noise. The top panel shows the data and the bottom panel shows the residual
+after subtraction of the MSF fit. The software using one of the built in DCF models
+and fitting normalised data is shown to be capable of recovering the
+random noise.
+
+.. image:: /docs/images/README.png
+  :width: 400
+  :align: center
 
 Installation
 ~~~~~~~~~~~
