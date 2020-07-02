@@ -21,24 +21,27 @@ There are several requirements needed to define a new basis function completely
 for ``maxsmooth`` to be able to fit it. They are as summarised below and then
 examples of each are given in more detail,
 
-    * **args** Additional non-standard  arguments needed in the definition of the
-    basis. The standard arguments are the data (x and y), the order of the fit N
-    the pivot_point, the derivative order :math:`{m}` and the params. While the
+    * **args:** Additional non-standard  arguments needed in the definition of the
+    basis. The standard arguments are the data (x and y), the order of the fit N,
+    the pivot point about which a model can be fit,
+    the derivative order :math:`{m}` and the params. While the
     pivot point is not strictly needed it is a required argument for the
     functions defining a new basis to help the user in their definition.
 
-    * **basis_functions** This function defined the basis of the DCF model
+    * **basis_functions:** This function defines the basis of the DCF model,
     :math:`{\phi}` where the model can be generally defined as,
 
     .. math::
 
         y = \sum_{k = 0}^N a_k \phi_k(x)
 
-    * **model** This is the function described by the equation above.
+    where :math:`{a_k}` are the fit parameters.
 
-    * **derivative** This function defines the :math:`{m^{th}}` order derivative.
+    * **model:** This is the function described by the equation above.
 
-    * **derivative_pre** This function defines the prefactors,
+    * **derivative:** This function defines the :math:`{m^{th}}` order derivative.
+
+    * **derivative_pre:** This function defines the prefactors,
     :math:`{\mathbf{G}}` on the derivatives where ``CVXOPT``, the quadratic
     programming routine used, evaluates the constraints as,
 
@@ -79,7 +82,7 @@ We can define the model that we are fitting in a function like that shown below.
 This is used for evaluating :math:`{\chi^2}` and returning the optimum fitted model
 once the code has finished running. It requires the arguments
 *(x, y, pivot_point, N, params, \*args)* in that order and again where 'args' is optional.
-'params' is the parameters of the fit :math:`{\mathbf{a}}` which should have length
+'params' is the parameters of the fit, :math:`{\mathbf{a}}` which should have length
 :math:`{N}`.
 
 The function should return the fitted estimate of y.
@@ -120,13 +123,13 @@ def derivative(m, x, y, N, pivot_point, params, *args):
 """
 Finally we have to define :math:`{\mathbf{G}}` which is used by ``CVXOPT`` to
 build the derivatives and constrain the functions. It takes arguments
-*(m, x, y, pivot_point, \*args)* and should return the prefactor on the
+*(m, x, y, N, pivot_point, \*args)* and should return the prefactor on the
 :math:`{m^{th}}` order derivative. For a more thorough definition of the
 prefactor on the derivative and an explination of how the problem is
 constrained in quadratic programming see the ``maxsmooth`` paper.
 """
 
-def derivative_pre(m, x, y, pivot_point, *args):
+def derivative_pre(m, x, y, N, pivot_point, *args):
 
     mth_order_derivative = []
     for i in range(N):
