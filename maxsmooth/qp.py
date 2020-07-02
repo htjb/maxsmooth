@@ -2,7 +2,6 @@ from maxsmooth.derivatives import derivative_class
 from maxsmooth.Models import Models_class
 from cvxopt import matrix, solvers
 import numpy as np
-import sys
 import warnings
 from scipy.special import legendre, lpmv
 
@@ -12,7 +11,7 @@ warnings.simplefilter('always', UserWarning)
 class qp_class(object):
     def __init__(
             self, x, y, N, signs, pivot_point, model_type, cvxopt_maxiter,
-            all_output, ifp_list, initial_params,
+            all_output, zero_crossings, initial_params,
             constraints, new_basis):
         self.model_type = model_type
         self.pivot_point = pivot_point
@@ -22,7 +21,7 @@ class qp_class(object):
         self.signs = signs
         self.cvxopt_maxiter = cvxopt_maxiter
         self.all_output = all_output
-        self.ifp_list = ifp_list
+        self.zero_crossings = zero_crossings
         self.initial_params = initial_params
         self.basis_functions = new_basis['basis_function']
         self.derivative_pres = new_basis['der_pres']
@@ -31,7 +30,7 @@ class qp_class(object):
         self.args = new_basis['args']
         self.new_basis = new_basis
         self.constraints = constraints
-        self.parameters, self.chi_squared, self.ifp_dict = self.fit()
+        self.parameters, self.chi_squared, self.zc_dict = self.fit()
 
     def fit(self):
 
@@ -117,8 +116,8 @@ class qp_class(object):
         signs = matrix(self.signs)
         for i in range(len(m)):
             if m[i] >= self.constraints:
-                if self.ifp_list is not None:
-                    if m[i] not in set(self.ifp_list):
+                if self.zero_crossings is not None:
+                    if m[i] not in set(self.zero_crossings):
                         derivative_prefactors = constraint_prefactors(m[i])
                         if derivative_prefactors != []:
                             derivatives.append(derivative_prefactors)
@@ -179,12 +178,12 @@ class qp_class(object):
                 self.y.astype(np.double), (len(self.y), 1),
                 'd')
 
-        if self.ifp_list is None:
+        if self.zero_crossings is None:
             h = matrix(0.0, ((self.N-self.constraints)*len(self.x), 1), 'd')
         else:
             h = matrix(
                 0.0, (
-                    (self.N-self.constraints-len(self.ifp_list))
+                    (self.N-self.constraints-len(self.zero_crossings))
                     * len(self.x), 1), 'd')
 
         Q = phi.T*phi
@@ -194,34 +193,35 @@ class qp_class(object):
         if self.initial_params is None:
             qpfit = solvers.qp(Q, q, G, h)
         if self.initial_params is not None:
-            initvals = {'x': matrix(self.initial_params)}
+            print(self.initial_params)
+            initvals = {'x': matrix(
+                self.initial_params, (1, self.N), 'd')}
             qpfit = solvers.qp(Q, q, G, h, initvals=initvals)
 
         parameters = qpfit['x']
 
         if 'unknown' in qpfit['status']:
             if qpfit['iterations'] == self.cvxopt_maxiter:
-                print(
+                raise ValueError(
                     'ERROR: "Maximum number of iterations reached in' +
                     ' cvxopt routine." Increase value of' +
                     ' setting.cvxopt_maxiter')
-                sys.exit(1)
             else:
                 parameters = np.array(matrix(0, (self.N, 1), 'd'))
                 if self.model_type == 'loglog_polynomial':
                     chi_squared = np.sum((np.log10(self.y))**2)
                 else:
                     chi_squared = np.sum((self.y)**2)
-                ifp_dict = {}
+                zc_dict = {}
         else:
             y = Models_class(
                 parameters, self.x, self.y, self.N, self.pivot_point,
                 self.model_type, self.new_basis).y_sum
             der = derivative_class(
                 self.x, self.y, parameters, self.N, self.pivot_point,
-                self.model_type, self.ifp_list,
+                self.model_type, self.zero_crossings,
                 self.constraints, self.new_basis)
-            ifp_dict = der.ifp_dict
+            zc_dict = der.zc_dict
 
             if self.model_type == 'loglog_polynomial':
                 chi_squared = np.sum((np.log10(self.y)-np.log10(y))**2)
@@ -229,4 +229,4 @@ class qp_class(object):
                 chi_squared = np.sum((self.y-y)**2)
             parameters = np.array(parameters)
 
-        return parameters, chi_squared, ifp_dict
+        return parameters, chi_squared, zc_dict

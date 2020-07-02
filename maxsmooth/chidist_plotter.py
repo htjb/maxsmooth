@@ -69,12 +69,12 @@ class chi_plotter(object):
                 to 2 for a Maximally Smooth Function. Used here to determine
                 the number of possible sign combinations available.
 
-        ifp_list: **Default = None else list of integers**
+        zero_crossings: **Default = None else list of integers**
             | Allows you to
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
                 derivative. e.g. a 6th order fit with just a constrained 2nd
-                and 3rd order derivative would have an ifp_list = [4, 5].
+                and 3rd order derivative would have an zero_crossings = [4, 5].
                 Again this is used in determining the possible sign
                 combinations available.
 
@@ -105,7 +105,7 @@ class chi_plotter(object):
         for keys, values in kwargs.items():
             if keys not in set([
                     'chi', 'base_dir',
-                    'ifp_list', 'constraints',
+                    'zero_crossings', 'constraints',
                     'fit_type', 'chi_squared_limit', 'cap', 'plot_limits']):
                 raise KeyError("Unexpected keyword argument in chi_plotter().")
 
@@ -141,17 +141,20 @@ class chi_plotter(object):
                 "'constraints' exceeds the number" +
                 " of derivatives.")
 
-        self.ifp_list = kwargs.pop('ifp_list', None)
-        if self.ifp_list is not None:
-            for i in range(len(self.ifp_list)):
-                if type(self.ifp_list[i]) is not int:
-                    raise TypeError("Entries in 'ifp_list' are not integer.")
-                if self.ifp_list[i] < self.constraints:
+        self.zero_crossings = kwargs.pop('zero_crossings', None)
+        if self.zero_crossings is not None:
+            for i in range(len(self.zero_crossings)):
+                if type(self.zero_crossings[i]) is not int:
+                    raise TypeError(
+                        "Entries in 'zero_crossings'" +
+                        " are not integer.")
+                if self.zero_crossings[i] < self.constraints:
                     raise ValueError(
                         'One or more specified derivatives for' +
-                        ' inflection points is less than the minimum' +
+                        ' zero crossings is less than the minimum' +
                         ' constrained' +
-                        ' derivative.\n ifp_list = ' + str(self.ifp_list)
+                        ' derivative.\n zero_crossings = '
+                        + str(self.zero_crossings)
                         + '\n' + ' Minimum Constrained Derivative = '
                         + str(self.constraints))
 
@@ -190,9 +193,9 @@ class chi_plotter(object):
         def signs_array(nums):
             return np.array(list(product(*((x, -x) for x in nums))))
 
-        if self.ifp_list is not None:
+        if self.zero_crossings is not None:
             possible_signs = signs_array([1]*(
-                self.N-self.constraints-len(self.ifp_list)))
+                self.N-self.constraints-len(self.zero_crossings)))
         else:
             possible_signs = signs_array([1]*(self.N-self.constraints))
 

@@ -4,7 +4,7 @@ from scipy.special import lpmv
 
 class derivative_class(object):
     def __init__(
-                self, x, y, params, N, pivot_point, model_type, ifp_list,
+                self, x, y, params, N, pivot_point, model_type, zero_crossings,
                 constraints, new_basis, **kwargs):
         self.x = x
         self.y = y
@@ -12,14 +12,14 @@ class derivative_class(object):
         self.params = params
         self.pivot_point = pivot_point
         self.model_type = model_type
-        self.ifp_list = ifp_list
+        self.zero_crossings = zero_crossings
         self.derivatives_function = new_basis['derivatives_function']
         self.args = new_basis['args']
         self.constraints = constraints
 
         self.call_type = kwargs.pop('call_type', 'checking')
 
-        self.derivatives, self.pass_fail, self.ifp_dict = \
+        self.derivatives, self.pass_fail, self.zc_dict = \
             self.derivatives_func()
 
     def derivatives_func(self):
@@ -117,25 +117,25 @@ class derivative_class(object):
 
         m = np.arange(0, self.N, 1)
         derivatives = []
-        ifp_derivatives = []
-        ifp_orders = []
+        zc_derivatives = []
+        zc_orders = []
         for i in range(len(m)):
             if m[i] < self.constraints:
-                ifp_orders.append(m[i])
-                ifp_derivatives.append(mth_order_derivatives(m[i]))
+                zc_orders.append(m[i])
+                zc_derivatives.append(mth_order_derivatives(m[i]))
             if m[i] >= self.constraints:
-                if self.ifp_list is not None:
-                    if m[i] not in set(self.ifp_list):
+                if self.zero_crossings is not None:
+                    if m[i] not in set(self.zero_crossings):
                         derivatives.append(mth_order_derivatives(m[i]))
-                    if m[i] in set(self.ifp_list):
-                        ifp_orders.append(m[i])
-                        ifp_derivatives.append(mth_order_derivatives(m[i]))
+                    if m[i] in set(self.zero_crossings):
+                        zc_orders.append(m[i])
+                        zc_derivatives.append(mth_order_derivatives(m[i]))
                 else:
                     derivatives.append(mth_order_derivatives(m[i]))
         derivatives = np.array(derivatives)
 
-        ifp_derivatives = np.array(ifp_derivatives)
-        ifp_orders = np.array(ifp_orders)
+        zc_derivatives = np.array(zc_derivatives)
+        zc_orders = np.array(zc_orders)
 
         # Check constrained derivatives
         pass_fail = []
@@ -147,15 +147,13 @@ class derivative_class(object):
                 pass_fail.append(0)
         pass_fail = np.array(pass_fail)
 
-        # ifp dictionary for reporting back to user presence of inflection
-        # points
-        ifp_dict = {}
-        for i in range(ifp_derivatives.shape[0]):
-            if np.all(ifp_derivatives[i, :] >= -1e-6) or \
-                    np.all(ifp_derivatives[i, :] <= 1e-6):
-                ifp_dict[str(ifp_orders[i])] = 1
+        zc_dict = {}
+        for i in range(zc_derivatives.shape[0]):
+            if np.all(zc_derivatives[i, :] >= -1e-6) or \
+                    np.all(zc_derivatives[i, :] <= 1e-6):
+                zc_dict[str(zc_orders[i])] = 1
             else:
-                ifp_dict[str(ifp_orders[i])] = 0
+                zc_dict[str(zc_orders[i])] = 0
 
         if self.call_type == 'checking':
             if np.any(pass_fail == 0):
@@ -164,4 +162,4 @@ class derivative_class(object):
                     '"Condition Violated" Derivatives feature' +
                     ' crossing points.')
 
-        return derivatives, pass_fail, ifp_dict
+        return derivatives, pass_fail, zc_dict

@@ -63,12 +63,11 @@ class basis_test(object):
         elif self.base_dir.endswith('/') is False:
             raise KeyError("'base_dir' must end in '/'.")
 
-        if not os.path.exists(self.base_dir):
-            os.mkdir(self.base_dir)
-
         self.N = kwargs.pop('N', np.arange(3, 14, 1))
-        if np.any(self.N % 1 != 0):
-            raise ValueError('N must be an integer or whole number float.')
+        for i in range(len(self.N)):
+            if self.N[i] % 1 != 0:
+                raise ValueError(
+                    'N must be an integer or whole number float.')
 
         self.test()
 
@@ -99,11 +98,17 @@ class basis_test(object):
                         'Unable to fit with N = ' + str(self.N[i]) + ' and ' +
                         str(model_type) + '.')
 
-            chi = np.array(chi)
-            min_chi = chi.min()
-            for i in range(len(chi)):
-                if chi[i] == chi.min():
-                    best_N = self.N[i]
+            if chi != []:
+                chi = np.array(chi)
+                min_chi = chi.min()
+                for i in range(len(chi)):
+                    if chi[i] == chi.min():
+                        best_N = self.N[i]
+            else:
+                chi = np.nan
+                min_chi = np.nan
+                N_passed = np.nan
+                best_N = np.nan
 
             return chi, min_chi, N_passed, best_N
 
@@ -131,4 +136,4 @@ class basis_test(object):
         plt.yscale('log')
         plt.tight_layout()
         plt.savefig(self.base_dir + 'Basis_functions.pdf')
-        plt.show()
+        plt.close()

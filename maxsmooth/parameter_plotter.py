@@ -56,12 +56,13 @@ class param_plotter(object):
                 to 2 for a Maximally Smooth Function. Used here to
                 determine the number of possible sign combinations available.
 
-        ifp_list: **Default = None else list of integers**
+        zero_crossings: **Default = None else list of integers**
             | Allows you to
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
                 derivative. e.g. a 6th order fit with just a constrained
-                2nd and 3rd order derivative would have an ifp_list = [4, 5].
+                2nd and 3rd order derivative would have an
+                zero_crossings = [4, 5].
                 Again this is used in determining the possible sign
                 combinations available.
 
@@ -79,7 +80,7 @@ class param_plotter(object):
             | Used to highlight when a derivative is
                 0 across the band and that in these instances the optimum
                 signs are assumed for the colourmap if :math:`{N \leq 5}`,
-                constraints=2 and the ifp_list is empty.
+                constraints=2 and the zero_crossings is empty.
 
         girdlines: **Default = False**
             | Plots gridlines showing the central value
@@ -130,7 +131,7 @@ class param_plotter(object):
         for keys, values in kwargs.items():
             if keys not in set([
                     'model_type', 'base_dir',
-                    'ifp_list', 'constraints',
+                    'zero_crossings', 'constraints',
                     'basis_functions', 'der_pres', 'model',
                     'derivatives', 'args', 'pivot_point', 'samples',
                     'width', 'warnings', 'gridlines']):
@@ -157,7 +158,7 @@ class param_plotter(object):
             self.basis_functions, 'der_pres': self.der_pres,
             'derivatives_function': self.derivatives_function,
             'model': self.model, 'args': self.args}
-        if np.all(value is None for value in self.new_basis.values()):
+        if np.all([value is None for value in self.new_basis.values()]):
             pass
         else:
             count = 0
@@ -199,17 +200,20 @@ class param_plotter(object):
             raise ValueError(
                 "'constraints' exceeds the number of derivatives.")
 
-        self.ifp_list = kwargs.pop('ifp_list', None)
-        if self.ifp_list is not None:
-            for i in range(len(self.ifp_list)):
-                if type(self.ifp_list[i]) is not int:
-                    raise TypeError("Entries in 'ifp_list' are not integer.")
-                if self.ifp_list[i] < self.constraints:
+        self.zero_crossings = kwargs.pop('zero_crossings', None)
+        if self.zero_crossings is not None:
+            for i in range(len(self.zero_crossings)):
+                if type(self.zero_crossings[i]) is not int:
+                    raise TypeError(
+                        "Entries in 'zero_crossings'" +
+                        " are not integer.")
+                if self.zero_crossings[i] < self.constraints:
                     raise ValueError(
                         'One or more specified derivatives for' +
                         ' inflection points is less than the minimum' +
                         ' constrained' +
-                        ' derivative.\n ifp_list = ' + str(self.ifp_list)
+                        ' derivative.\n zero_crossings = '
+                        + str(self.zero_crossings)
                         + '\n' + ' Minimum Constrained Derivative = '
                         + str(self.constraints))
 
@@ -263,9 +267,9 @@ class param_plotter(object):
         def signs_array(nums):
             return np.array(list(product(*((x, -x) for x in nums))))
 
-        if self.ifp_list is not None:
+        if self.zero_crossings is not None:
             available_signs = signs_array([1]*(
-                self.N-self.constraints-len(self.ifp_list)))
+                self.N-self.constraints-len(self.zero_crossings)))
         else:
             available_signs = signs_array([1]*(self.N-self.constraints))
 
@@ -346,7 +350,7 @@ class param_plotter(object):
                         self.x, self.y,
                         parameters, self.N,
                         self.pivot_point, self.model_type,
-                        self.ifp_list, self.constraints,
+                        self.zero_crossings, self.constraints,
                         self.new_basis, call_type='plotter')
 
                     derivatives, pass_fail = der.derivatives, der.pass_fail
@@ -364,7 +368,7 @@ class param_plotter(object):
                                 signs.append(self.optimum_signs*-1)
                                 if self.warnings is True and \
                                         warnings_count == 0:
-                                    print(
+                                    warnings.warn(
                                         'Warning: One or more derivatives'
                                         + ' equals 0 across the band. Optimum'
                                         + ' derivative signs from maxsmooth'
