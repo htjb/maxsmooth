@@ -10,6 +10,12 @@ Introduction
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
 
+Licence and Citation
+~~~~~~~~~~~~~~~~~~~~
+
+Derivative Constrained Functions and ``maxsmooth``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``maxsmooth`` is an open source software for fitting derivative constrained
 functions, DCFs such as Maximally Smooth Functions
 , MSFs to data sets. MSFs are functions for which there are no zero
@@ -82,6 +88,3 @@ To run the code you will need the following additional packages,
 - `numpy <https://pypi.org/project/numpy/>`__
 - `CVXOPT <https://pypi.org/project/cvxopt/>`__
 - `scipy <https://pypi.org/project/scipy/>`__
-
-Citation
-~~~~~~~~
