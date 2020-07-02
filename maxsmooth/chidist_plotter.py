@@ -33,8 +33,8 @@ class chi_plotter(object):
     **Kwargs:**
 
         fit_type: **Default = 'qp-sign_flipping'**
-            | This kwarg is the same as
-                before. Here it allows the files to be read from the base
+            | This kwarg is the same as for the smooth() function.
+                Here it allows the files to be read from the base
                 directory.
 
         base_dir: **Default = 'Fitted_Output/'**
@@ -63,7 +63,7 @@ class chi_plotter(object):
                 and the tested parameters which are found in
                 'Output_Parameters/' in the base directory.
 
-        constraints: **Default = 2 else an integer less than or equal**
+        **constraints: Default = 2 else an integer less than or equal**
         **to N - 1**
             | The minimum constrained derivative order which is set by default
                 to 2 for a Maximally Smooth Function. Used here to determine
@@ -74,7 +74,7 @@ class chi_plotter(object):
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
                 derivative. e.g. a 6th order fit with just a constrained 2nd
-                and 3rd order derivative would have an zero_crossings = [4, 5].
+                and 3rd order derivative would have a zero_crossings = [4, 5].
                 Again this is used in determining the possible sign
                 combinations available.
 
@@ -85,15 +85,17 @@ class chi_plotter(object):
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
             | Determines the maximum number of signs explored either side of
-                the minimum :math`{\chi^2}` value found after the
-                decent algorithm has terminated.
+                the minimum :math:`{\chi^2}` value found after the
+                decent algorithm has terminated when running smooth(). Here
+                it is used when plot_limits=True.
 
         chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
-            | The maximum allowed increase in :math`{\chi^2}` during the
+            | The maximum allowed increase in :math:`{\chi^2}` during the
                 directional exploration. If this value is exceeded then the
                 exploration in one direction is terminated and started in the
-                other. For more details on this and 'cap' see the ``maxsmooth``
-                paper.
+                other when runing smooth(). For more details on this and
+                'cap' see the ``maxsmooth`` paper. Again this is used here
+                when plot_limits=True.
 
     """
     def __init__(self, N, **kwargs):

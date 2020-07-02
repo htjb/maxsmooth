@@ -76,10 +76,10 @@ class qp_class(object):
             if self.derivative_pres is not None:
                 if self.args is None:
                     derivatives = self.derivative_pres(
-                        m, self.x, self.y, self.pivot_point)
+                        m, self.x, self.y, self.N, self.pivot_point)
                 if self.args is not None:
                     derivatives = self.derivative_pres(
-                        m, self.x, self.y, self.pivot_point,
+                        m, self.x, self.y, self.N, self.pivot_point,
                         *self.args)
 
             if self.model_type == 'legendre':

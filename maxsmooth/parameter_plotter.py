@@ -50,7 +50,7 @@ class param_plotter(object):
             | The location in which the
                 parameter plot is saved.
 
-        constraints: **Default = 2 else an integer less than or equal**
+        **constraints: Default = 2 else an integer less than or equal**
         **to N - 1**
             | The minimum constrained derivative order which is set by default
                 to 2 for a Maximally Smooth Function. Used here to
@@ -103,13 +103,13 @@ class param_plotter(object):
                 the data.
 
         **der_pres: Default = None else function with parameters**
-        **(m, i, x, y, pivot_point)**
-            | This function describes the prefactors on the ith term of the
+        **(m, x, y, N, pivot_point)**
+            | This function describes the prefactors on the
                 mth order derivative used in defining the constraint.
 
         **derivatives: Default = None else function with parameters**
-        **(m, i, x, y, pivot_point, params)**
-            | User defined function describing the ith term of the mth
+        **(m, x, y, N, pivot_point, params)**
+            | User defined function describing the mth
                 order derivative used to check that conditions are being met.
 
         **args: Default = None else list**

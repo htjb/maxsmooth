@@ -1,5 +1,6 @@
 """
-This function allows you to test the built in basis and their ability to
+As demonstrated, this function allows you to test the built in basis and their
+ability to
 fit the data. It produces a plot that shows :math:`{\chi^2}` as a function of
 :math:`{N}` for the 7 built in models and saves the figure to the base
 directory.
@@ -35,7 +36,7 @@ class basis_test(object):
                 graph from function. This must be a string and end in '/'. If
                 the file does not exist then the function will create it.
 
-        N: **Default = [3, .., 13] in steps of 1 else list or numpy array**
+        **N: Default = [3, .., 13] in steps of 1 else list or numpy array**
         **of integers**
             | The DCF orders to test each basis function with. In
                 some instances the basis function may fail for a given

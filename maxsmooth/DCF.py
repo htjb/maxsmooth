@@ -2,7 +2,7 @@
 """
 *smooth*, as demonstrated in the examples section,
 is used to call the fitting routine. There are a number
-of :math:`{^{**}}`kwargs that can be assigned to the function which change how
+of :math:`{^{**}}` kwargs that can be assigned to the function which change how
 the fit is performed, the model that is fit and various other attributes.
 These are detailed below.
 
@@ -43,7 +43,7 @@ class smooth(object):
                 (default) or testing all sign combinations on the derivatives
                 which can be accessed by setting to 'qp'.
 
-        model_type: **Default = 'difference_polynomials'**
+        model_type: **Default = 'difference_polynomial'**
             | Allows the user to
                 access default Derivative Constrained Functions built into the
                 software. Available options include the default, 'polynomial',
@@ -52,7 +52,8 @@ class smooth(object):
                 functional form of the built in basis see the ``maxsmooth``
                 paper.
 
-        pivot_point: **Default = len(x)//2 else integer**
+        **pivot_point: Default = len(x)//2 otherwise an integer between**
+        **-len(x) and len(x)**
             | Some of the built in
                 models rely on pivot points in the data sets which by defualt
                 is set as the middle index. This can be altered via
@@ -89,7 +90,7 @@ class smooth(object):
             | Allows the user
                 to overwrite the default initial parameters used by ``CVXOPT``.
 
-        constraints: **Default = 2 else an integer less than or equal**
+        **constraints: Default = 2 else an integer less than or equal**
         **to N - 1**
             | The minimum constrained derivative order which is set by default
                 to 2 for a Maximally Smooth Function.
@@ -99,21 +100,21 @@ class smooth(object):
                 specify if the conditions should be relaxed on any
                 of the derivatives between constraints and the highest order
                 derivative. e.g. a 6th order fit with just a constrained 2nd
-                and 3rd order derivative would have an zero_crossings = [4, 5].
+                and 3rd order derivative would have zero_crossings = [4, 5].
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
             | Determines the maximum number of signs explored either side of
-                the minimum :math`{\chi^2}` value found after the decent
+                the minimum :math:`{\chi^2}` value found after the decent
                 algorithm has terminated.
 
         chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
-            | The maximum allowed increase in :math`{\chi^2}` during the
+            | The maximum allowed increase in :math:`{\chi^2}` during the
                 directional exploration. If this value is exceeded then the
                 exploration in one direction is terminated and started in the
                 other. For more details on this and 'cap' see the ``maxsmooth``
                 paper.
 
-        The following Kwargs can be used by the user to define thier own basis
+        The following Kwargs can be used by the user to define their own basis
         function and will overwrite the 'model_type' kwarg.
 
         **basis_function: Default = None else function with parameters**
@@ -130,13 +131,13 @@ class smooth(object):
                 the data.
 
         **der_pres: Default = None else function with parameters**
-        **(m, i, x, y, pivot_point)**
-            | This function describes the prefactors on the ith term of the
+        **(m, x, y, N, pivot_point)**
+            | This function describes the prefactors on the
                 mth order derivative used in defining the constraint.
 
         **derivatives: Default = None else function with parameters**
-        **(m, i, x, y, pivot_point, params)**
-            | User defined function describing the ith term of the mth
+        **(m, x, y, N, pivot_point, params)**
+            | User defined function describing the mth
                 order derivative used to check that conditions are being met.
 
         **args: Default = None else list**
@@ -145,21 +146,18 @@ class smooth(object):
 
     **Output**
 
-        If N is a list with length greater than 1 then the outputs from smooth
-        are lists and arrays with dimension 0 equal to len(N).
-
         .y_fit: **numpy.array**
-            | The fitted arrays of y data from `smooth`.
+            | The fitted array of y data from smooth().
 
         .optimum_chi: **float**
-            | The optimum chi squared values for the fit calculated by,
+            | The optimum :math:`{\chi^2}` value for the fit calculated by,
 
             .. math::
 
                 {X^2=\sum(y-y_{fit})^2}.
 
         .optimum_params: **numpy.array**
-            | The set of parameters corresponding to the optimum fits.
+            | The set of parameters corresponding to the optimum fit.
 
         .rms: **float**
             | The rms value of the residuals :math:`{y_{res}=y-y_{fit}}`
@@ -176,7 +174,9 @@ class smooth(object):
 
         .optimum_signs: **numpy.array**
             | The sign combinations corresponding to the
-                optimal results.
+                optimal result. The nature of the constraint means that a
+                negative ``maxsmooth`` sign implies a positive :math:`{m^{th}}`
+                order derivative and visa versa.
 
     """
 
