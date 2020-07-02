@@ -5,7 +5,7 @@ maxsmooth: maximally smooth function fitting
 Introduction
 ------------
 
-:maxsmooth: maximally smooth function fitting
+:maxsmooth: Derivative Constrained Function Fitting
 :Author: Harry Thomas Jones Bevins
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
