@@ -1,3 +1,3 @@
 .. title:: Introduction
 
-.. include:: ../../README.rst
+.. include:: README_for_docs.rst

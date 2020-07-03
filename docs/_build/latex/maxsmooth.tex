@@ -74,7 +74,7 @@
 
 
 \title{maxsmooth Documentation}
-\date{Jul 02, 2020}
+\date{Jul 03, 2020}
 \release{1.0.0}
 \author{Harry Thomas Jones Bevins}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -94,7 +94,7 @@
 \chapter{Introduction}
 \label{\detokenize{source/intro:introduction}}\begin{quote}\begin{description}
 \item[{maxsmooth}] \leavevmode
-maximally smooth function fitting
+Derivative Constrained Function Fitting
 
 \item[{Author}] \leavevmode
 Harry Thomas Jones Bevins
@@ -107,6 +107,12 @@ Harry Thomas Jones Bevins
 
 \end{description}\end{quote}
 
+
+\section{Licence and Citation}
+\label{\detokenize{source/intro:licence-and-citation}}
+
+\section{Derivative Constrained Functions and \sphinxstyleliteralintitle{\sphinxupquote{maxsmooth}}}
+\label{\detokenize{source/intro:derivative-constrained-functions-and-maxsmooth}}
 \sphinxcode{\sphinxupquote{maxsmooth}} is an open source software for fitting derivative constrained
 functions, DCFs such as Maximally Smooth Functions
 , MSFs to data sets. MSFs are functions for which there are no zero
@@ -157,6 +163,18 @@ The software has been designed with these two
 applications in mind and is a simple interface.
 
 
+\section{Example Fit}
+\label{\detokenize{source/intro:example-fit}}
+Shown below is an example MSF fit performed with \sphinxcode{\sphinxupquote{maxsmooth}} to data that
+follows a \({y = x^{-2.5}}\) power law with a randomly generated Gaussian
+noise. The top panel shows the data and the bottom panel shows the residual
+after subtraction of the MSF fit. The software using one of the built in DCF models
+and fitting normalised data is shown to be capable of recovering the
+random noise.
+
+\noindent{\hspace*{\fill}\sphinxincludegraphics[width=400\sphinxpxdimen]{{README}.png}\hspace*{\fill}}
+
+
 \section{Installation}
 \label{\detokenize{source/intro:installation}}
 
@@ -186,9 +204,6 @@ To run the code you will need the following additional packages,
 
 \end{itemize}
 
-
-\section{Citation}
-\label{\detokenize{source/intro:citation}}
 
 \chapter{Maxsmooth Example Codes}
 \label{\detokenize{source/maxsmooth:maxsmooth-example-codes}}\label{\detokenize{source/maxsmooth::doc}}
@@ -727,11 +742,13 @@ the minimum \({\chi^2}\) value found after the decent
 algorithm has terminated.
 \end{DUlineblock}
 
-\item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2*min(chi\_squared) else float or int}}] \leavevmode
+\item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2 else float or int}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The maximum allowed increase in \({\chi^2}\) during the
-directional exploration. If this value is exceeded then the
-exploration in one direction is terminated and started in the
+\item[] The prefactor on the maximum allowed increase in \({\chi^2}\)
+during the directional exploration which is defaulted at 2.
+If this value multiplied by the minimum \({\chi^2}\)
+value found after the descent algorithm is exceeded then the
+exploration in one direction is stopped and started in the
 other. For more details on this and \textquotesingle{}cap\textquotesingle{} see the \sphinxcode{\sphinxupquote{maxsmooth}}
 paper.
 \end{DUlineblock}
@@ -1016,13 +1033,15 @@ decent algorithm has terminated when running smooth(). Here
 it is used when plot\_limits=True.
 \end{DUlineblock}
 
-\item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2*min(chi\_squared) else float or int}}] \leavevmode
+\item[{chi\_squared\_limit: \sphinxstylestrong{Default = 2 else float or int}}] \leavevmode
 \begin{DUlineblock}{0em}
-\item[] The maximum allowed increase in \({\chi^2}\) during the
-directional exploration. If this value is exceeded then the
-exploration in one direction is terminated and started in the
-other when runing smooth(). For more details on this and
-\textquotesingle{}cap\textquotesingle{} see the \sphinxcode{\sphinxupquote{maxsmooth}} paper. Again this is used here
+\item[] The prefactor on the maximum allowed increase in \({\chi^2}\)
+during the directional exploration which is defaulted at 2.
+If this value multiplied by the minimum \({\chi^2}\)
+value found after the descent algorithm is exceeded then the
+exploration in one direction is stopped and started in the
+other. For more details on this and \textquotesingle{}cap\textquotesingle{} see the \sphinxcode{\sphinxupquote{maxsmooth}}
+paper. Again this is used here
 when plot\_limits=True.
 \end{DUlineblock}
 
