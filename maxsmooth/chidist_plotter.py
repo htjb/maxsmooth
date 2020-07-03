@@ -254,8 +254,10 @@ class chi_plotter(object):
                         i - self.cap,  min(chi), max(chi),
                         ls='--', color='k', alpha=0.5)
         if self.plot_limits is True:
+            min_chi = np.load(self.base_dir + str(self.N) +
+                '_'+self.fit_type+'_minimum_chi_post_descent.npy')
             plt.hlines(
-                self.chi_squared_limit, 0, len(possible_signs),
+                self.chi_squared_limit*min_chi, 0, len(possible_signs),
                 ls='-.', label=r'Max. Increase\n' + ' in $\chi^2$',
                 color='k', alpha=0.5)
         plt.xlim([j[0], j[-1]])
