@@ -89,12 +89,14 @@ class chi_plotter(object):
                 decent algorithm has terminated when running smooth(). Here
                 it is used when plot_limits=True.
 
-        chi_squared_limit: **Default = 2*min(chi_squared) else float or int**
-            | The maximum allowed increase in :math:`{\chi^2}` during the
-                directional exploration. If this value is exceeded then the
-                exploration in one direction is terminated and started in the
-                other when runing smooth(). For more details on this and
-                'cap' see the ``maxsmooth`` paper. Again this is used here
+        chi_squared_limit: **Default = 2 else float or int**
+            | The prefactor on the maximum allowed increase in :math:`{\chi^2}`
+                during the directional exploration which is defaulted at 2.
+                If this value multiplied by the minimum :math:`{\chi^2}`
+                value found after the descent algorithm is exceeded then the
+                exploration in one direction is stopped and started in the
+                other. For more details on this and 'cap' see the ``maxsmooth``
+                paper. Again this is used here
                 when plot_limits=True.
 
     """
