@@ -34,7 +34,7 @@ summarized like so,
 
 .. math::
 
-  \frac{d^m~y}{d~x^m}~\geq~0~~\textnormal{or}~~\frac{d^m~y}{d~x^m}~\leq~0.
+  \frac{d^m~y}{d~x^m}~\geq~0~~\mathrm{or}~~\frac{d^m~y}{d~x^m}~\leq~0.
 
 This constraint is itself not linear but ``maxsmooth`` is designed to test the
 constraint,
@@ -88,7 +88,24 @@ Installation
 
 Documentation
 ~~~~~~~~~~~~~
-The documentation can be compiled from the git repository by...
+The documentation can be compiled locally from the git repository and requires
+`sphinx <https://pypi.org/project/Sphinx/>`__ to be installed.
+You can do this via:
+
+.. code::
+
+  cd docs/
+  make html
+
+or
+
+.. code::
+
+  cd docs/
+  make latexpdf
+
+The resultant docs can be found in the docs/_build/html/ and docs/_build/latex/
+respectively.
 
 Requirements
 ~~~~~~~~~~~~
@@ -96,9 +113,17 @@ Requirements
 The code was written in Python 3.6 but should be backward compatible with
 Python 2 although this has not been thoroughly tested.
 
-To run the code you will need the following additional packages,
+To run the code you will need the following additional packages:
 
 - `matplotlib <https://pypi.org/project/matplotlib/>`__
 - `numpy <https://pypi.org/project/numpy/>`__
 - `CVXOPT <https://pypi.org/project/cvxopt/>`__
 - `scipy <https://pypi.org/project/scipy/>`__
+
+To compile the documentation locally you will need:
+
+- `sphinx <https://pypi.org/project/Sphinx/>`__
+
+To run the test suit you will need:
+
+- `pytest <https://pypi.org/project/pytest/>`__
