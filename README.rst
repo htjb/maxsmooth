@@ -10,9 +10,6 @@ Introduction
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
 
-Licence and Citation
-~~~~~~~~~~~~~~~~~~~~
-
 Derivative Constrained Functions and ``maxsmooth``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -74,7 +71,8 @@ Example Fit
 
 Shown below is an example MSF fit performed with ``maxsmooth`` to data that
 follows a :math:`{y = x^{-2.5}}` power law with a randomly generated Gaussian
-noise. The top panel shows the data and the bottom panel shows the residual
+noise with a standard deviation 0.02. The top panel shows the data and the
+bottom panel shows the residual
 after subtraction of the MSF fit. The software using one of the built in DCF models
 and fitting normalised data is shown to be capable of recovering the
 random noise.
@@ -85,6 +83,15 @@ random noise.
 
 Installation
 ~~~~~~~~~~~
+
+Licence and Citation
+~~~~~~~~~~~~~~~~~~~~
+
+The software is free to use on the MIT open source license. However if you use
+the software for academic purposes we request that you cite the ``maxsmooth``
+paper. ::
+
+  H. T. J. Bevins et al., in prep.
 
 Documentation
 ~~~~~~~~~~~~~
