@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>&lt;no title&gt; &mdash; maxsmooth 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> maxsmooth
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maxsmooth.html">Maxsmooth Example Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maxsmooth.html#maxsmooth-functions">Maxsmooth Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">maxsmooth</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/new_basis_example.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p>This example code illustrates how to define your own basis function for the
+DCF model.
+It implements a modified version of the built in normalized polynomial model
+but the structure is the same for more elaborate models.</p>
+<p>As always we need to import the data, define an order <span class="math notranslate nohighlight">\({N}\)</span>
+and import the function fitting routine, smooth().</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">maxsmooth.DCF</span> <span class="kn">import</span> <span class="n">smooth</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+
+<span class="n">N</span><span class="o">=</span><span class="mi">10</span>
+</pre></div>
+</div>
+<p>There are several requirements needed to define a new basis function completely
+for <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> to be able to fit it. They are as summarized below and then
+examples of each are given in more detail,</p>
+<blockquote>
+<div><ul>
+<li><p><strong>args:</strong> Additional non-standard  arguments needed in the definition of the
+basis. The standard arguments are the data (x and y), the order of the fit N,
+the pivot point about which a model can be fit,
+the derivative order <span class="math notranslate nohighlight">\({m}\)</span> and the params. While the
+pivot point is not strictly needed it is a required argument for the
+functions defining a new basis to help the user in their definition.</p></li>
+<li><p><strong>basis_functions:</strong> This function defines the basis of the DCF model,
+<span class="math notranslate nohighlight">\({\phi}\)</span> where the model can be generally defined as,</p>
+<div class="math notranslate nohighlight">
+\[y = \sum_{k = 0}^N a_k \phi_k(x)\]</div>
+<p>where <span class="math notranslate nohighlight">\({a_k}\)</span> are the fit parameters.</p>
+</li>
+<li><p><strong>model:</strong> This is the function described by the equation above.</p></li>
+<li><p><strong>derivative:</strong> This function defines the <span class="math notranslate nohighlight">\({m^{th}}\)</span> order derivative.</p></li>
+<li><p><strong>derivative_pre:</strong> This function defines the prefactors,
+<span class="math notranslate nohighlight">\({\mathbf{G}}\)</span> on the derivatives where <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code>, the quadratic
+programming routine used, evaluates the constraints as,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{Ga} \leq \mathbf{h}\]</div>
+<p>where <span class="math notranslate nohighlight">\({\mathbf{a}}\)</span> is the matrix of parameters and <span class="math notranslate nohighlight">\({\mathbf{h}}\)</span>
+is the matrix of constraint limits. For more details on this see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+paper.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>We can begin defining our new basis function by defining the additional arguments
+needed to fit the model as a list,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">arguments</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The next step is to define the basis functions <span class="math notranslate nohighlight">\({\phi}\)</span>. This needs to be
+done in a function that has the arguments <em>(x, y, pivot_point, N, *args)</em>. 'args'
+is optional but since we need them for this basis we are passing it in.</p>
+<p>The basis functions, <span class="math notranslate nohighlight">\({\phi}\)</span>, should be an array of dimensions len(x)
+by N and consequently evaluated at each N and x data point as shown below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">basis_functions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">N</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">phi</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">h</span><span class="p">]</span><span class="o">/</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">phi</span>
+</pre></div>
+</div>
+<p>We can define the model that we are fitting in a function like that shown below.
+This is used for evaluating <span class="math notranslate nohighlight">\({\chi^2}\)</span> and returning the optimum fitted model
+once the code has finished running. It requires the arguments
+<em>(x, y, pivot_point, N, params, *args)</em> in that order and again where 'args' is optional.
+'params' is the parameters of the fit, <span class="math notranslate nohighlight">\({\mathbf{a}}\)</span> which should have length
+<span class="math notranslate nohighlight">\({N}\)</span>.</p>
+<p>The function should return the fitted estimate of y.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">y_sum</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">i</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_sum</span>
+</pre></div>
+</div>
+<p>Next we have to define a function for the derivatives of the model which
+takes arguments <em>(m, x, y, N, pivot_point, params, *args)</em> where <span class="math notranslate nohighlight">\({m}\)</span> is
+the derivative order. The function should return the <span class="math notranslate nohighlight">\({m^{th}}\)</span> order
+derivative evaluation and is used for checking that the constraints have been
+met and returning the derivatives of the optimum fit to the user.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">mth_order_derivative</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">):</span>
+            <span class="n">mth_order_derivative_term</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> \
+                <span class="n">params</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">+</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> \
+                <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">mth_order_derivative_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mth_order_derivative</span>
+</pre></div>
+</div>
+<p>Finally we have to define <span class="math notranslate nohighlight">\({\mathbf{G}}\)</span> which is used by <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code> to
+build the derivatives and constrain the functions. It takes arguments
+<em>(m, x, y, N, pivot_point, *args)</em> and should return the prefactor on the
+<span class="math notranslate nohighlight">\({m^{th}}\)</span> order derivative. For a more thorough definition of the
+prefactor on the derivative and an explanation of how the problem is
+constrained in quadratic programming see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">derivative_pre</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">mth_order_derivative</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">):</span>
+            <span class="n">mth_order_derivative_term</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> \
+                <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> \
+                <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">mth_order_derivative_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mth_order_derivative</span>
+</pre></div>
+</div>
+<p>With our functions and additional arguments defined we can pass these
+to the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> smooth() function as is shown below. This overwrites the
+built in DCF model but you are still able to modify the fit type i.e. testing all
+available sign combinations or sampling them.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span>
+    <span class="n">basis_functions</span><span class="o">=</span><span class="n">basis_functions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">derivatives</span><span class="o">=</span><span class="n">derivative</span><span class="p">,</span> <span class="n">der_pres</span><span class="o">=</span><span class="n">derivative_pre</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of the fit can be accessed as before,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Funtion Evaluations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_chi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;RMS:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">rms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_params</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fitted y:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">y_fit</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Sign Combinations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_signs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Derivatives:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">derivatives</span><span class="p">)</span>
+</pre></div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Harry Thomas Jones Bevins
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

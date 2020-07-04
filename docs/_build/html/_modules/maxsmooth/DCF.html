@@ -1,0 +1,1082 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>maxsmooth.DCF &mdash; maxsmooth 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../source/index.html" class="icon icon-home" alt="Documentation Home"> maxsmooth
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/maxsmooth.html">Maxsmooth Example Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/maxsmooth.html#maxsmooth-functions">Maxsmooth Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../source/index.html">maxsmooth</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../source/index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>maxsmooth.DCF</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for maxsmooth.DCF</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">*smooth*, as demonstrated in the examples section,</span>
+<span class="sd">is used to call the fitting routine. There are a number</span>
+<span class="sd">of :math:`{^{**}}` kwargs that can be assigned to the function which change how</span>
+<span class="sd">the fit is performed, the model that is fit and various other attributes.</span>
+<span class="sd">These are detailed below.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">maxsmooth.qp</span> <span class="kn">import</span> <span class="n">qp_class</span>
+<span class="kn">from</span> <span class="nn">maxsmooth.Models</span> <span class="kn">import</span> <span class="n">Models_class</span>
+<span class="kn">from</span> <span class="nn">maxsmooth.derivatives</span> <span class="kn">import</span> <span class="n">derivative_class</span>
+<span class="kn">from</span> <span class="nn">maxsmooth.Data_save</span> <span class="kn">import</span> <span class="n">save</span><span class="p">,</span> <span class="n">save_optimum</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+
+<div class="viewcode-block" id="smooth"><a class="viewcode-back" href="../../source/maxsmooth.html#maxsmooth.DCF.smooth">[docs]</a><span class="k">class</span> <span class="nc">smooth</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    **Parameters:**</span>
+
+<span class="sd">        x: **numpy.array**</span>
+<span class="sd">            | The x data points for the set being fitted.</span>
+
+<span class="sd">        y: **numpy.array**</span>
+<span class="sd">            | The y data points for fitting.</span>
+
+<span class="sd">        N: **int**</span>
+<span class="sd">            | The number of terms in the DCF.</span>
+
+<span class="sd">    **Kwargs:**</span>
+
+<span class="sd">        fit_type: **Default = &#39;qp-sign_flipping&#39;**</span>
+<span class="sd">            | This kwarg allows the user to</span>
+<span class="sd">                switch between sampling the available discrete sign spaces</span>
+<span class="sd">                (default) or testing all sign combinations on the derivatives</span>
+<span class="sd">                which can be accessed by setting to &#39;qp&#39;.</span>
+
+<span class="sd">        model_type: **Default = &#39;difference_polynomial&#39;**</span>
+<span class="sd">            | Allows the user to</span>
+<span class="sd">                access default Derivative Constrained Functions built into the</span>
+<span class="sd">                software. Available options include the default, &#39;polynomial&#39;,</span>
+<span class="sd">                &#39;normalised_polynomial&#39;, &#39;legendre&#39;, &#39;log_polynomial&#39;,</span>
+<span class="sd">                &#39;loglog_polynomial&#39; and &#39;exponential&#39;. For more details on the</span>
+<span class="sd">                functional form of the built in basis see the ``maxsmooth``</span>
+<span class="sd">                paper.</span>
+
+<span class="sd">        **pivot_point: Default = len(x)//2 otherwise an integer between**</span>
+<span class="sd">        **-len(x) and len(x)**</span>
+<span class="sd">            | Some of the built in</span>
+<span class="sd">                models rely on pivot points in the data sets which by defualt</span>
+<span class="sd">                is set as the middle index. This can be altered via</span>
+<span class="sd">                this kwarg which can occasionally lead to a better quality fit.</span>
+
+<span class="sd">        base_dir: **Default = &#39;Fitted_Output/&#39;**</span>
+<span class="sd">            | The location of the outputted</span>
+<span class="sd">                data from ``maxsmooth``. This must be a string and end in &#39;/&#39;.</span>
+<span class="sd">                If the file does not exist then ``maxsmooth`` will create it.</span>
+<span class="sd">                By default the only outputted data is a summary of the best</span>
+<span class="sd">                fit but additional data can be recorded by setting the keyword</span>
+<span class="sd">                argument &#39;data_save = True&#39;.</span>
+
+<span class="sd">        data_save: **Default = False**</span>
+<span class="sd">            | By setting this to True the algorithm</span>
+<span class="sd">                will save every tested set of parameters, signs and objective</span>
+<span class="sd">                function evaluations into files in base_dir. Theses files will</span>
+<span class="sd">                be over written on repeated runs but they are needed to run the</span>
+<span class="sd">                &#39;chidist_plotter&#39;.</span>
+
+<span class="sd">        all_output: **Default = False**</span>
+<span class="sd">            | If set to True this outputs to the</span>
+<span class="sd">                terminal every fit performed by the algorithm. By default the</span>
+<span class="sd">                only output is the optimal solution once the code is finished.</span>
+
+<span class="sd">        cvxopt_maxiter: **Default = 10000 else integer**</span>
+<span class="sd">            | This shouldn&#39;t need</span>
+<span class="sd">                changing for most problems however if ``CVXOPT`` fails with a</span>
+<span class="sd">                &#39;maxiters reached&#39; error message this can be increased.</span>
+<span class="sd">                Doing so arbitrarily will however increase the run time of</span>
+<span class="sd">                ``maxsmooth``.</span>
+
+<span class="sd">        initial_params: **Default = None else list of length N**</span>
+<span class="sd">            | Allows the user</span>
+<span class="sd">                to overwrite the default initial parameters used by ``CVXOPT``.</span>
+
+<span class="sd">        **constraints: Default = 2 else an integer less than or equal**</span>
+<span class="sd">        **to N - 1**</span>
+<span class="sd">            | The minimum constrained derivative order which is set by default</span>
+<span class="sd">                to 2 for a Maximally Smooth Function.</span>
+
+<span class="sd">        zero_crossings: **Default = None else list of integers**</span>
+<span class="sd">            | Allows you to</span>
+<span class="sd">                specify if the conditions should be relaxed on any</span>
+<span class="sd">                of the derivatives between constraints and the highest order</span>
+<span class="sd">                derivative. e.g. a 6th order fit with just a constrained 2nd</span>
+<span class="sd">                and 3rd order derivative would have zero_crossings = [4, 5].</span>
+
+<span class="sd">        cap: **Default = (len(available_signs)//N) + N else an integer**</span>
+<span class="sd">            | Determines the maximum number of signs explored either side of</span>
+<span class="sd">                the minimum :math:`{\chi^2}` value found after the decent</span>
+<span class="sd">                algorithm has terminated.</span>
+
+<span class="sd">        chi_squared_limit: **Default = 2 else float or int**</span>
+<span class="sd">            | The prefactor on the maximum allowed increase in :math:`{\chi^2}`</span>
+<span class="sd">                during the directional exploration which is defaulted at 2.</span>
+<span class="sd">                If this value multiplied by the minimum :math:`{\chi^2}`</span>
+<span class="sd">                value found after the descent algorithm is exceeded then the</span>
+<span class="sd">                exploration in one direction is stopped and started in the</span>
+<span class="sd">                other. For more details on this and &#39;cap&#39; see the ``maxsmooth``</span>
+<span class="sd">                paper.</span>
+
+<span class="sd">        The following Kwargs can be used by the user to define their own basis</span>
+<span class="sd">        function and will overwrite the &#39;model_type&#39; kwarg.</span>
+
+<span class="sd">        **basis_function: Default = None else function with parameters**</span>
+<span class="sd">        **(x, y, pivot_point, N)**</span>
+<span class="sd">            | This is a function of basis functions</span>
+<span class="sd">                for the quadratic programming. The variable pivot_point is the</span>
+<span class="sd">                index at the middle of the datasets x and y by default but can</span>
+<span class="sd">                be adjusted.</span>
+
+<span class="sd">        **model: Default = None else function with parameters**</span>
+<span class="sd">        **(x, y, pivot_point, N, params)**</span>
+<span class="sd">            | This is</span>
+<span class="sd">                a user defined function describing the model to be fitted to</span>
+<span class="sd">                the data.</span>
+
+<span class="sd">        **der_pres: Default = None else function with parameters**</span>
+<span class="sd">        **(m, x, y, N, pivot_point)**</span>
+<span class="sd">            | This function describes the prefactors on the</span>
+<span class="sd">                mth order derivative used in defining the constraint.</span>
+
+<span class="sd">        **derivatives: Default = None else function with parameters**</span>
+<span class="sd">        **(m, x, y, N, pivot_point, params)**</span>
+<span class="sd">            | User defined function describing the mth</span>
+<span class="sd">                order derivative used to check that conditions are being met.</span>
+
+<span class="sd">        **args: Default = None else list**</span>
+<span class="sd">            | Extra arguments for `smooth`</span>
+<span class="sd">                to pass to the functions detailed above.</span>
+
+<span class="sd">    **Output**</span>
+
+<span class="sd">        .y_fit: **numpy.array**</span>
+<span class="sd">            | The fitted array of y data from smooth().</span>
+
+<span class="sd">        .optimum_chi: **float**</span>
+<span class="sd">            | The optimum :math:`{\chi^2}` value for the fit calculated by,</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                {X^2=\sum(y-y_{fit})^2}.</span>
+
+<span class="sd">        .optimum_params: **numpy.array**</span>
+<span class="sd">            | The set of parameters corresponding to the optimum fit.</span>
+
+<span class="sd">        .rms: **float**</span>
+<span class="sd">            | The rms value of the residuals :math:`{y_{res}=y-y_{fit}}`</span>
+<span class="sd">                calculated by,</span>
+
+<span class="sd">            .. math::</span>
+
+<span class="sd">                {rms=\sqrt{\frac{\sum(y-y_{fit})^2}{n}}}</span>
+
+<span class="sd">            where :math:`n` is the number of data points.</span>
+
+<span class="sd">        .derivatives: **numpy.array**</span>
+<span class="sd">            | The :math:`m^{th}` order derivatives.</span>
+
+<span class="sd">        .optimum_signs: **numpy.array**</span>
+<span class="sd">            | The sign combinations corresponding to the</span>
+<span class="sd">                optimal result. The nature of the constraint means that a</span>
+<span class="sd">                negative ``maxsmooth`` sign implies a positive :math:`{m^{th}}`</span>
+<span class="sd">                order derivative and visa versa.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;N must be an integer or whole number float.&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">keys</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s1">&#39;fit_type&#39;</span><span class="p">,</span> <span class="s1">&#39;model_type&#39;</span><span class="p">,</span> <span class="s1">&#39;base_dir&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;all_output&#39;</span><span class="p">,</span> <span class="s1">&#39;cvxopt_maxiter&#39;</span><span class="p">,</span> <span class="s1">&#39;zero_crossings&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;data_save&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;constraints&#39;</span><span class="p">,</span> <span class="s1">&#39;chi_squared_limit&#39;</span><span class="p">,</span> <span class="s1">&#39;cap&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;initial_params&#39;</span><span class="p">,</span> <span class="s1">&#39;basis_functions&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;der_pres&#39;</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;derivatives&#39;</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="s1">&#39;pivot_point&#39;</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Unexpected keyword argument in smooth().&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;fit_type&#39;</span><span class="p">,</span> <span class="s1">&#39;qp-sign_flipping&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;qp&#39;</span><span class="p">,</span> <span class="s1">&#39;qp-sign_flipping&#39;</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid &#39;fit_type&#39;. Valid entries include &#39;qp&#39;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span>
+                <span class="s2">&quot;&#39;qp-sign_flipping&#39;&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;pivot_point&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Pivot point is not an integer index.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span> <span class="o">&lt;</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Pivot point must be in the range -len(x) - len(x).&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;base_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;Fitted_Output/&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;&#39;base_dir&#39; must be a string ending in &#39;/&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;&#39;base_dir&#39; must end in &#39;/&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;model_type&#39;</span><span class="p">,</span> <span class="s1">&#39;difference_polynomial&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;normalised_polynomial&#39;</span><span class="p">,</span> <span class="s1">&#39;polynomial&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;log_polynomial&#39;</span><span class="p">,</span> <span class="s1">&#39;loglog_polynomial&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;difference_polynomial&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;exponential&#39;</span><span class="p">,</span> <span class="s1">&#39;legendre&#39;</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid &#39;model_type&#39;. See documentation for built&quot;</span> <span class="o">+</span>
+                <span class="s2">&quot;in models.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cvxopt_maxiter&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;cvxopt_maxiter&#39; is not integer.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;all_output&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;data_save&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">boolean_kwargs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_save</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">boolean_kwargs</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">boolean_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Boolean keyword argument with value &quot;</span>
+                    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">boolean_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span>
+                    <span class="s2">&quot; is not True or False.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;constraints&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;&#39;constraints&#39; is not an integer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;constraints&#39; exceeds the number of derivatives.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;zero_crossings&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="s2">&quot;Entries in &#39;zero_crossings&#39;&quot;</span> <span class="o">+</span>
+                        <span class="s2">&quot; are not integer.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s1">&#39;One or more specified derivatives for&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; zero crossings is less than the minimum&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; constrained&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; derivative.</span><span class="se">\n</span><span class="s1"> zero_crossings = &#39;</span> <span class="o">+</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39; Minimum Constrained Derivative = &#39;</span>
+                        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;chi_squared_limit&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cap&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> \
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Limit on maximum allowed increase in chi squared&quot;</span> <span class="o">+</span>
+                    <span class="s2">&quot;, &#39;chi_squared_limit&#39;, is not an integer or float.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="s2">&quot;The cap on directional exploration&quot;</span> <span class="o">+</span>
+                    <span class="s2">&quot;, &#39;cap&#39;, is not an integer.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;initial_params&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">)</span> \
+                <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Initial Parameters is not equal to the number&quot;</span> <span class="o">+</span>
+                <span class="s2">&quot;of terms in the polynomial, N.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">)</span> \
+                <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">float</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="s1">&#39;One or more initial&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39;parameters is not numeric.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_functions</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;basis_functions&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">der_pres</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;der_pres&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">derivatives_function</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;derivatives&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;basis_function&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basis_functions</span><span class="p">,</span> <span class="s1">&#39;der_pres&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">der_pres</span><span class="p">,</span>
+            <span class="s1">&#39;derivatives_function&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivatives_function</span><span class="p">,</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">key</span> <span class="o">!=</span> <span class="s1">&#39;args&#39;</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                        <span class="s1">&#39;Attempt to change basis functions failed.&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; One or more functions not defined.&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; Please consult documentation.&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;args&#39;</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s1">&#39;Warning: No additional arguments passed to&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; new basis functions&#39;</span><span class="p">)</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="s1">&#39;user_defined&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_fit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimum_signs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimum_params</span><span class="p">,</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivatives</span><span class="p">,</span>\
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimum_chi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimum_zc_dict</span> \
+            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">fitting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">signs_array</span><span class="p">(</span><span class="n">nums</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">))))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Parameters/&#39;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Parameters/&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Signs/&#39;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Signs/&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Evaluation/&#39;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="o">+</span><span class="s1">&#39;Output_Evaluation/&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">qp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">):</span>  <span class="c1"># Testing all signs</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;######################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#######&#39;</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">signs</span> <span class="o">=</span> <span class="n">signs_array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">signs</span> <span class="o">=</span> <span class="n">signs_array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">))</span>
+
+            <span class="n">params</span><span class="p">,</span> <span class="n">chi_squared</span><span class="p">,</span> <span class="n">zc_dict</span><span class="p">,</span> <span class="n">passed_signs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="n">append_params</span><span class="p">,</span> <span class="n">append_chi</span><span class="p">,</span> <span class="n">append_zc_dict</span><span class="p">,</span> <span class="n">append_passed_signs</span> <span class="o">=</span> \
+                <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">,</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">append</span><span class="p">,</span> <span class="n">zc_dict</span><span class="o">.</span><span class="n">append</span><span class="p">,</span> \
+                <span class="n">passed_signs</span><span class="o">.</span><span class="n">append</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">signs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">fit</span> <span class="o">=</span> <span class="n">qp_class</span><span class="p">(</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">signs</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:],</span> <span class="n">pivot_point</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;-----------------------------------------------&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39;-----&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">signs</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:])</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                            <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                            <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;-----------------------------------------------&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39;-----&#39;</span><span class="p">)</span>
+
+                <span class="n">append_params</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+                <span class="n">append_chi</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                <span class="n">append_zc_dict</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                <span class="n">append_passed_signs</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">save</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">,</span>
+                        <span class="n">signs</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+
+            <span class="n">params</span><span class="p">,</span> <span class="n">chi_squared</span><span class="p">,</span> <span class="n">zc_dict</span><span class="p">,</span> <span class="n">passed_signs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">zc_dict</span><span class="p">),</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">passed_signs</span><span class="p">)</span>
+
+            <span class="n">Optimum_chi_squared</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">chi_squared</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="n">chi_squared</span><span class="o">.</span><span class="n">min</span><span class="p">():</span>
+                    <span class="n">Optimum_params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">Optimum_sign_combination</span> <span class="o">=</span> <span class="n">passed_signs</span><span class="p">[</span><span class="n">f</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="n">y_fit</span> <span class="o">=</span> <span class="n">Models_class</span><span class="p">(</span>
+                <span class="n">Optimum_params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span><span class="o">.</span><span class="n">y_sum</span>
+            <span class="n">der</span> <span class="o">=</span> <span class="n">derivative_class</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span>
+                <span class="n">pivot_point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+            <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span> <span class="o">=</span> <span class="n">der</span><span class="o">.</span><span class="n">derivatives</span><span class="p">,</span> <span class="n">der</span><span class="o">.</span><span class="n">zc_dict</span>
+
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;######################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#######&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;----------------------OPTIMUM RESULT--------------------&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;-----&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time:&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">Optimum_sign_combination</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                    <span class="n">Optimum_zc_dict</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                    <span class="n">Optimum_zc_dict</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;-------------------------------------------------------&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;------&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;######################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#######&#39;</span><span class="p">)</span>
+
+            <span class="n">save_optimum</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span>
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span>
+                <span class="n">Optimum_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> \
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span>
+
+        <span class="k">def</span> <span class="nf">qp_sign_flipping</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">):</span>  <span class="c1"># Sign Sampling</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;######################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#######&#39;</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">array_signs</span> <span class="o">=</span> <span class="n">signs_array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">array_signs</span> <span class="o">=</span> <span class="n">signs_array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">))</span>
+
+            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">signs</span> <span class="o">=</span> <span class="n">array_signs</span><span class="p">[</span><span class="n">r</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">tested_indices</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">chi_squared</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">tested_signs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">r</span><span class="p">:</span>
+                    <span class="n">tested_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="n">qp_class</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">signs</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+            <span class="n">chi_squared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+            <span class="n">tested_signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
+            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+            <span class="n">chi_squared_old</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span>
+            <span class="n">previous_signs</span> <span class="o">=</span> <span class="n">signs</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">signs</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">chi_squared_old</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                        <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Zero Crossings Used? (0 signifies&#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39;Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">save</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">,</span>
+                    <span class="n">signs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+
+            <span class="c1"># Transforms or &#39;steps&#39; of sign combination</span>
+            <span class="n">sign_transform</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signs</span><span class="p">)):</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">signs</span><span class="p">))</span>
+                <span class="n">base</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">sign_transform</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+            <span class="n">sign_transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sign_transform</span><span class="p">)</span>
+            <span class="n">chi_squared_new</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">while</span> <span class="n">chi_squared_new</span> <span class="o">&lt;</span> <span class="n">chi_squared_old</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">chi_squared_new</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">chi_squared_old</span> <span class="o">=</span> <span class="n">chi_squared_new</span>
+                <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sign_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">signs</span> <span class="o">=</span> <span class="n">previous_signs</span> <span class="o">*</span> <span class="n">sign_transform</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">signs</span> <span class="o">==</span> <span class="n">array_signs</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                            <span class="n">ind</span> <span class="o">=</span> <span class="n">i</span>
+                    <span class="k">if</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">tested_indices</span><span class="p">):</span>
+                        <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">tested_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+                        <span class="n">fit</span> <span class="o">=</span> <span class="n">qp_class</span><span class="p">(</span>
+                            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">signs</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span> <span class="o">&lt;</span> <span class="n">chi_squared_old</span><span class="p">:</span>
+                            <span class="n">chi_squared_new</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span>
+                            <span class="n">previous_signs</span> <span class="o">=</span> <span class="n">signs</span>
+                            <span class="n">chi_squared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                            <span class="n">tested_signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
+                            <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                                    <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span>
+                                        <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">-</span>
+                                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span>
+                                        <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">signs</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span>
+                                    <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span>
+                                        <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                                        <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative&#39;</span> <span class="o">+</span>
+                                        <span class="s1">&#39; order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                        <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span>
+                                        <span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                                    <span class="nb">print</span><span class="p">(</span>
+                                        <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                                        <span class="s1">&#39; (0 signifies&#39;</span> <span class="o">+</span>
+                                        <span class="s1">&#39;Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                        <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                                    <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                                <span class="n">save</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                                    <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">,</span>
+                                    <span class="n">signs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+
+                            <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="n">sign_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">chi_squared_new</span> <span class="o">=</span> <span class="n">chi_squared_old</span>
+                        <span class="k">break</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span> <span class="o">+</span>
+                <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="o">+</span><span class="s1">&#39;_minimum_chi_post_descent.npy&#39;</span><span class="p">,</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi_squared_limit</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lim</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cap</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">)</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">previous_signs</span> <span class="o">==</span> <span class="n">array_signs</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">i</span>
+
+            <span class="n">down_int</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">down_int</span> <span class="o">&lt;</span> <span class="n">cap</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">index</span><span class="o">-</span><span class="n">down_int</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">index</span><span class="o">-</span><span class="n">down_int</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">tested_indices</span><span class="p">):</span>
+                    <span class="n">chi_down</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">signs</span> <span class="o">=</span> <span class="n">array_signs</span><span class="p">[</span><span class="n">index</span><span class="o">-</span><span class="n">down_int</span><span class="p">]</span>
+                    <span class="n">tested_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span> <span class="o">-</span> <span class="n">down_int</span><span class="p">)</span>
+                    <span class="n">fit</span> <span class="o">=</span> <span class="n">qp_class</span><span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">signs</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+                    <span class="n">chi_down</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span>
+                    <span class="n">chi_squared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                    <span class="n">tested_signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
+                    <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">-</span>
+                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">signs</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39; order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossings Used? (0 signifies&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39;Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">save</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">,</span>
+                            <span class="n">signs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">chi_down</span> <span class="o">&gt;</span> <span class="n">lim</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="n">down_int</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">up_int</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">up_int</span> <span class="o">&lt;</span> <span class="n">cap</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">index</span><span class="o">+</span><span class="n">up_int</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_signs</span><span class="p">):</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="n">up_int</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">tested_indices</span><span class="p">):</span>
+                    <span class="n">chi_up</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">signs</span> <span class="o">=</span> <span class="n">array_signs</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="n">up_int</span><span class="p">]</span>
+                    <span class="n">tested_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="n">up_int</span><span class="p">)</span>
+                    <span class="n">fit</span> <span class="o">=</span> <span class="n">qp_class</span><span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">signs</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cvxopt_maxiter</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+                    <span class="n">chi_up</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span>
+                    <span class="n">chi_squared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                    <span class="n">tested_signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
+                    <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">-</span>
+                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">signs</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39; order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span>
+                                <span class="s1">&#39;Zero Crossings Used? (0 signifies&#39;</span> <span class="o">+</span>
+                                <span class="s1">&#39;Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                                <span class="n">fit</span><span class="o">.</span><span class="n">zc_dict</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s1">&#39;--------------------------------------&#39;</span> <span class="o">+</span>
+                            <span class="s1">&#39;--------------&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_save</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">save</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">fit</span><span class="o">.</span><span class="n">chi_squared</span><span class="p">,</span>
+                            <span class="n">signs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">chi_up</span> <span class="o">&gt;</span> <span class="n">lim</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="n">up_int</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">chi_squared</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="nb">min</span><span class="p">(</span><span class="n">chi_squared</span><span class="p">):</span>
+                    <span class="n">Optimum_params</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">Optimum_sign_combination</span> <span class="o">=</span> <span class="n">tested_signs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">Optimum_chi_squared</span> <span class="o">=</span> <span class="n">chi_squared</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">y_fit</span> <span class="o">=</span> <span class="n">Models_class</span><span class="p">(</span>
+                <span class="n">Optimum_params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span><span class="o">.</span><span class="n">y_sum</span>
+            <span class="n">der</span> <span class="o">=</span> <span class="n">derivative_class</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span>
+                <span class="n">pivot_point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_basis</span><span class="p">)</span>
+            <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span> <span class="o">=</span> <span class="n">der</span><span class="o">.</span><span class="n">derivatives</span><span class="p">,</span> <span class="n">der</span><span class="o">.</span><span class="n">zc_dict</span>
+
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;######################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#######&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;----------------------OPTIMUM RESULT--------------------&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;-----&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time:&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Polynomial Order:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Number of Constrained Derivatives:&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Signs :&#39;</span><span class="p">,</span> <span class="n">Optimum_sign_combination</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Function Value:&#39;</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:&#39;</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Method:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Constraints: m &gt;=&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                    <span class="n">Optimum_zc_dict</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Zero Crossing Derivatives:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Zero Crossings Used?&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; (0 signifies Yes</span><span class="se">\n</span><span class="s1"> in derivative order &quot;i&quot;):&#39;</span><span class="p">,</span>
+                    <span class="n">Optimum_zc_dict</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;----------------------------------------------------&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;---------&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;####################################################&#39;</span> <span class="o">+</span>
+                <span class="s1">&#39;#########&#39;</span><span class="p">)</span>
+
+            <span class="n">save_optimum</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span>
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span>
+                <span class="n">Optimum_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">zero_crossings</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> \
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span> <span class="o">==</span> <span class="s1">&#39;qp&#39;</span><span class="p">:</span>
+            <span class="n">y_fit</span><span class="p">,</span> <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> \
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span> <span class="o">=</span> \
+                <span class="n">qp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_type</span> <span class="o">==</span> <span class="s1">&#39;qp-sign_flipping&#39;</span><span class="p">:</span>
+            <span class="n">y_fit</span><span class="p">,</span> <span class="n">derivatives</span><span class="p">,</span> <span class="n">Optimum_chi_squared</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> \
+                <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span> <span class="o">=</span> \
+                <span class="n">qp_sign_flipping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pivot_point</span><span class="p">)</span>
+
+        <span class="n">rms</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">-</span><span class="n">y_fit</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">Optimum_sign_combination</span><span class="p">,</span> <span class="n">Optimum_params</span><span class="p">,</span> <span class="n">derivatives</span><span class="p">,</span> \
+            <span class="n">Optimum_chi_squared</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="n">Optimum_zc_dict</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Harry Thomas Jones Bevins
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

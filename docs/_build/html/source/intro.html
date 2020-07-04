@@ -1,129 +1,345 @@
 
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>Introduction &#8212; maxsmooth  documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; maxsmooth 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Maxsmooth Example Codes" href="maxsmooth.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
           
 
-          <div class="body" role="main">
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> maxsmooth
+          
+
+          
+          </a>
+
+          
             
-  <div class="section" id="maxsmooth-maximally-smooth-function-fitting">
-<h1>maxsmooth: maximally smooth function fitting<a class="headerlink" href="#maxsmooth-maximally-smooth-function-fitting" title="Permalink to this headline">¶</a></h1>
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#licence-and-citation">Licence and Citation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derivative-constrained-functions-and-maxsmooth">Derivative Constrained Functions and <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-fit">Example Fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="maxsmooth.html">Maxsmooth Example Codes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maxsmooth.html#maxsmooth-functions">Maxsmooth Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">maxsmooth</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/intro.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="maxsmooth-derivative-constrained-function-fitting">
+<h1>maxsmooth: Derivative Constrained Function Fitting<a class="headerlink" href="#maxsmooth-derivative-constrained-function-fitting" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <dl class="field-list simple">
 <dt class="field-odd">maxsmooth</dt>
-<dd class="field-odd"><p>maximally smooth function fitting</p>
+<dd class="field-odd"><p>Derivative Constrained Function Fitting</p>
 </dd>
 <dt class="field-even">Author</dt>
 <dd class="field-even"><p>Harry Thomas Jones Bevins</p>
 </dd>
 <dt class="field-odd">Version</dt>
-<dd class="field-odd"><p>0.0.0</p>
+<dd class="field-odd"><p>1.0.0</p>
+</dd>
+<dt class="field-even">Homepage</dt>
+<dd class="field-even"><p><a class="reference external" href="https://github.com/htjb/maxsmooth">https://github.com/htjb/maxsmooth</a></p>
 </dd>
 </dl>
-<p><code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> is an open source software for fitting maximally smooth functions to data sets. You can read more about maximally smooth functions here ..</p>
-<p><code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> features a built in library of maximally smooth functions or allows the user to define their own. The addition of possible inflection points is also available to the user. The software has been designed with these two applications in mind and is a simple interface.</p>
-<div class="section" id="instalation">
-<h2>Instalation<a class="headerlink" href="#instalation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="licence-and-citation">
+<h3>Licence and Citation<a class="headerlink" href="#licence-and-citation" title="Permalink to this headline">¶</a></h3>
 </div>
-<div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Basic requirements:</p>
+<div class="section" id="derivative-constrained-functions-and-maxsmooth">
+<h3>Derivative Constrained Functions and <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code><a class="headerlink" href="#derivative-constrained-functions-and-maxsmooth" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> is an open source software for fitting derivative constrained
+functions, DCFs such as Maximally Smooth Functions
+, MSFs to data sets. MSFs are functions for which there are no zero
+crossings in derivatives of order <span class="math notranslate nohighlight">\(m \geq 2\)</span> within the domain of interest.
+They are designed to prevent the loss of
+signals when fitting out dominant foregrounds and in some cases can be used to
+highlight systematics left in the data. More generally for DCFs the minimum
+constrained derivative order, m can take on any value or a set of
+specific high order derivatives can be constrained.</p>
+<p>You can read more about MSFs here ..</p>
+<p><code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> uses quadratic programming implemented with <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code> to fit
+data subject to a linear constraint. The constraint on an MSF can be
+summarized like so,</p>
+<div class="math notranslate nohighlight">
+\[\frac{d^m~y}{d~x^m}~\geq~0~~\mathrm{or}~~\frac{d^m~y}{d~x^m}~\leq~0.\]</div>
+<p>This constraint is itself not linear but <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> is designed to test the
+constraint,</p>
+<div class="math notranslate nohighlight">
+\[\pm \frac{d^m~y}{d~x^m}~\leq~0\]</div>
+<p>where a positive sign in front of the <span class="math notranslate nohighlight">\(m^{th}\)</span> order derivative forces the derivative
+to be negative for all x. For an <span class="math notranslate nohighlight">\(N^{th}\)</span> order polynomial <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> can test
+every available sign combination but by default it implements a 'sign-sampling'/'sign-flipping'
+algorithm. This is detailed in the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper (see citation) but is summarized
+below.</p>
+<p>The available sign combinations act as discrete parameter spaces all with
+global minima and <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> is capable of finding the minimum of these global
+minima by implementing a descent algorithm which is followed by a directional
+exploration. The descent routine typically finds an approximate to the global
+minimum and then the directional exploration is a complete search
+of the sign combinations in the neighbourhood
+of that minimum. The searched region is limited by factors
+that encapsulate enough of the neighbourhood to confidently return the global minimum.</p>
+<p>The sign sampling method is reliant on the problem being 'well defined' but this
+is not always the case and it is in these instances possible to run the code testing
+every available sign combination on the constrained derivatives. For a definition of
+a 'well defined' problem and it's counter part see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper.</p>
+<p><code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> features a built in library of DCFs or
+allows the user to define their own. The addition of possible inflection points
+and zero crossings in higher order derivatives is also available to the user.
+The software has been designed with these two
+applications in mind and is a simple interface.</p>
+</div>
+<div class="section" id="example-fit">
+<h3>Example Fit<a class="headerlink" href="#example-fit" title="Permalink to this headline">¶</a></h3>
+<p>Shown below is an example MSF fit performed with <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> to data that
+follows a <span class="math notranslate nohighlight">\({y = x^{-2.5}}\)</span> power law with a randomly generated Gaussian
+noise. The top panel shows the data and the bottom panel shows the residual
+after subtraction of the MSF fit. The software using one of the built in DCF models
+and fitting normalised data is shown to be capable of recovering the
+random noise.</p>
+<a class="reference internal image-reference" href="../_images/README.png"><img alt="../_images/README.png" class="align-center" src="../_images/README.png" style="width: 400px;" /></a>
+</div>
+<div class="section" id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>The documentation can be compiled locally from the git repository and requires
+<a class="reference external" href="https://pypi.org/project/Sphinx/">sphinx</a> to be installed.
+You can do this via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span><span class="o">/</span>
+<span class="n">make</span> <span class="n">html</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span><span class="o">/</span>
+<span class="n">make</span> <span class="n">latexpdf</span>
+</pre></div>
+</div>
+<p>The resultant docs can be found in the docs/_build/html/ and docs/_build/latex/
+respectively.</p>
+</div>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>The code was written in Python 3.6 but should be backward compatible with
+Python 2 although this has not been thoroughly tested.</p>
+<p>To run the code you will need the following additional packages:</p>
 <ul class="simple">
-<li><p>Python version..</p></li>
-<li><p><a class="reference external" href="https://pypi.org/project/pylab/">pylab</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/matplotlib/">matplotlib</a></p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/numpy/">numpy</a></p></li>
-<li><p><a class="reference external" href="https://pypi.org/project/cvxopt/">cvxopt</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/cvxopt/">CVXOPT</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/scipy/">scipy</a></p></li>
+</ul>
+<p>To compile the documentation locally you will need:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/Sphinx/">sphinx</a></p></li>
+</ul>
+<p>To run the test suit you will need:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/pytest/">pytest</a></p></li>
 </ul>
 </div>
-<div class="section" id="citation">
-<h2>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
 
+           </div>
+           
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../source.html">maxsmooth</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../source.html">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="maxsmooth.html" class="btn btn-neutral float-right" title="Maxsmooth Example Codes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  
 
+  <hr/>
 
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Harry Thomas Jones Bevins
 
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-
-
-
+</footer>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2020, Harry Thomas Jones Bevins.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/source/intro.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

@@ -1,0 +1,1082 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Maxsmooth Example Codes &mdash; maxsmooth 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="maxsmooth: Derivative Constrained Function Fitting" href="intro.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> maxsmooth
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Maxsmooth Example Codes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simple-example-code">Simple Example code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#new-basis-example">New Basis Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#best-basis-example">Best Basis Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#chi-2-distribution-example"><span class="math notranslate nohighlight">\({\chi^2}\)</span> Distribution Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-plotter-example">Parameter Plotter Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#maxsmooth-functions">Maxsmooth Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-maxsmooth.DCF">smooth()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-maxsmooth.best_basis">best_basis()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-maxsmooth.chidist_plotter">chidist_plotter()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-maxsmooth.parameter_plotter">parameter_plotter()</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">maxsmooth</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Maxsmooth Example Codes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/source/maxsmooth.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="toctree-wrapper compound">
+</div>
+<div class="section" id="maxsmooth-example-codes">
+<h1>Maxsmooth Example Codes<a class="headerlink" href="#maxsmooth-example-codes" title="Permalink to this headline">¶</a></h1>
+<p>This section is designed to introduce the user to the software and the form
+in which it is run. It provides basic examples of data fitting with a built in
+MSF model and a user defined model.</p>
+<p>There are also examples of functions that can be used pre-fitting and post-fitting
+for various purposes including; determination of the best DCF model from the
+built in library for the problem being fitted, analysis of the <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+distribution as a function of the discrete sign spaces and analysis of the
+parameter space surrounding the optimum results.</p>
+<div class="section" id="simple-example-code">
+<h2>Simple Example code<a class="headerlink" href="#simple-example-code" title="Permalink to this headline">¶</a></h2>
+<p>In order to run the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> software using the built
+in DCF models for a simple fit the user can follow the simple structure detailed here.</p>
+<p>The user should begin by importing the <cite>smooth</cite> class from <cite>maxsmooth.DCF</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">maxsmooth.DCF</span> <span class="kn">import</span> <span class="n">smooth</span>
+</pre></div>
+</div>
+<p>The user should then import the data they wish to fit.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and define the polynomial orders they wish to fit.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>N = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+for i in range(len(N)):
+    `act on N[i]`
+</pre></div>
+</div>
+<p>or for example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<p><cite>smooth</cite> can be called like so,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where the kwargs are detailed below. It's resulting attributes can be accessed by writing
+<code class="code docutils literal notranslate"><span class="pre">result.attribute_name</span></code>. For example printing the outputs is done like
+so,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Funtion Evaluations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_chi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;RMS:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">rms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_params</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fitted y:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">y_fit</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Sign Combinations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_signs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Derivatives:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">derivatives</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="new-basis-example">
+<h2>New Basis Example<a class="headerlink" href="#new-basis-example" title="Permalink to this headline">¶</a></h2>
+<p>This example code illustrates how to define your own basis function for the
+DCF model.
+It implements a modified version of the built in normalized polynomial model
+but the structure is the same for more elaborate models.</p>
+<p>As always we need to import the data, define an order <span class="math notranslate nohighlight">\({N}\)</span>
+and import the function fitting routine, smooth().</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">maxsmooth.DCF</span> <span class="kn">import</span> <span class="n">smooth</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+
+<span class="n">N</span><span class="o">=</span><span class="mi">10</span>
+</pre></div>
+</div>
+<p>There are several requirements needed to define a new basis function completely
+for <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> to be able to fit it. They are as summarized below and then
+examples of each are given in more detail,</p>
+<blockquote>
+<div><ul>
+<li><p><strong>args:</strong> Additional non-standard  arguments needed in the definition of the
+basis. The standard arguments are the data (x and y), the order of the fit N,
+the pivot point about which a model can be fit,
+the derivative order <span class="math notranslate nohighlight">\({m}\)</span> and the params. While the
+pivot point is not strictly needed it is a required argument for the
+functions defining a new basis to help the user in their definition.</p></li>
+<li><p><strong>basis_functions:</strong> This function defines the basis of the DCF model,
+<span class="math notranslate nohighlight">\({\phi}\)</span> where the model can be generally defined as,</p>
+<div class="math notranslate nohighlight">
+\[y = \sum_{k = 0}^N a_k \phi_k(x)\]</div>
+<p>where <span class="math notranslate nohighlight">\({a_k}\)</span> are the fit parameters.</p>
+</li>
+<li><p><strong>model:</strong> This is the function described by the equation above.</p></li>
+<li><p><strong>derivative:</strong> This function defines the <span class="math notranslate nohighlight">\({m^{th}}\)</span> order derivative.</p></li>
+<li><p><strong>derivative_pre:</strong> This function defines the prefactors,
+<span class="math notranslate nohighlight">\({\mathbf{G}}\)</span> on the derivatives where <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code>, the quadratic
+programming routine used, evaluates the constraints as,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{Ga} \leq \mathbf{h}\]</div>
+<p>where <span class="math notranslate nohighlight">\({\mathbf{a}}\)</span> is the matrix of parameters and <span class="math notranslate nohighlight">\({\mathbf{h}}\)</span>
+is the matrix of constraint limits. For more details on this see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+paper.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>We can begin defining our new basis function by defining the additional arguments
+needed to fit the model as a list,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arguments</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The next step is to define the basis functions <span class="math notranslate nohighlight">\({\phi}\)</span>. This needs to be
+done in a function that has the arguments <em>(x, y, pivot_point, N, *args)</em>. 'args'
+is optional but since we need them for this basis we are passing it in.</p>
+<p>The basis functions, <span class="math notranslate nohighlight">\({\phi}\)</span>, should be an array of dimensions len(x)
+by N and consequently evaluated at each N and x data point as shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">basis_functions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">N</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">phi</span><span class="p">[</span><span class="n">h</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">h</span><span class="p">]</span><span class="o">/</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">phi</span>
+</pre></div>
+</div>
+<p>We can define the model that we are fitting in a function like that shown below.
+This is used for evaluating <span class="math notranslate nohighlight">\({\chi^2}\)</span> and returning the optimum fitted model
+once the code has finished running. It requires the arguments
+<em>(x, y, pivot_point, N, params, *args)</em> in that order and again where 'args' is optional.
+'params' is the parameters of the fit, <span class="math notranslate nohighlight">\({\mathbf{a}}\)</span> which should have length
+<span class="math notranslate nohighlight">\({N}\)</span>.</p>
+<p>The function should return the fitted estimate of y.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">y_sum</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span>
+        <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="n">i</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_sum</span>
+</pre></div>
+</div>
+<p>Next we have to define a function for the derivatives of the model which
+takes arguments <em>(m, x, y, N, pivot_point, params, *args)</em> where <span class="math notranslate nohighlight">\({m}\)</span> is
+the derivative order. The function should return the <span class="math notranslate nohighlight">\({m^{th}}\)</span> order
+derivative evaluation and is used for checking that the constraints have been
+met and returning the derivatives of the optimum fit to the user.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">mth_order_derivative</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">):</span>
+            <span class="n">mth_order_derivative_term</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> \
+                <span class="n">params</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">+</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> \
+                <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">mth_order_derivative_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mth_order_derivative</span>
+</pre></div>
+</div>
+<p>Finally we have to define <span class="math notranslate nohighlight">\({\mathbf{G}}\)</span> which is used by <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code> to
+build the derivatives and constrain the functions. It takes arguments
+<em>(m, x, y, N, pivot_point, *args)</em> and should return the prefactor on the
+<span class="math notranslate nohighlight">\({m^{th}}\)</span> order derivative. For a more thorough definition of the
+prefactor on the derivative and an explanation of how the problem is
+constrained in quadratic programming see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">derivative_pre</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">pivot_point</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">mth_order_derivative</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">):</span>
+            <span class="n">mth_order_derivative_term</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">i</span><span class="p">)</span> <span class="o">/</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> \
+                <span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> \
+                <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">mth_order_derivative</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">mth_order_derivative_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mth_order_derivative</span>
+</pre></div>
+</div>
+<p>With our functions and additional arguments defined we can pass these
+to the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> smooth() function as is shown below. This overwrites the
+built in DCF model but you are still able to modify the fit type i.e. testing all
+available sign combinations or sampling them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span>
+    <span class="n">basis_functions</span><span class="o">=</span><span class="n">basis_functions</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">derivatives</span><span class="o">=</span><span class="n">derivative</span><span class="p">,</span> <span class="n">der_pres</span><span class="o">=</span><span class="n">derivative_pre</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of the fit can be accessed as before,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Objective Funtion Evaluations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_chi</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;RMS:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">rms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_params</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fitted y:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">y_fit</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Sign Combinations:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_signs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Derivatives:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">derivatives</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="best-basis-example">
+<h2>Best Basis Example<a class="headerlink" href="#best-basis-example" title="Permalink to this headline">¶</a></h2>
+<p>This function can be used to identify which of the built in DCFs
+fits the data best before running joint fits.</p>
+<p>To use it we begin by loading in the data,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and then importing the basis_test() function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">maxsmooth.best_basis</span> <span class="kn">import</span> <span class="n">basis_test</span>
+</pre></div>
+</div>
+<p>To call the function we use,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">basis_test</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;examples/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function only requires the data but we can provide it with a base directory,
+fit type and range of DCF orders to test. By default it uses the sign sampling
+algorithm and tests <span class="math notranslate nohighlight">\({N = 3 - 13}\)</span>. The resultant graph is saved in the
+base directory and the example generated here is shown below.</p>
+<a class="reference internal image-reference" href="../_images/Basis_functions.png"><img alt="../_images/Basis_functions.png" class="align-center" src="../_images/Basis_functions.png" style="width: 400px;" /></a>
+</div>
+<div class="section" id="chi-2-distribution-example">
+<h2><span class="math notranslate nohighlight">\({\chi^2}\)</span> Distribution Example<a class="headerlink" href="#chi-2-distribution-example" title="Permalink to this headline">¶</a></h2>
+<p>This example will show you how to generate a plot of the <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+distribution as a function of the discrete sign combinations on the constrained
+derivatives.</p>
+<p>First you will need to import your data and fit this using <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> as
+was done in the simple example code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">maxsmooth.DCF</span> <span class="kn">import</span> <span class="n">smooth</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;examples/&#39;</span><span class="p">,</span>
+  <span class="n">data_save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fit_type</span><span class="o">=</span><span class="s1">&#39;qp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we have used some additional keyword arguments for the 'smooth' fitting
+function. 'data_save' ensures that the files containing the tested sign combinations
+and the corresponding objective function evaluations exist in the base directory
+which we have changed to 'base_dir='examples/''. These files are essential for
+the plotting the <span class="math notranslate nohighlight">\({\chi^2}\)</span> distribution and are not saved by <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+without 'data_save=True'. We have also set the 'fit_type' to 'qp' rather than the
+default 'qp-sign_flipping'. This ensures that all of the available sign
+combinations are tested rather than a sampled set giving us a full picture of the
+distribution when we plot it. We have used the default DCF model to fit this data.</p>
+<p>We can import the 'chi_plotter' like so,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">maxsmooth.chidist_plotter</span> <span class="kn">import</span> <span class="n">chi_plotter</span>
+</pre></div>
+</div>
+<p>and produce the fit which gets placed in the base directory with the following
+code,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chi_plotter</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;examples/&#39;</span><span class="p">,</span> <span class="n">fit_type</span><span class="o">=</span><span class="s1">&#39;qp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We pass the same 'base_dir' as before so that the plotter can find the correct output
+files. We also give the function the same 'fit_type' used for the fitting which
+ensures that the files can be read.</p>
+<p>The resultant plot is shown below and the yellow star shows the global minimum.
+This can be used to determine how well
+the sign sampling approach using a descent and directional exploration
+can find the global minimum. If the distribution looks like noise then it is
+unlikely the sign sampling algorithm will consistently find the global minimum.
+Rather it will likely repeatedly return the local minima found after the descent
+algorithm and you should use the 'qp' method testing all available sign combinations
+in any future fits to the data with this DCF model.</p>
+<a class="reference internal image-reference" href="../_images/chi_distribution.png"><img alt="../_images/chi_distribution.png" class="align-center" src="../_images/chi_distribution.png" style="width: 400px;" /></a>
+</div>
+<div class="section" id="parameter-plotter-example">
+<h2>Parameter Plotter Example<a class="headerlink" href="#parameter-plotter-example" title="Permalink to this headline">¶</a></h2>
+<p>We can assess the parameter space around the optimum solution
+found using <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> with the param_plotter() function.
+This can help us identify how well a problem can be solved using the
+sign sampling approach employed by <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> or simply
+be used to identify correlations between the foreground parameters.
+For more details on this see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper.</p>
+<p>We begin by importing and fitting the data as with the chi_plotter()
+function illustrated above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/x.npy&#39;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;Data/y.npy&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">maxsmooth.DCF</span> <span class="kn">import</span> <span class="n">smooth</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;examples/&#39;</span><span class="p">,</span> <span class="n">fit_type</span><span class="o">=</span><span class="s1">&#39;qp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have changed the order of the fit to 5 to illustrate that for
+order <span class="math notranslate nohighlight">\({N \leq 5}\)</span> and fits with derivatives <span class="math notranslate nohighlight">\({m \geq 2}\)</span> constrained
+the function will plot each region of the graph corresponding to
+different sign functions in a different colourmap. If the constraints are
+different or the order is greater than 5 then the viable regions will have
+a single colourmap. Invalid regions are plotted as black shaded colourmaps
+and the contour lines are contours of <span class="math notranslate nohighlight">\({\chi^2}\)</span>.</p>
+<p>We can import the function like so,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">maxsmooth.parameter_plotter</span> <span class="kn">import</span> <span class="n">param_plotter</span>
+</pre></div>
+</div>
+<p>and access it using,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">param_plotter</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">optimum_params</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">optimum_signs</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="s1">&#39;examples/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function takes in the optimum parameters and signs found after the fit
+as well as the data and order of the fit. There are a number of keyword arguments
+detailed in the following section and the resultant fit is shown below. The
+function by default samples the parameter ranges 50% either side of the optimum
+and calculates 50 samples for each parameter. In each panel the two
+labelled parameters are varied while the others are maintained at their optimum
+values.</p>
+<img alt="../_images/Parameter_plot.png" src="../_images/Parameter_plot.png" />
+</div>
+</div>
+<div class="section" id="maxsmooth-functions">
+<h1>Maxsmooth Functions<a class="headerlink" href="#maxsmooth-functions" title="Permalink to this headline">¶</a></h1>
+<p>This section details the specifics of the built in functions in <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> including
+the relevant keyword arguments and default parameters for all. Where keyword arguments
+are essential for the functions to run this is stated.</p>
+<div class="section" id="module-maxsmooth.DCF">
+<span id="smooth"></span><h2>smooth()<a class="headerlink" href="#module-maxsmooth.DCF" title="Permalink to this headline">¶</a></h2>
+<p><em>smooth</em>, as demonstrated in the examples section,
+is used to call the fitting routine. There are a number
+of <span class="math notranslate nohighlight">\({^{**}}\)</span> kwargs that can be assigned to the function which change how
+the fit is performed, the model that is fit and various other attributes.
+These are detailed below.</p>
+<dl class="py class">
+<dt id="maxsmooth.DCF.smooth">
+<em class="property">class </em><code class="sig-prename descclassname">maxsmooth.DCF.</code><code class="sig-name descname">smooth</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/maxsmooth/DCF.html#smooth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#maxsmooth.DCF.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl>
+<dt>x: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The x data points for the set being fitted.</div>
+</div>
+</dd>
+<dt>y: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The y data points for fitting.</div>
+</div>
+</dd>
+<dt>N: <strong>int</strong></dt><dd><div class="line-block">
+<div class="line">The number of terms in the DCF.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Kwargs:</strong></p>
+<blockquote>
+<div><dl>
+<dt>fit_type: <strong>Default = 'qp-sign_flipping'</strong></dt><dd><div class="line-block">
+<div class="line">This kwarg allows the user to
+switch between sampling the available discrete sign spaces
+(default) or testing all sign combinations on the derivatives
+which can be accessed by setting to 'qp'.</div>
+</div>
+</dd>
+<dt>model_type: <strong>Default = 'difference_polynomial'</strong></dt><dd><div class="line-block">
+<div class="line">Allows the user to
+access default Derivative Constrained Functions built into the
+software. Available options include the default, 'polynomial',
+'normalised_polynomial', 'legendre', 'log_polynomial',
+'loglog_polynomial' and 'exponential'. For more details on the
+functional form of the built in basis see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+paper.</div>
+</div>
+</dd>
+</dl>
+<p><strong>pivot_point: Default = len(x)//2 otherwise an integer between</strong>
+<strong>-len(x) and len(x)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">Some of the built in
+models rely on pivot points in the data sets which by defualt
+is set as the middle index. This can be altered via
+this kwarg which can occasionally lead to a better quality fit.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt>base_dir: <strong>Default = 'Fitted_Output/'</strong></dt><dd><div class="line-block">
+<div class="line">The location of the outputted
+data from <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>. This must be a string and end in '/'.
+If the file does not exist then <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> will create it.
+By default the only outputted data is a summary of the best
+fit but additional data can be recorded by setting the keyword
+argument 'data_save = True'.</div>
+</div>
+</dd>
+<dt>data_save: <strong>Default = False</strong></dt><dd><div class="line-block">
+<div class="line">By setting this to True the algorithm
+will save every tested set of parameters, signs and objective
+function evaluations into files in base_dir. Theses files will
+be over written on repeated runs but they are needed to run the
+'chidist_plotter'.</div>
+</div>
+</dd>
+<dt>all_output: <strong>Default = False</strong></dt><dd><div class="line-block">
+<div class="line">If set to True this outputs to the
+terminal every fit performed by the algorithm. By default the
+only output is the optimal solution once the code is finished.</div>
+</div>
+</dd>
+<dt>cvxopt_maxiter: <strong>Default = 10000 else integer</strong></dt><dd><div class="line-block">
+<div class="line">This shouldn't need
+changing for most problems however if <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code> fails with a
+'maxiters reached' error message this can be increased.
+Doing so arbitrarily will however increase the run time of
+<code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>.</div>
+</div>
+</dd>
+<dt>initial_params: <strong>Default = None else list of length N</strong></dt><dd><div class="line-block">
+<div class="line">Allows the user
+to overwrite the default initial parameters used by <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code>.</div>
+</div>
+</dd>
+</dl>
+<p><strong>constraints: Default = 2 else an integer less than or equal</strong>
+<strong>to N - 1</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt>zero_crossings: <strong>Default = None else list of integers</strong></dt><dd><div class="line-block">
+<div class="line">Allows you to
+specify if the conditions should be relaxed on any
+of the derivatives between constraints and the highest order
+derivative. e.g. a 6th order fit with just a constrained 2nd
+and 3rd order derivative would have zero_crossings = [4, 5].</div>
+</div>
+</dd>
+<dt>cap: <strong>Default = (len(available_signs)//N) + N else an integer</strong></dt><dd><div class="line-block">
+<div class="line">Determines the maximum number of signs explored either side of
+the minimum <span class="math notranslate nohighlight">\({\chi^2}\)</span> value found after the decent
+algorithm has terminated.</div>
+</div>
+</dd>
+<dt>chi_squared_limit: <strong>Default = 2 else float or int</strong></dt><dd><div class="line-block">
+<div class="line">The prefactor on the maximum allowed increase in <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+during the directional exploration which is defaulted at 2.
+If this value multiplied by the minimum <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+value found after the descent algorithm is exceeded then the
+exploration in one direction is stopped and started in the
+other. For more details on this and 'cap' see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+paper.</div>
+</div>
+</dd>
+</dl>
+<p>The following Kwargs can be used by the user to define their own basis
+function and will overwrite the 'model_type' kwarg.</p>
+<p><strong>basis_function: Default = None else function with parameters</strong>
+<strong>(x, y, pivot_point, N)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This is a function of basis functions
+for the quadratic programming. The variable pivot_point is the
+index at the middle of the datasets x and y by default but can
+be adjusted.</div>
+</div>
+</div></blockquote>
+<p><strong>model: Default = None else function with parameters</strong>
+<strong>(x, y, pivot_point, N, params)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This is
+a user defined function describing the model to be fitted to
+the data.</div>
+</div>
+</div></blockquote>
+<p><strong>der_pres: Default = None else function with parameters</strong>
+<strong>(m, x, y, N, pivot_point)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This function describes the prefactors on the
+mth order derivative used in defining the constraint.</div>
+</div>
+</div></blockquote>
+<p><strong>derivatives: Default = None else function with parameters</strong>
+<strong>(m, x, y, N, pivot_point, params)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">User defined function describing the mth
+order derivative used to check that conditions are being met.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt><strong>args: Default = None else list</strong></dt><dd><div class="line-block">
+<div class="line">Extra arguments for <cite>smooth</cite>
+to pass to the functions detailed above.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Output</strong></p>
+<blockquote>
+<div><dl>
+<dt>.y_fit: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The fitted array of y data from smooth().</div>
+</div>
+</dd>
+<dt>.optimum_chi: <strong>float</strong></dt><dd><div class="line-block">
+<div class="line">The optimum <span class="math notranslate nohighlight">\({\chi^2}\)</span> value for the fit calculated by,</div>
+</div>
+<div class="math notranslate nohighlight">
+\[{X^2=\sum(y-y_{fit})^2}.\]</div>
+</dd>
+<dt>.optimum_params: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The set of parameters corresponding to the optimum fit.</div>
+</div>
+</dd>
+<dt>.rms: <strong>float</strong></dt><dd><div class="line-block">
+<div class="line">The rms value of the residuals <span class="math notranslate nohighlight">\({y_{res}=y-y_{fit}}\)</span>
+calculated by,</div>
+</div>
+<div class="math notranslate nohighlight">
+\[{rms=\sqrt{\frac{\sum(y-y_{fit})^2}{n}}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(n\)</span> is the number of data points.</p>
+</dd>
+<dt>.derivatives: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The <span class="math notranslate nohighlight">\(m^{th}\)</span> order derivatives.</div>
+</div>
+</dd>
+<dt>.optimum_signs: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The sign combinations corresponding to the
+optimal result. The nature of the constraint means that a
+negative <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> sign implies a positive <span class="math notranslate nohighlight">\({m^{th}}\)</span>
+order derivative and visa versa.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-maxsmooth.best_basis">
+<span id="best-basis"></span><h2>best_basis()<a class="headerlink" href="#module-maxsmooth.best_basis" title="Permalink to this headline">¶</a></h2>
+<p>As demonstrated, this function allows you to test the built in basis and their
+ability to
+fit the data. It produces a plot that shows <span class="math notranslate nohighlight">\({\chi^2}\)</span> as a function of
+<span class="math notranslate nohighlight">\({N}\)</span> for the 7 built in models and saves the figure to the base
+directory.</p>
+<dl class="py class">
+<dt id="maxsmooth.best_basis.basis_test">
+<em class="property">class </em><code class="sig-prename descclassname">maxsmooth.best_basis.</code><code class="sig-name descname">basis_test</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/maxsmooth/best_basis.html#basis_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#maxsmooth.best_basis.basis_test" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl>
+<dt>x: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The x data points for the set being fitted.</div>
+</div>
+</dd>
+<dt>y: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The y data points for fitting.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Kwargs:</strong></p>
+<blockquote>
+<div><dl>
+<dt>fit_type: <strong>Default = 'qp-sign_flipping'</strong></dt><dd><div class="line-block">
+<div class="line">This kwarg allows the user to switch between sampling the
+available discrete sign spaces (default)
+or testing all sign combinations on the derivatives which can
+be accessed by setting to 'qp'.</div>
+</div>
+</dd>
+<dt>base_dir: <strong>Default = 'Fitted_Output/'</strong></dt><dd><div class="line-block">
+<div class="line">The location of the outputted
+graph from function. This must be a string and end in '/'. If
+the file does not exist then the function will create it.</div>
+</div>
+</dd>
+</dl>
+<p><strong>N: Default = [3, .., 13] in steps of 1 else list or numpy array</strong>
+<strong>of integers</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">The DCF orders to test each basis function with. In
+some instances the basis function may fail for a given
+<span class="math notranslate nohighlight">\({N}\)</span> and higher orders due to overflow/underflow
+errors or <code class="docutils literal notranslate"><span class="pre">CVXOPT</span></code> errors.</div>
+</div>
+</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-maxsmooth.chidist_plotter">
+<span id="chidist-plotter"></span><h2>chidist_plotter()<a class="headerlink" href="#module-maxsmooth.chidist_plotter" title="Permalink to this headline">¶</a></h2>
+<p>This function allows the user to produce plots of the <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+distribution as a function of the available discrete sign spaces for the
+constrained derivatives. This can be used to identify whether or not the
+problem is <cite>ill defined</cite>, see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> paper for a definition,
+and if it can be solved using the sign sampling approach.</p>
+<p>It can also be used to determine whether or not the 'cap' and maximum allowed
+increase on the value of <span class="math notranslate nohighlight">\({\chi^2}\)</span> during the directional exploration
+are sufficient to identify the global minimum for the problem.</p>
+<p>The function is reliant on the output of the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> smooth() function.
+The required outputs can be saved when running smooth()
+using the 'data_save = True' kwarg.</p>
+<dl class="py class">
+<dt id="maxsmooth.chidist_plotter.chi_plotter">
+<em class="property">class </em><code class="sig-prename descclassname">maxsmooth.chidist_plotter.</code><code class="sig-name descname">chi_plotter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/maxsmooth/chidist_plotter.html#chi_plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#maxsmooth.chidist_plotter.chi_plotter" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl>
+<dt>N: <strong>int</strong></dt><dd><div class="line-block">
+<div class="line">The number of terms in the DCF.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Kwargs:</strong></p>
+<blockquote>
+<div><dl>
+<dt>fit_type: <strong>Default = 'qp-sign_flipping'</strong></dt><dd><div class="line-block">
+<div class="line">This kwarg is the same as for the smooth() function.
+Here it allows the files to be read from the base
+directory.</div>
+</div>
+</dd>
+<dt>base_dir: <strong>Default = 'Fitted_Output/'</strong></dt><dd><div class="line-block">
+<div class="line">The location of the outputted
+data from <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>. This must be a string and end in '/'
+and must contain the files 'Output_Evaluations/' and
+'Output_Signs/' which can be obtained by running smooth() with
+data_save=True.</div>
+</div>
+</dd>
+<dt>chi: <strong>Default = None else list or numpy array</strong></dt><dd><div class="line-block">
+<div class="line">A list of
+<span class="math notranslate nohighlight">\({\chi^2}\)</span> evaluations. If provided then this is used
+over outputted data in the base directory. It must have the
+same length as the ouputted signs in the file 'Output_Signs/'
+in the base directory. It must also be ordered correctly
+otherwise the returned graph will not be correct. A correct
+ordering is one for which each entry in the array corresponds
+to the correct sign combination in 'Output_Signs/'.
+Typically this will not be needed but if the <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+evaluation in 'Output_Evaluations/' in the base directory
+is not in the desired parameter space this can be useful.
+For example the built in logarithmic model calculates
+<span class="math notranslate nohighlight">\({\chi^2}\)</span> in logarithmic space. To plot the distribution
+in linear space we can calculate
+<span class="math notranslate nohighlight">\({\chi^2}\)</span> in linear space using a function for the model
+and the tested parameters which are found in
+'Output_Parameters/' in the base directory.</div>
+</div>
+</dd>
+</dl>
+<p><strong>constraints: Default = 2 else an integer less than or equal</strong>
+<strong>to N - 1</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function. Used here to determine
+the number of possible sign combinations available.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt>zero_crossings: <strong>Default = None else list of integers</strong></dt><dd><div class="line-block">
+<div class="line">Allows you to
+specify if the conditions should be relaxed on any
+of the derivatives between constraints and the highest order
+derivative. e.g. a 6th order fit with just a constrained 2nd
+and 3rd order derivative would have a zero_crossings = [4, 5].
+Again this is used in determining the possible sign
+combinations available.</div>
+</div>
+</dd>
+<dt>plot_limits: <strong>Default = False</strong></dt><dd><div class="line-block">
+<div class="line">Determines whether the limits on
+the directional exploration are plotted on top of the
+<span class="math notranslate nohighlight">\({\chi^2}\)</span> distribution.</div>
+</div>
+</dd>
+<dt>cap: <strong>Default = (len(available_signs)//N) + N else an integer</strong></dt><dd><div class="line-block">
+<div class="line">Determines the maximum number of signs explored either side of
+the minimum <span class="math notranslate nohighlight">\({\chi^2}\)</span> value found after the
+decent algorithm has terminated when running smooth(). Here
+it is used when plot_limits=True.</div>
+</div>
+</dd>
+<dt>chi_squared_limit: <strong>Default = 2 else float or int</strong></dt><dd><div class="line-block">
+<div class="line">The prefactor on the maximum allowed increase in <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+during the directional exploration which is defaulted at 2.
+If this value multiplied by the minimum <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+value found after the descent algorithm is exceeded then the
+exploration in one direction is stopped and started in the
+other. For more details on this and 'cap' see the <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code>
+paper. Again this is used here
+when plot_limits=True.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-maxsmooth.parameter_plotter">
+<span id="parameter-plotter"></span><h2>parameter_plotter()<a class="headerlink" href="#module-maxsmooth.parameter_plotter" title="Permalink to this headline">¶</a></h2>
+<p>This function allows you to plot the parameter space around the optimum
+solution found when running <code class="docutils literal notranslate"><span class="pre">maxsmooth</span></code> and visualise the constraints with
+contour lines given by <span class="math notranslate nohighlight">\({\chi^2}\)</span>.</p>
+<dl class="py class">
+<dt id="maxsmooth.parameter_plotter.param_plotter">
+<em class="property">class </em><code class="sig-prename descclassname">maxsmooth.parameter_plotter.</code><code class="sig-name descname">param_plotter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">best_params</span></em>, <em class="sig-param"><span class="n">optimum_signs</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/maxsmooth/parameter_plotter.html#param_plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#maxsmooth.parameter_plotter.param_plotter" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters:</strong></p>
+<blockquote>
+<div><dl>
+<dt>best_params: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The optimum parameters found when running
+a DCF fit to the data.</div>
+</div>
+</dd>
+<dt>optimum_signs: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The optimum signs for the DCF fit which
+are used when the derivatives are equal to 0 across the band.</div>
+</div>
+</dd>
+<dt>x: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The x data points.</div>
+</div>
+</dd>
+<dt>y: <strong>numpy.array</strong></dt><dd><div class="line-block">
+<div class="line">The y data points.</div>
+</div>
+</dd>
+<dt>N: <strong>int</strong></dt><dd><div class="line-block">
+<div class="line">The number of terms in the DCF.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Kwargs:</strong></p>
+<blockquote>
+<div><dl>
+<dt>model_type: <strong>Default = 'difference_polynomial'</strong></dt><dd><div class="line-block">
+<div class="line">The functional form of
+the model being plotted. If a the user has defined their own
+basis they can supply this with the Kwargs below and this
+will be overwritten.</div>
+</div>
+</dd>
+<dt>base_dir: <strong>Default = 'Fitted_Output/'</strong></dt><dd><div class="line-block">
+<div class="line">The location in which the
+parameter plot is saved.</div>
+</div>
+</dd>
+</dl>
+<p><strong>constraints: Default = 2 else an integer less than or equal</strong>
+<strong>to N - 1</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">The minimum constrained derivative order which is set by default
+to 2 for a Maximally Smooth Function. Used here to
+determine the number of possible sign combinations available.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt>zero_crossings: <strong>Default = None else list of integers</strong></dt><dd><div class="line-block">
+<div class="line">Allows you to
+specify if the conditions should be relaxed on any
+of the derivatives between constraints and the highest order
+derivative. e.g. a 6th order fit with just a constrained
+2nd and 3rd order derivative would have an
+zero_crossings = [4, 5].
+Again this is used in determining the possible sign
+combinations available.</div>
+</div>
+</dd>
+<dt>samples: <strong>Default = 50</strong></dt><dd><div class="line-block">
+<div class="line">The sampling rate across the parameter ranges
+defined with the optimum solution and width.</div>
+</div>
+</dd>
+<dt>width: <strong>Default = 0.5</strong></dt><dd><div class="line-block">
+<div class="line">The range of each parameter to explore. The
+default value of 0.5 means that the <span class="math notranslate nohighlight">\({\chi^2}\)</span>
+values for parameters ranging 50% either side of the optimum
+result are tested.</div>
+</div>
+</dd>
+<dt>warnings: <strong>Default = True</strong></dt><dd><div class="line-block">
+<div class="line">Used to highlight when a derivative is
+0 across the band and that in these instances the optimum
+signs are assumed for the colourmap if <span class="math notranslate nohighlight">\({N \leq 5}\)</span>,
+constraints=2 and the zero_crossings is empty.</div>
+</div>
+</dd>
+<dt>girdlines: <strong>Default = False</strong></dt><dd><div class="line-block">
+<div class="line">Plots gridlines showing the central value
+for each parameter in each panel of the plot.</div>
+</div>
+</dd>
+</dl>
+<p>The following Kwargs are used to plot the parameter space for a user
+defined basis function and will overwrite the 'model_type' kwarg.</p>
+<p><strong>basis_function: Default = None else function with parameters</strong>
+<strong>(x, y, pivot_point, N)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This is a function of basis functions
+for the quadratic programming. The variable pivot_point is the
+index at the middle of the datasets x and y by default but can
+be adjusted.</div>
+</div>
+</div></blockquote>
+<p><strong>model: Default = None else function with parameters</strong>
+<strong>(x, y, pivot_point, N, params)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This is
+a user defined function describing the model to be fitted to
+the data.</div>
+</div>
+</div></blockquote>
+<p><strong>der_pres: Default = None else function with parameters</strong>
+<strong>(m, x, y, N, pivot_point)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">This function describes the prefactors on the
+mth order derivative used in defining the constraint.</div>
+</div>
+</div></blockquote>
+<p><strong>derivatives: Default = None else function with parameters</strong>
+<strong>(m, x, y, N, pivot_point, params)</strong></p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">User defined function describing the mth
+order derivative used to check that conditions are being met.</div>
+</div>
+</div></blockquote>
+<dl>
+<dt><strong>args: Default = None else list</strong></dt><dd><div class="line-block">
+<div class="line">Extra arguments for <cite>smooth</cite>
+to pass to the functions detailed above.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="intro.html" class="btn btn-neutral float-left" title="maxsmooth: Derivative Constrained Function Fitting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Harry Thomas Jones Bevins
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
