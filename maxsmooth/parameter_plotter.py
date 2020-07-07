@@ -377,9 +377,9 @@ class param_plotter(object):
                                         + ' in the parameter plot.')
                                     warnings_count += 1
                             elif (np.all(derivatives[i, :] >= -1e-6)):
-                                signs.append(1)
-                            elif (np.all(derivatives[i, :] <= 1e-6)):
                                 signs.append(-1)
+                            elif (np.all(derivatives[i, :] <= 1e-6)):
+                                signs.append(+1)
 
                         for i in range(len(available_signs)):
                             if np.all(signs == available_signs[i]) \
@@ -482,7 +482,7 @@ class param_plotter(object):
                         cp_array[i], cax=cbaxes[count],
                         orientation='horizontal')
                     clb.ax.set_ylabel(
-                        r'Signs = ' + str(sign_combinations[i]),
+                        r'$\mathbf{s}$ = ' + str(sign_combinations[i]),
                         rotation=0, fontsize=10)
                     clb.ax.yaxis.set_label_coords(-0.2, 0.1)
                     if i != indices.max():
