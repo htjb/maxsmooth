@@ -1,7 +1,7 @@
 """
 As demonstrated, this function allows you to test the built in basis and their
 ability to
-fit the data. It produces a plot that shows :math:`{\chi^2}` as a function of
+fit the data. It produces a plot that shows chi squared as a function of
 :math:`{N}` for the 7 built in models and saves the figure to the base
 directory.
 """

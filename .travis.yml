@@ -2,7 +2,7 @@ os: linux
 language: python
 python:
   - "3.6"
-  - "3.7"
+  #- "3.7"
   - "3.8"
 
 install:
@@ -11,9 +11,9 @@ install:
   - pip install coverage flake8
   - pip install --upgrade pytest
 
-#before_script:
+before_script:
     # Test for pep-compliance
-    #- flake8 maxsmooth
+    - flake8 maxsmooth
 
 script:
       coverage run --source=maxsmooth -m py.test;

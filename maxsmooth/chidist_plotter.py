@@ -259,7 +259,8 @@ class chi_plotter(object):
                 '_'+self.fit_type+'_minimum_chi_post_descent.npy')
             plt.hlines(
                 self.chi_squared_limit*min_chi, 0, len(possible_signs),
-                ls='-.', label=r'Max. Increase\n' + ' in $\chi^2$',
+                ls='-.', label=r'Max. Increase\n' +
+                ' in $\chi^2$',   # noqa: W605
                 color='k', alpha=0.5)
         plt.xlim([j[0], j[-1]])
         plt.grid()
