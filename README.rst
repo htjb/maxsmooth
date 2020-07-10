@@ -65,12 +65,26 @@ after subtraction of the MSF fit. The software using one of the built in DCF mod
 and fitting normalised data is shown to be capable of recovering the
 random noise.
 
-.. image:: https://github.com/htjb/maxsmooth/blob/master/docs/images/README.png
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/README.png
   :width: 400
   :align: center
 
 Installation
 ~~~~~~~~~~~~
+
+The software can be pip installed from the PYPI repository like so,
+
+.. code::
+
+  pip install maxsmooth
+
+or alternatively it can be installed from the git repository via,
+
+.. code::
+
+  git clone https://github.com/htjb/maxsmooth.git
+  cd maxsmooth
+  python setup.py install --user
 
 Licence and Citation
 ~~~~~~~~~~~~~~~~~~~~
