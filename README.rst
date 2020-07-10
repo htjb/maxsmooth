@@ -10,10 +10,12 @@ Introduction
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
 
+.. image:: https://travis-ci.org/htjb/maxsmooth.svg?branch=master
+   :target: https://travis-ci.org/htjb/maxsmooth
+   :alt: Build Status
 .. image:: https://badge.fury.io/py/maxsmooth.svg
    :target: https://badge.fury.io/py/maxsmooth
-   :alt:PyPI location
-   
+   :alt: PyPI location
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
@@ -127,8 +129,10 @@ respectively.
 Requirements
 ~~~~~~~~~~~~
 
-The code was written in Python 3.6 but should be backward compatible with
-Python 2 although this has not been thoroughly tested.
+The code currently builds on python 3.6 and 3.8. There is an issue with 3.7
+currently, the majority of the code including the fitting routine
+will run however the parameter space plotter is not passing the tests with
+python 3.7.
 
 To run the code you will need the following additional packages:
 
