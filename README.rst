@@ -10,6 +10,9 @@ Introduction
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
 
+.. image:: https://badge.fury.io/py/maxsmooth.svg
+    :target: https://badge.fury.io/py/maxsmooth
+    :alt:PyPI location
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
