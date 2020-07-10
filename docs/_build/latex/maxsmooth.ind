@@ -5,34 +5,34 @@
 \let\spxextra \sphinxstyleindexextra
 
   \bigletter B
-  \item \spxentry{basis\_test}\spxextra{class in maxsmooth.best\_basis}, \hyperpage{13}
+  \item \spxentry{basis\_test}\spxextra{class in maxsmooth.best\_basis}, \hyperpage{15}
 
   \indexspace
   \bigletter C
-  \item \spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}, \hyperpage{14}
+  \item \spxentry{chi\_plotter}\spxextra{class in maxsmooth.chidist\_plotter}, \hyperpage{16}
 
   \indexspace
   \bigletter M
   \item \spxentry{maxsmooth.best\_basis}
-    \subitem \spxentry{module}, \hyperpage{13}
-  \item \spxentry{maxsmooth.chidist\_plotter}
-    \subitem \spxentry{module}, \hyperpage{14}
-  \item \spxentry{maxsmooth.DCF}
-    \subitem \spxentry{module}, \hyperpage{11}
-  \item \spxentry{maxsmooth.parameter\_plotter}
     \subitem \spxentry{module}, \hyperpage{15}
+  \item \spxentry{maxsmooth.chidist\_plotter}
+    \subitem \spxentry{module}, \hyperpage{16}
+  \item \spxentry{maxsmooth.DCF}
+    \subitem \spxentry{module}, \hyperpage{13}
+  \item \spxentry{maxsmooth.parameter\_plotter}
+    \subitem \spxentry{module}, \hyperpage{17}
   \item \spxentry{module}
-    \subitem \spxentry{maxsmooth.best\_basis}, \hyperpage{13}
-    \subitem \spxentry{maxsmooth.chidist\_plotter}, \hyperpage{14}
-    \subitem \spxentry{maxsmooth.DCF}, \hyperpage{11}
-    \subitem \spxentry{maxsmooth.parameter\_plotter}, \hyperpage{15}
+    \subitem \spxentry{maxsmooth.best\_basis}, \hyperpage{15}
+    \subitem \spxentry{maxsmooth.chidist\_plotter}, \hyperpage{16}
+    \subitem \spxentry{maxsmooth.DCF}, \hyperpage{13}
+    \subitem \spxentry{maxsmooth.parameter\_plotter}, \hyperpage{17}
 
   \indexspace
   \bigletter P
-  \item \spxentry{param\_plotter}\spxextra{class in maxsmooth.parameter\_plotter}, \hyperpage{15}
+  \item \spxentry{param\_plotter}\spxextra{class in maxsmooth.parameter\_plotter}, \hyperpage{17}
 
   \indexspace
   \bigletter S
-  \item \spxentry{smooth}\spxextra{class in maxsmooth.DCF}, \hyperpage{11}
+  \item \spxentry{smooth}\spxextra{class in maxsmooth.DCF}, \hyperpage{13}
 
 \end{sphinxtheindex}

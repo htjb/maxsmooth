@@ -74,7 +74,7 @@
 
 
 \title{maxsmooth Documentation}
-\date{Jul 03, 2020}
+\date{Jul 10, 2020}
 \release{1.0.0}
 \author{Harry Thomas Jones Bevins}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -108,9 +108,6 @@ Harry Thomas Jones Bevins
 \end{description}\end{quote}
 
 
-\section{Licence and Citation}
-\label{\detokenize{source/intro:licence-and-citation}}
-
 \section{Derivative Constrained Functions and \sphinxstyleliteralintitle{\sphinxupquote{maxsmooth}}}
 \label{\detokenize{source/intro:derivative-constrained-functions-and-maxsmooth}}
 \sphinxcode{\sphinxupquote{maxsmooth}} is an open source software for fitting derivative constrained
@@ -129,7 +126,7 @@ You can read more about MSFs here ..
 data subject to a linear constraint. The constraint on an MSF can be
 summarized like so,
 \begin{equation*}
-\begin{split}\frac{d^m~y}{d~x^m}~\geq~0~~\textnormal{or}~~\frac{d^m~y}{d~x^m}~\leq~0.\end{split}
+\begin{split}\frac{d^m~y}{d~x^m}~\geq~0~~\mathrm{or}~~\frac{d^m~y}{d~x^m}~\leq~0.\end{split}
 \end{equation*}
 This constraint is itself not linear but \sphinxcode{\sphinxupquote{maxsmooth}} is designed to test the
 constraint,
@@ -167,7 +164,8 @@ applications in mind and is a simple interface.
 \label{\detokenize{source/intro:example-fit}}
 Shown below is an example MSF fit performed with \sphinxcode{\sphinxupquote{maxsmooth}} to data that
 follows a \({y = x^{-2.5}}\) power law with a randomly generated Gaussian
-noise. The top panel shows the data and the bottom panel shows the residual
+noise with a standard deviation 0.02. The top panel shows the data and the
+bottom panel shows the residual
 after subtraction of the MSF fit. The software using one of the built in DCF models
 and fitting normalised data is shown to be capable of recovering the
 random noise.
@@ -178,9 +176,37 @@ random noise.
 \section{Installation}
 \label{\detokenize{source/intro:installation}}
 
+\section{Licence and Citation}
+\label{\detokenize{source/intro:licence-and-citation}}
+The software is free to use on the MIT open source license. However if you use
+the software for academic purposes we request that you cite the \sphinxcode{\sphinxupquote{maxsmooth}}
+paper.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{H}\PYG{o}{.} \PYG{n}{T}\PYG{o}{.} \PYG{n}{J}\PYG{o}{.} \PYG{n}{Bevins} \PYG{n}{et} \PYG{n}{al}\PYG{o}{.}\PYG{p}{,} \PYG{o+ow}{in} \PYG{n}{prep}\PYG{o}{.}
+\end{sphinxVerbatim}
+
+
 \section{Documentation}
 \label{\detokenize{source/intro:documentation}}
-The documentation can be compiled from the git repository by...
+The documentation can be compiled locally from the git repository and requires
+\sphinxhref{https://pypi.org/project/Sphinx/}{sphinx} to be installed.
+You can do this via:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{cd} \PYG{n}{docs}\PYG{o}{/}
+\PYG{n}{make} \PYG{n}{html}
+\end{sphinxVerbatim}
+
+or
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{cd} \PYG{n}{docs}\PYG{o}{/}
+\PYG{n}{make} \PYG{n}{latexpdf}
+\end{sphinxVerbatim}
+
+The resultant docs can be found in the docs/\_build/html/ and docs/\_build/latex/
+respectively.
 
 
 \section{Requirements}
@@ -188,7 +214,7 @@ The documentation can be compiled from the git repository by...
 The code was written in Python 3.6 but should be backward compatible with
 Python 2 although this has not been thoroughly tested.
 
-To run the code you will need the following additional packages,
+To run the code you will need the following additional packages:
 \begin{itemize}
 \item {} 
 \sphinxhref{https://pypi.org/project/matplotlib/}{matplotlib}
@@ -201,6 +227,26 @@ To run the code you will need the following additional packages,
 
 \item {} 
 \sphinxhref{https://pypi.org/project/scipy/}{scipy}
+
+\item {} 
+\sphinxhref{https://pypi.org/project/progressbar/}{progressbar}
+
+\end{itemize}
+
+To compile the documentation locally you will need:
+\begin{itemize}
+\item {} 
+\sphinxhref{https://pypi.org/project/Sphinx/}{sphinx}
+
+\item {} 
+\sphinxhref{https://pypi.org/project/numpydoc/}{numpydoc}
+
+\end{itemize}
+
+To run the test suit you will need:
+\begin{itemize}
+\item {} 
+\sphinxhref{https://pypi.org/project/pytest/}{pytest}
 
 \end{itemize}
 

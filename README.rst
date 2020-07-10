@@ -1,6 +1,6 @@
-============================================
+==================================================
 maxsmooth: Derivative Constrained Function Fitting
-============================================
+==================================================
 
 Introduction
 ------------
@@ -16,32 +16,20 @@ Derivative Constrained Functions and ``maxsmooth``
 ``maxsmooth`` is an open source software for fitting derivative constrained
 functions, DCFs such as Maximally Smooth Functions
 , MSFs to data sets. MSFs are functions for which there are no zero
-crossings in derivatives of order :math:`m \geq 2` within the domain of interest.
+crossings in derivatives of order m >= 2 within the domain of interest.
 They are designed to prevent the loss of
 signals when fitting out dominant foregrounds and in some cases can be used to
 highlight systematics left in the data. More generally for DCFs the minimum
 constrained derivative order, m can take on any value or a set of
 specific high order derivatives can be constrained.
 
-You can read more about MSFs here ..
-
 ``maxsmooth`` uses quadratic programming implemented with ``CVXOPT`` to fit
-data subject to a linear constraint. The constraint on an MSF can be
-summarized like so,
-
-.. math::
-
-  \frac{d^m~y}{d~x^m}~\geq~0~~\mathrm{or}~~\frac{d^m~y}{d~x^m}~\leq~0.
-
-This constraint is itself not linear but ``maxsmooth`` is designed to test the
-constraint,
-
-.. math::
-
-  \pm \frac{d^m~y}{d~x^m}~\leq~0
-
-where a positive sign in front of the :math:`m^{th}` order derivative forces the derivative
-to be negative for all x. For an :math:`N^{th}` order polynomial ``maxsmooth`` can test
+data subject to a linear constraint. The constraint on an MSF are not explicitly
+linear and each constrained derivative can be positive or negative.
+``maxsmooth`` is, however, designed to test the <= 0 constraint multiplied
+by a positive or negative sign. Where a positive sign in front of the m\ :sup:`th`
+order derivative forces the derivative
+to be negative for all x. For an N\ :sup:`th` order polynomial ``maxsmooth`` can test
 every available sign combination but by default it implements a 'sign-sampling'/'sign-flipping'
 algorithm. This is detailed in the ``maxsmooth`` paper (see citation) but is summarized
 below.
@@ -70,19 +58,19 @@ Example Fit
 ~~~~~~~~~~~
 
 Shown below is an example MSF fit performed with ``maxsmooth`` to data that
-follows a :math:`{y = x^{-2.5}}` power law with a randomly generated Gaussian
+follows a y = x\ :sup:`2.5` power law with a randomly generated Gaussian
 noise with a standard deviation 0.02. The top panel shows the data and the
 bottom panel shows the residual
 after subtraction of the MSF fit. The software using one of the built in DCF models
 and fitting normalised data is shown to be capable of recovering the
 random noise.
 
-.. image:: /docs/images/README.png
+.. image:: ../images/README.png
   :width: 400
   :align: center
 
 Installation
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 Licence and Citation
 ~~~~~~~~~~~~~~~~~~~~
@@ -131,6 +119,7 @@ To run the code you will need the following additional packages:
 To compile the documentation locally you will need:
 
 - `sphinx <https://pypi.org/project/Sphinx/>`__
+- `numpydoc <https://pypi.org/project/numpydoc/>`__
 
 To run the test suit you will need:
 
