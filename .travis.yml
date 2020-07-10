@@ -1,0 +1,19 @@
+os: linux
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
+install:
+  - pip install -r requirements.txt
+  - pip install .
+  - pip install coverage
+  - pip install --upgrade pytest
+
+before_script:
+    # Test for pep-compliance
+    - flake8 maxsmooth
+
+script:
+      coverage --source=maxsmooth -m py.test;
