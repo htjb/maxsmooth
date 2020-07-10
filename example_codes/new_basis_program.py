@@ -160,9 +160,9 @@ result = smooth(x, y, N,
 The output of the fit can be accessed as before,
 """
 
-print('Objective Funtion Evaluations:\n', result.Optimum_chi)
+print('Objective Funtion Evaluations:\n', result.optimum_chi)
 print('RMS:\n', result.rms)
-print('Parameters:\n', result.Optimum_params[2])
+print('Parameters:\n', result.optimum_params[2])
 print('Fitted y:\n', result.y_fit)
-print('Sign Combinations:\n', result.Optimum_signs)
+print('Sign Combinations:\n', result.optimum_signs)
 print('Derivatives:\n', result.derivatives)

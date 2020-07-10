@@ -66,11 +66,11 @@ so,
 
 result = smooth(x, y, N, model_type='normalised_polynomial')
 print('Accessing Fit Attributes:')
-print('Objective Funtion Evaluations:\n', result.Optimum_chi)
+print('Objective Funtion Evaluations:\n', result.optimum_chi)
 print('RMS:\n', result.rms)
 #print('Parameters:\n', result.Optimum_params)
 #print('Fitted y:\n', result.y_fit)
-print('Sign Combinations:\n', result.Optimum_signs)
+print('Sign Combinations:\n', result.optimum_signs)
 #print('Derivatives:\n', result.derivatives)
 
 import matplotlib.pyplot as plt
