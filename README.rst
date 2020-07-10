@@ -65,7 +65,7 @@ after subtraction of the MSF fit. The software using one of the built in DCF mod
 and fitting normalised data is shown to be capable of recovering the
 random noise.
 
-.. image:: ../images/README.png
+.. image:: https://github.com/htjb/maxsmooth/blob/master/docs/images/README.png
   :width: 400
   :align: center
 
