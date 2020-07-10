@@ -13,7 +13,7 @@ install:
 
 before_script:
     # Test for pep-compliance
-    - flake8 maxsmooth
+    - flake8 --ignore=W605 maxsmooth
 
 script:
       coverage --source=maxsmooth -m py.test;
