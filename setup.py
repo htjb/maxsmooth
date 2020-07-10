@@ -20,7 +20,7 @@ setup(
     install_requires=['numpy', 'scipy', 'cvxopt', 'matplotlib', 'progressbar'],
     license='MIT',
     extras_require={
-          'docs': ['sphinx', 'sphinx_rtd_theme'],
+          'docs': ['sphinx', 'sphinx_rtd_theme', 'numpydoc'],
           },
     tests_require=['pytest'],
     classifiers=[
