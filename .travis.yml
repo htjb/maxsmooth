@@ -17,3 +17,7 @@ before_script:
 
 script:
       coverage run --source=maxsmooth -m py.test;
+
+after_success:
+    - codecov
+    - bash <(curl -s https://codecov.io/bash)

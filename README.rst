@@ -13,6 +13,9 @@ Introduction
 .. image:: https://travis-ci.org/htjb/maxsmooth.svg?branch=master
    :target: https://travis-ci.org/htjb/maxsmooth
    :alt: Build Status
+.. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/htjb/maxsmooth
+   :alt: Test Coverage Status
 .. image:: https://badge.fury.io/py/maxsmooth.svg
    :target: https://badge.fury.io/py/maxsmooth
    :alt: PyPI location
