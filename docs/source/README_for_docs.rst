@@ -126,6 +126,7 @@ To run the code you will need the following additional packages:
 - `numpy <https://pypi.org/project/numpy/>`__
 - `CVXOPT <https://pypi.org/project/cvxopt/>`__
 - `scipy <https://pypi.org/project/scipy/>`__
+- `progressbar <https://pypi.org/project/progressbar/>`__
 
 To compile the documentation locally you will need:
 
