@@ -1,7 +1,7 @@
 """
 This function allows you to plot the parameter space around the optimum
 solution found when running ``maxsmooth`` and visualise the constraints with
-contour lines given by :math:`{\chi^2}`.
+contour lines given by chi squared.
 """
 
 import warnings

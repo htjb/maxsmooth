@@ -1,13 +1,13 @@
 """
 
-This function allows the user to produce plots of the :math:`{\chi^2}`
+This function allows the user to produce plots of the chi squared
 distribution as a function of the available discrete sign spaces for the
 constrained derivatives. This can be used to identify whether or not the
 problem is `ill defined`, see the ``maxsmooth`` paper for a definition,
 and if it can be solved using the sign sampling approach.
 
 It can also be used to determine whether or not the 'cap' and maximum allowed
-increase on the value of :math:`{\chi^2}` during the directional exploration
+increase on the value of chi squared during the directional exploration
 are sufficient to identify the global minimum for the problem.
 
 The function is reliant on the output of the ``maxsmooth`` smooth() function.
@@ -46,20 +46,20 @@ class chi_plotter(object):
 
         chi: **Default = None else list or numpy array**
             | A list of
-                :math:`{\chi^2}` evaluations. If provided then this is used
+                chi squared evaluations. If provided then this is used
                 over outputted data in the base directory. It must have the
                 same length as the ouputted signs in the file 'Output_Signs/'
                 in the base directory. It must also be ordered correctly
                 otherwise the returned graph will not be correct. A correct
                 ordering is one for which each entry in the array corresponds
                 to the correct sign combination in 'Output_Signs/'.
-                Typically this will not be needed but if the :math:`{\chi^2}`
+                Typically this will not be needed but if the chi squared
                 evaluation in 'Output_Evaluations/' in the base directory
                 is not in the desired parameter space this can be useful.
                 For example the built in logarithmic model calculates
-                :math:`{\chi^2}` in logarithmic space. To plot the distribution
+                chi squared in logarithmic space. To plot the distribution
                 in linear space we can calculate
-                :math:`{\chi^2}` in linear space using a function for the model
+                chi squared in linear space using a function for the model
                 and the tested parameters which are found in
                 'Output_Parameters/' in the base directory.
 
@@ -81,18 +81,18 @@ class chi_plotter(object):
         plot_limits: **Default = False**
             | Determines whether the limits on
                 the directional exploration are plotted on top of the
-                :math:`{\chi^2}` distribution.
+                chi squared distribution.
 
         cap: **Default = (len(available_signs)//N) + N else an integer**
             | Determines the maximum number of signs explored either side of
-                the minimum :math:`{\chi^2}` value found after the
+                the minimum chi squared value found after the
                 decent algorithm has terminated when running smooth(). Here
                 it is used when plot_limits=True.
 
         chi_squared_limit: **Default = 2 else float or int**
-            | The prefactor on the maximum allowed increase in :math:`{\chi^2}`
+            | The prefactor on the maximum allowed increase in chi squared
                 during the directional exploration which is defaulted at 2.
-                If this value multiplied by the minimum :math:`{\chi^2}`
+                If this value multiplied by the minimum chi squared
                 value found after the descent algorithm is exceeded then the
                 exploration in one direction is stopped and started in the
                 other. For more details on this and 'cap' see the ``maxsmooth``
@@ -254,7 +254,8 @@ class chi_plotter(object):
                         i - self.cap,  min(chi), max(chi),
                         ls='--', color='k', alpha=0.5)
         if self.plot_limits is True:
-            min_chi = np.load(self.base_dir + str(self.N) +
+            min_chi = np.load(
+                self.base_dir + str(self.N) +
                 '_'+self.fit_type+'_minimum_chi_post_descent.npy')
             plt.hlines(
                 self.chi_squared_limit*min_chi, 0, len(possible_signs),

@@ -644,9 +644,10 @@ class smooth(object):
                         break
 
             if self.data_save is True:
-                np.save(self.base_dir + str(self.N) +
-                '_'+self.fit_type+'_minimum_chi_post_descent.npy',
-                min(chi_squared))
+                np.save(
+                    self.base_dir + str(self.N) +
+                    '_'+self.fit_type+'_minimum_chi_post_descent.npy',
+                    min(chi_squared))
 
             if self.chi_squared_limit is not None:
                 lim = self.chi_squared_limit*min(chi_squared)
