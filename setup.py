@@ -17,7 +17,7 @@ setup(
     author_email='htjb2@cam.ac.uk',
     url='https://github.com/htjb/maxsmooth',
     packages=find_packages(),
-    install_requires=['numpy', 'scipy', 'cvxopt', 'matplotlib'],
+    install_requires=['numpy', 'scipy', 'cvxopt', 'matplotlib', 'progressbar'],
     license='MIT',
     extras_require={
           'docs': ['sphinx', 'sphinx_rtd_theme'],
