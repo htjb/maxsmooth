@@ -10,6 +10,10 @@ Introduction
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
 
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
+   :alt: License information
+
 Derivative Constrained Functions and ``maxsmooth``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
