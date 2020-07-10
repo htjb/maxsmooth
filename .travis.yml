@@ -16,4 +16,4 @@ install:
     #- flake8 maxsmooth
 
 script:
-      coverage --source=maxsmooth -m py.test;
+      coverage run --source=maxsmooth -m py.test;
