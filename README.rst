@@ -114,7 +114,9 @@ paper. ::
 
 Documentation
 ~~~~~~~~~~~~~
-The documentation can be compiled locally from the git repository and requires
+The documentation is available at: https://maxsmooth.readthedocs.io/
+
+Alternatively, it can be compiled locally from the git repository and requires
 `sphinx <https://pypi.org/project/Sphinx/>`__ to be installed.
 You can do this via:
 
