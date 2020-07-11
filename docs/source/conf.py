@@ -12,10 +12,10 @@
 #
 import sys
 import os
-sys.path.append(os.path.abspath('../'))
+sys.path.append(os.path.abspath('../../'))
 
 def get_version(short=False):
-    with open('../README.rst') as f:
+    with open('../../README.rst') as f:
         for line in f:
             if ':Version:' in line:
                 ver = line.split(':')[2].strip()
@@ -62,7 +62,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'source/index'
+master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
