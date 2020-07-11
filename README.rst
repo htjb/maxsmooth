@@ -9,6 +9,7 @@ Introduction
 :Author: Harry Thomas Jones Bevins
 :Version: 1.0.0
 :Homepage: https://github.com/htjb/maxsmooth
+:Documentation: https://maxsmooth.readthedocs.io/
 
 .. image:: https://travis-ci.org/htjb/maxsmooth.svg?branch=master
    :target: https://travis-ci.org/htjb/maxsmooth
@@ -16,6 +17,9 @@ Introduction
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
    :alt: Test Coverage Status
+.. image:: https://readthedocs.org/projects/maxsmooth/badge/?version=latest
+   :target: https://maxsmooth.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 .. image:: https://badge.fury.io/py/maxsmooth.svg
    :target: https://badge.fury.io/py/maxsmooth
    :alt: PyPI location
