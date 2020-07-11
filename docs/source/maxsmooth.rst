@@ -1,7 +1,7 @@
 .. toctree::
    :maxdepth: 6
 
-Maxsmooth Example Codes
+``maxsmooth`` Example Codes
 -----------------------
 
 This section is designed to introduce the user to the software and the form
@@ -38,7 +38,7 @@ Parameter Plotter Example
 
 .. include:: param_plotter_example.rst
 
-Maxsmooth Functions
+``maxsmooth`` Functions
 -------------------
 
 This section details the specifics of the built in functions in ``maxsmooth`` including
