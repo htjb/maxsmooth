@@ -3,4 +3,3 @@ numpy
 CVXOPT
 scipy
 progressbar
-sphinx==1.6.7
