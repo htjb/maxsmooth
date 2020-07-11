@@ -27,6 +27,6 @@ fit type and range of DCF orders to test. By default it uses the sign sampling
 algorithm and tests :math:`{N = 3 - 13}`. The resultant graph is saved in the
 base directory and the example generated here is shown below.
 
-.. image:: /images/Basis_functions.png
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Basis_functions.png
   :width: 400
   :align: center

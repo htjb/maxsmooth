@@ -49,4 +49,4 @@ and calculates 50 samples for each parameter. In each panel the two
 labelled parameters are varied while the others are maintained at their optimum
 values.
 
-.. image:: /images/Parameter_plot.png
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Parameter_plot.png

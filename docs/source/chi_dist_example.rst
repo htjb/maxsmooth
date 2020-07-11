@@ -54,6 +54,6 @@ Rather it will likely repeatedly return the local minima found after the descent
 algorithm and you should use the 'qp' method testing all available sign combinations
 in any future fits to the data with this DCF model.
 
-.. image:: /images/chi_distribution.png
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/chi_distribution.png
   :width: 400
   :align: center
