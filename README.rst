@@ -11,8 +11,8 @@ Introduction
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 
-.. image:: https://travis-ci.org/htjb/maxsmooth.svg?branch=master
-   :target: https://travis-ci.org/htjb/maxsmooth
+.. image:: https://travis-ci.com/htjb/maxsmooth.svg?branch=master
+   :target: https://travis-ci.com/htjb/maxsmooth
    :alt: Build Status
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
