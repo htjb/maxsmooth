@@ -138,11 +138,6 @@ respectively.
 Requirements
 ~~~~~~~~~~~~
 
-The code currently builds on python 3.6 and 3.8. There is an issue with 3.7
-currently, the majority of the code including the fitting routine
-will run however the parameter space plotter is not passing the tests with
-python 3.7.
-
 To run the code you will need the following additional packages:
 
 - `matplotlib <https://pypi.org/project/matplotlib/>`__
