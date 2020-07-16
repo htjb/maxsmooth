@@ -68,3 +68,5 @@ parameter_plotter()
 
 .. automodule:: maxsmooth.parameter_plotter
   :members: param_plotter
+
+.. include:: ../../CHANGELOG.rst

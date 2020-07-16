@@ -365,7 +365,7 @@ class param_plotter(object):
                         for i in range(derivatives.shape[0]):
                             if (np.all(derivatives[i, :] >= -1e-6)) and \
                                     (np.all(derivatives[i, :] <= 1e-6)):
-                                signs.append(self.optimum_signs*-1)
+                                signs.append(self.optimum_signs)
                                 if self.warnings is True and \
                                         warnings_count == 0:
                                     warnings.warn(
