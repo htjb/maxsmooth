@@ -154,3 +154,8 @@ To compile the documentation locally you will need:
 To run the test suit you will need:
 
 - `pytest <https://pypi.org/project/pytest/>`__
+
+Change Log
+~~~~~~~~~~
+
+.. include:: CHANGELOG.rst

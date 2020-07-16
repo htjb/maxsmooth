@@ -1,7 +1,5 @@
-Change Log
-==========
-
-Unreleased changes appear on the github but not the pip install.
+Unreleased changes are not yet included in the pip install but are pushed to the
+github.
 
 Unrealeased
 ~~~~~~~~~~~
