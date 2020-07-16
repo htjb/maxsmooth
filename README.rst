@@ -158,4 +158,4 @@ To run the test suit you will need:
 Change Log
 ~~~~~~~~~~
 
-.. include:: docs/source/CHANGELOG.rst
+.. include:: /docs/source/CHANGELOG.rst
