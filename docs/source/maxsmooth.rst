@@ -2,7 +2,7 @@
    :maxdepth: 6
 
 ``maxsmooth`` Example Codes
------------------------
+---------------------------
 
 This section is designed to introduce the user to the software and the form
 in which it is run. It provides basic examples of data fitting with a built in
@@ -68,3 +68,8 @@ parameter_plotter()
 
 .. automodule:: maxsmooth.parameter_plotter
   :members: param_plotter
+
+Change Log
+----------
+
+.. include:: CHANGELOG.rst
