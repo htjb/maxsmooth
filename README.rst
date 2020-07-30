@@ -33,7 +33,7 @@ Derivative Constrained Functions and ``maxsmooth``
 ``maxsmooth`` is an open source software for fitting derivative constrained
 functions, DCFs such as Maximally Smooth Functions
 , MSFs to data sets. MSFs are functions for which there are no zero
-crossings in derivatives of order :math:`{m \geq 2}` within the domain of interest.
+crossings in derivatives of order m >= 2 within the domain of interest.
 They are designed to prevent the loss of
 signals when fitting out dominant smooth foregrounds or large magnitude signals that
 mask signals of interest. Here "smooth" means that the foregrounds follow power
@@ -44,14 +44,14 @@ constrained derivative order, m can take on any value or a set of
 specific high order derivatives can be constrained.
 
 ``maxsmooth`` uses quadratic programming implemented with ``CVXOPT`` to fit
-data subject to a fixed linear constraint, :math:`{\mathbf{Ga} \leq 0}`, where
-:math:`{\mathbf{Ga}}` is a matrix of derivatives.
+data subject to a fixed linear constraint, Ga <= 0, where the product
+Ga is a matrix of derivatives.
 The constraint on an MSF are not explicitly
 linear and each constrained derivative can be positive or negative.
 ``maxsmooth`` is, however, designed to test the <= 0 constraint multiplied
 by a positive or negative sign. Where a positive sign in front of the m\ :sup:`th`
 order derivative forces the derivative
-to be negative for all x. For an :math:`{N^{th}}` order polynomial ``maxsmooth`` can test
+to be negative for all x. For an N\ :sup:`th` order polynomial ``maxsmooth`` can test
 every available sign combination but by default it implements a sign navigating algorithm.
 This is detailed in the ``maxsmooth`` paper (see citation), is summarized
 below and in the software documentation.
@@ -81,8 +81,8 @@ Example Fit
 ~~~~~~~~~~~
 
 Shown below is an example MSF fit performed with ``maxsmooth`` to data that
-follows a :math:`{y = x^{2.5}}` power law with a randomly generated Gaussian
-noise with a standard deviation :math:`{0.02}`. The top panel shows the data and the
+follows a y = x\ :sup:`-2.5` power law with a randomly generated Gaussian
+noise with a standard deviation 0.02. The top panel shows the data and the
 bottom panel shows the residual
 after subtraction of the MSF fit. The software using one of the built in DCF models
 and fitting normalised data is shown to be capable of recovering the

@@ -35,7 +35,8 @@ Well Defined Problems and Discrete Sign Space Searches
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :math:`{\chi^2}` Distribution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 We investigate the distribution of :math:`{\chi^2}` values, shown in the figure below,
 for a 10 :math:`{^{th}}` order y-log(x) space MSF fit to a :math:`{y = x^{-2.5}}`
 power law plus gaussian noise.

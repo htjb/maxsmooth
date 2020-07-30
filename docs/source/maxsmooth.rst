@@ -44,7 +44,7 @@ Parameter Plotter Example
 .. include:: param_plotter_example.rst
 
 ``maxsmooth`` Functions
--------------------
+-----------------------
 
 This section details the specifics of the built in functions in ``maxsmooth`` including
 the relevant keyword arguments and default parameters for all. Where keyword arguments
