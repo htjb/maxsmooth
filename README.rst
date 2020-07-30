@@ -27,6 +27,15 @@ Introduction
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
 
+Version Note
+~~~~~~~~~~~~
+
+The pip install is currently for version 1.0.0 and will shortly be updated to
+version 1.1.0.
+
+Version 1.1.0 can be cloned from the github in the meantime, see Installation
+section.
+
 Derivative Constrained Functions and ``maxsmooth``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
