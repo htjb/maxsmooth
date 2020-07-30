@@ -23,10 +23,10 @@ Introduction
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
-.. image:: https://pypip.in/v/maxsmooth/badge.png
+.. image:: https://pypip.in/v/maxsmooth/badge.svg
    :target: https://pypi.org/project/maxsmooth/#description
    :alt: Latest PyPI version
-.. image:: https://pypip.in/d/maxsmooth/badge.png
+.. image:: https://pypip.in/d/maxsmooth/badge.svg
    :alt: Number of PyPI downloads
 
 Derivative Constrained Functions and ``maxsmooth``
