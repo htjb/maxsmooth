@@ -20,9 +20,10 @@ Introduction
 .. image:: https://readthedocs.org/projects/maxsmooth/badge/?version=latest
    :target: https://maxsmooth.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-.. image:: https://badge.fury.io/py/maxsmooth.svg
-   :target: https://badge.fury.io/py/maxsmooth
-   :alt: PyPI location
+.. image:: https://pypip.in/v/maxsmooth/badge.png
+   :alt: Latest PyPI version
+.. image:: https://pypip.in/d/maxsmooth/badge.png
+   :alt: Number of PyPI downloads
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
