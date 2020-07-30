@@ -1,6 +1,11 @@
 .. toctree::
    :maxdepth: 6
 
+``maxsmooth`` Theory and Algorithm
+----------------------------------
+
+.. include:: theory.rst
+
 ``maxsmooth`` Example Codes
 ---------------------------
 

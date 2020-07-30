@@ -50,3 +50,16 @@ labelled parameters are varied while the others are maintained at their optimum
 values.
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Parameter_plot.png
+
+We are also able to plot the data, fit and residuals alongside the parameter
+plot and this can be done by setting data_plot=True. We can also highlight the
+central region in each panel of the parameter space by setting center_plot=True.
+
+.. code::
+
+  param_plotter(result.optimum_params, result.optimum_signs,
+      x, y, N, base_dir='examples/', data_plot=True, center_plot=True)
+
+which gives us the graph below.
+
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Parameter_plot_extended.png

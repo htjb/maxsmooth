@@ -297,6 +297,6 @@ def test_loglog():
     param_plotter(
         sol.optimum_params, sol.optimum_signs,
         x, y, N, samples=10, base_dir='new_dir/',
-        model_type='loglog_polynomial')
+        model_type='loglog_polynomial', data_plot=True, center_plot=True)
 
     assert(os.path.exists('new_dir/Parameter_plot.pdf') is True)

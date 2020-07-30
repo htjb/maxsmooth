@@ -49,4 +49,11 @@ function by default samples the parameter ranges 50% either side of the optimum
 and calculates 50 spamples for each parameter. In each panel the two
 labelled parameters are varied while the others are maintained at their optimum
 values.
+
+We are also able to plot the data, fit and residuals alongside the parameter
+plot and this can be done by setting data_plot=True. We can also highlight the
+central region in each panel of the parameter space by setting center_plot=True.
 """
+
+param_plotter(result.optimum_params, result.optimum_signs,
+    x, y, N, base_dir='examples/', data_plot=True, center_plot=True)

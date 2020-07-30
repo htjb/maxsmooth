@@ -86,6 +86,15 @@ class param_plotter(object):
             | Plots gridlines showing the central value
                 for each parameter in each panel of the plot.
 
+        center_plot: **Default = False**
+            | Setting this equal to True will highlight the central region
+                with a white circle.
+
+        data_plot: **Default = False**
+            | Setting to True will plot the data, fitted model and the
+                residuals, :math:`{y - y_{fit}}`, alongside the
+                parameter graph.
+
         The following Kwargs are used to plot the parameter space for a user
         defined basis function and will overwrite the 'model_type' kwarg.
 
@@ -134,7 +143,8 @@ class param_plotter(object):
                     'zero_crossings', 'constraints',
                     'basis_functions', 'der_pres', 'model',
                     'derivatives', 'args', 'pivot_point', 'samples',
-                    'width', 'warnings', 'gridlines']):
+                    'width', 'warnings', 'gridlines', 'center_plot',
+                    'data_plot']):
                 raise KeyError(
                     "Unexpected keyword argument in param_plotter().")
 
@@ -228,7 +238,11 @@ class param_plotter(object):
 
         self.warnings = kwargs.pop('warnings', True)
         self.gridlines = kwargs.pop('gridlines', False)
-        boolean_kwargs = [self.warnings, self.gridlines]
+        self.data_plot = kwargs.pop('data_plot', False)
+        self.center_plot = kwargs.pop('center_plot', False)
+        boolean_kwargs = [
+            self.warnings, self.gridlines,
+            self.center_plot, self.data_plot]
         for i in range(len(boolean_kwargs)):
             if type(boolean_kwargs[i]) is not bool:
                 raise TypeError(
@@ -294,9 +308,15 @@ class param_plotter(object):
         cp_array = []
         sign_combinations = []
         warnings_count = 0
-        fig, axes = plt.subplots(
-            figsize=(15, 15),
-            nrows=self.N-1, ncols=self.N-1)
+
+        if self.data_plot is True:
+            fig, axes = plt.subplots(
+                figsize=(15, 10), nrows=self.N-1,
+                ncols=self.N-1)
+        else:
+            fig, axes = plt.subplots(
+                figsize=(10, 10), nrows=self.N-1,
+                ncols=self.N-1)
 
         for n in range(self.N-1):
             for m in range(self.N-1):
@@ -315,6 +335,11 @@ class param_plotter(object):
                             self.best_params[i] * (1 + self.width),
                             self.samples))
             p = np.array(p).T[0]
+            best = [
+                list(self.best_params[i2])[0], list(self.best_params[i1])[0]]
+            p = list(p)
+            p.insert(len(p)//2, best)
+            p = np.array(p)
 
             comb, id = [], []
             for i in range(self.N):
@@ -405,7 +430,10 @@ class param_plotter(object):
                         np.linspace(chi.min(), chi.max(), 10),
                         cmap='autumn')
                     if f == len(combis) - 1:
-                        cbax = fig.add_axes([0.61, 0.8, 0.3, 0.02])
+                        if self.data_plot is True:
+                            cbax = fig.add_axes([0.7*11/15, 0.88, 0.2, 0.02])
+                        else:
+                            cbax = fig.add_axes([0.61, 0.88, 0.25, 0.02])
                         clb = plt.colorbar(
                             cp, cax=cbax,
                             orientation='horizontal')
@@ -421,7 +449,7 @@ class param_plotter(object):
                         'autumn', 'winter', 'summer', 'spring',
                         'Greens', 'cool', 'pink', 'ocean']
                     for i in range(len(available_signs)):
-                        if np.all(chi_array[i].mask is True):
+                        if np.all(chi_array[i].mask):
                             pass
                         else:
                             cp = axes[i1 - 1, i2].contourf(
@@ -439,7 +467,10 @@ class param_plotter(object):
                     np.linspace(chi.min(), chi.max(), 10),
                     cmap='gray')
                 if f == len(combis) - 1:
-                    cbax = fig.add_axes([0.61, 0.8+0.02, 0.3, 0.02])
+                    if self.data_plot is True:
+                        cbax = fig.add_axes([0.7*11/15, 0.9, 0.2, 0.02])
+                    else:
+                        cbax = fig.add_axes([0.61, 0.9, 0.25, 0.02])
                     clb = plt.colorbar(
                         cp_fail, cax=cbax,
                         orientation='horizontal')
@@ -451,6 +482,11 @@ class param_plotter(object):
                     clb.ax.tick_params(
                         labelcolor="none", bottom=False, left=False)
 
+            if self.center_plot is True:
+                axes[i1 - 1, i2].plot(
+                    self.best_params[i2], self.best_params[i1],
+                    color='w', marker='o',
+                    fillstyle='none', markersize=10)
             if self.gridlines is True:
                 axes[i1 - 1, i2].vlines(
                     self.best_params[i2], p[:, 1].min(),
@@ -461,7 +497,7 @@ class param_plotter(object):
         bar.finish()
 
         cbaxes = []
-        height = 0.8
+        height = 0.88
 
         if self.N <= 5:
             mapped_colours = list(
@@ -474,7 +510,12 @@ class param_plotter(object):
             for i in range(len(unique_mapped_colours)):
                 if i > 0:
                     height -= 0.02
-                cbaxes.append(fig.add_axes([0.61, height, 0.3, 0.02]))
+                if self.data_plot is True:
+                    cbaxes.append(
+                        fig.add_axes([0.7*11/15, height, 0.2, 0.02]))
+                else:
+                    cbaxes.append(
+                        fig.add_axes([0.61, height, 0.25, 0.02]))
             count = 0
             for i in range(len(cp_array)):
                 if i in set(indices):
@@ -484,7 +525,7 @@ class param_plotter(object):
                     clb.ax.set_ylabel(
                         r'$\mathbf{s}$ = ' + str(sign_combinations[i]),
                         rotation=0, fontsize=10)
-                    clb.ax.yaxis.set_label_coords(-0.2, 0.1)
+                    clb.ax.yaxis.set_label_coords(-0.25, 0.1)
                     if i != indices.max():
                         clb.ax.tick_params(
                             labelcolor="none", bottom=False, left=False)
@@ -493,5 +534,25 @@ class param_plotter(object):
                     count += 1
 
         plt.subplots_adjust(wspace=0.1, hspace=0.1)
+
+        if self.data_plot is True:
+            fig.subplots_adjust(right=4.5/6.3)
+            fig.add_axes([11.5/15, 0.55, 3/15, 0.35])
+            plt.plot(self.x, self.y, label='Data')
+            plt.ylabel(r'$y$')
+            y_sum = Models.Models_class(
+                self.best_params, self.x, self.y,
+                self.N, self.pivot_point, self.model_type,
+                self.new_basis).y_sum
+            plt.plot(self.x, y_sum, label='Fit')
+            plt.legend(loc=0)
+            fig.add_axes([11.5/15, 0.15, 3/15, 0.35])
+            plt.plot(
+                self.x, self.y - y_sum, label='RMS = %2.1f K'
+                % (np.sqrt(np.sum((self.y - y_sum)**2)/len(self.y))))
+            plt.legend(loc=0)
+            plt.ylabel(r'$\delta y$')
+            plt.xlabel(r'$x$')
+
         plt.savefig(self.base_dir + 'Parameter_plot.pdf')
         plt.close()
