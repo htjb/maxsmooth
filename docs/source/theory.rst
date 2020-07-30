@@ -98,6 +98,8 @@ of the right directional exploration where the calculated :math:`{\chi^2}`
 value exceeds the limit on the directional exploration.
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/routine.png
+  :width: 400
+  :align: center
 
 The global well tends to be associated with signs that are all positive,
 all negative or alternating. We see this in the figure above where the minimum falls
@@ -133,6 +135,8 @@ approximately equal minima and the directional exploration will then quickly
 terminate because of the limits imposed.
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/combined_chi.png
+  :width: 400
+  :align: center
 
 If we repeat the above fit and perform it with a y-x space MSF we find that the
 problem is well defined with a larger :math:`{\chi^2}` variation across sign
@@ -163,4 +167,6 @@ space leading to the presence of local minima. This issue will also be present
 in any data set where the noise or signal of interest are of a similar magnitude
 to the foreground in y - x space.
 
-.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Gradient_fits.png
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/Gradients_fits.png
+  :width: 400
+  :align: center
