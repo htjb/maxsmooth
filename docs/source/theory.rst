@@ -50,6 +50,8 @@ here :math:`{C = (N -2)}`. In binary the sign combination numbers run from
 order derivative with a 1 representing a negative ``maxsmooth`` sign.
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/chi_dist_theory.png
+  :width: 400
+  :align: center
 
 The distribution appears to be composed of smooth steps or shelves; however,
 when each shelf is studied closer, we find a series of peaks and troughs. This can
