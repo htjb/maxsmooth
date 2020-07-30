@@ -20,13 +20,14 @@ Introduction
 .. image:: https://readthedocs.org/projects/maxsmooth/badge/?version=latest
    :target: https://maxsmooth.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-.. image:: https://pypip.in/v/maxsmooth/badge.png
-   :alt: Latest PyPI version
-.. image:: https://pypip.in/d/maxsmooth/badge.png
-   :alt: Number of PyPI downloads
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/htjb/maxsmooth/blob/master/LICENSE
    :alt: License information
+.. image:: https://pypip.in/v/maxsmooth/badge.png
+   :target: https://pypi.org/project/maxsmooth/#description
+   :alt: Latest PyPI version
+.. image:: https://pypip.in/d/maxsmooth/badge.png
+   :alt: Number of PyPI downloads
 
 Derivative Constrained Functions and ``maxsmooth``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
