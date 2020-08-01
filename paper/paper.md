@@ -25,7 +25,7 @@ data sets and reveal non-smooth signals of interest in the residuals. ``maxsmoot
 utilises the [CVXOPT](https://pypi.org/project/cvxopt/) implementation of
 quadratic programming to perform the constrained fitting rapidly and efficiently.
 
-# Foreground Modelling in 21-cm Cosmology
+# Statement of Need
 
 The development of ``maxsmooth`` has largely been motivated by the problem
 of foreground modelling in Global 21-cm experiments. [@EDGES_LB; @LEDA; @SARAS; @REACH].
