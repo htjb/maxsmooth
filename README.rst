@@ -14,6 +14,8 @@ Introduction
 .. image:: https://travis-ci.com/htjb/maxsmooth.svg?branch=master
    :target: https://travis-ci.com/htjb/maxsmooth
    :alt: Build Status
+.. image:: https://circleci.com/gh/htjb/maxsmooth.svg?style=svg
+    :target: https://circleci.com/gh/htjb/maxsmooth
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
    :alt: Test Coverage Status
