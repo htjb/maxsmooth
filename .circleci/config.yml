@@ -29,7 +29,7 @@ jobs:
             . venv/bin/activate
             flake8 maxsmooth
 
-       - run:
+      - run:
           name: tests
           command: |
             . venv/bin/activate
