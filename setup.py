@@ -10,7 +10,7 @@ def readme(short=False):
 
 setup(
     name='maxsmooth',
-    version='1.1.0',
+    version='1.2.0',
     description='maxsmooth:Derivative Constrained Function Fitting',
     long_description=readme(),
     author='Harry T. J. Bevins',
