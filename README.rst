@@ -166,7 +166,7 @@ Below is the BibTex citation,
   }
 
 JOSS paper currently under review
-`here <https://github.com/openjournals/joss-reviews/issues/2596>__`.
+`here <https://github.com/openjournals/joss-reviews/issues/2596>`__.
 
 Contributing
 ~~~~~~~~~~~~
