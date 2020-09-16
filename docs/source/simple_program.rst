@@ -54,7 +54,7 @@ or for example,
 
 .. code::
 
-    N = 10
+    N = 15
 
 We can also plot the data to illustrate what is happening.
 Here the data is a scaled :math:`{x^{-2.5}}` power law and I have added gaussian
@@ -70,6 +70,8 @@ noise in with a standard deviation of 0.02.
     plt.show()
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_data.png
+  :width: 400
+  :align: center
 
 `smooth` can be called as is shown below. It takes the x and y data as standard
 inputs as well as the order of the fit. There are a set of keyword arguments
@@ -100,6 +102,8 @@ so,
     plt.show()
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_msf_residuals.png
+  :width: 400
+  :align: center
 
 To fit the data with a CSF we can use the 'constraints' keyword
 argument in smooth(). 'constraints' sets the minimum constrained
@@ -122,6 +126,8 @@ increased by 1 and the only derivative that is allowed to cross through 0
     plt.show()
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_csf_residuals.png
+  :width: 400
+  :align: center
 
 A Partially Smooth Function can have derivatives constrained via :math:`{m \geq a}`
 where :math:`{a}` is
@@ -143,6 +149,8 @@ data features an inflection point we want to model with our fit.
    plt.show()
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_psf1_residuals.png
+  :width: 400
+  :align: center
 
 To allow a particular set of derivatives to cross zero we use the
 'zero_crossings' keyword. In the example below we are lifting the constraints
@@ -162,6 +170,8 @@ constrained via the condition at the begining of this example code.
    plt.show()
 
 .. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_psf2_residuals.png
+  :width: 400
+  :align: center
 
 While PSFs can seem like an attractive way to improve the quality of fit they
 are less 'smooth' than a MSF or CSF and consequently they can introduce
