@@ -7,7 +7,7 @@ Introduction
 
 :maxsmooth: Derivative Constrained Function Fitting
 :Author: Harry Thomas Jones Bevins
-:Version: 1.1.0
+:Version: 1.2.0
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 
@@ -37,6 +37,8 @@ Introduction
 .. image:: https://joss.theoj.org/papers/7f53a67e2a3e8f021d4324de96fb59c8/status.svg
    :target: https://joss.theoj.org/papers/7f53a67e2a3e8f021d4324de96fb59c8
    :alt: JOSS paper
+.. image:: https://mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/htjb/maxsmooth/master?filepath=example_notebooks%2F
 
 Installation
 ~~~~~~~~~~~~
@@ -63,7 +65,7 @@ Derivative Constrained Functions and ``maxsmooth``
 ``maxsmooth`` is an open source software, written in Python (supporting version 3 upwards),
 for fitting derivative constrained
 functions (DCFs) such as Maximally Smooth Functions
- (MSFs) to data sets. MSFs are functions for which there are no zero
+(MSFs) to data sets. MSFs are functions for which there are no zero
 crossings in derivatives of order m >= 2 within the domain of interest.
 More generally for DCFs the minimum
 constrained derivative order, m can take on any value or a set of
@@ -233,7 +235,7 @@ completeness we provide in this repo the code used to make this comparison
 in the file 'Basin-hopping_Nelder_Mead/'.
 
 The code times_chis.py is used to call ``maxsmooth`` and the Basin-hopping
-methods (in the file 'BHNM/') and plot the recorded times and objective
+methods (in the file 'BHNM/'). It will plot the recorded times and objective
 function evaluations.
 
 The Basin-hopping/Nelder-Mead code is designed to fit MSFs and is not
