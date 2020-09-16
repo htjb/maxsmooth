@@ -25,7 +25,7 @@ The data used for all of this examples is available
 The example codes can be found
 `here <https://github.com/htjb/maxsmooth/tree/master/example_codes>`__ and
 corresponding Jupyter Notebooks are provided
-`here <>`__.
+`here <https://mybinder.org/v2/gh/htjb/maxsmooth/master?filepath=example_notebooks%2F>`__.
 
 Simple Example code
 ~~~~~~~~~~~~~~~~~~~

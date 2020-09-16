@@ -128,7 +128,8 @@ capable of recovering the random noise.
 
 Further examples can be found in the Documentation (https://maxsmooth.readthedocs.io/)
 and in the github repository in the files 'example_codes/' and
-'example_notebooks/'.
+'example_notebooks/' (notebooks can also be accessed online
+`here <https://mybinder.org/v2/gh/htjb/maxsmooth/master?filepath=example_notebooks%2F>`__).
 
 Licence and Citation
 ~~~~~~~~~~~~~~~~~~~~
