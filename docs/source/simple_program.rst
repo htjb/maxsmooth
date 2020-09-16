@@ -69,6 +69,8 @@ noise in with a standard deviation of 0.02.
     plt.ylabel('y')
     plt.show()
 
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_data.png
+
 `smooth` can be called as is shown below. It takes the x and y data as standard
 inputs as well as the order of the fit. There are a set of keyword arguments
 also available that change the type of function being fitted and these are
@@ -97,6 +99,8 @@ so,
     plt.tight_layout()
     plt.show()
 
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_msf_residuals.png
+
 To fit the data with a CSF we can use the 'constraints' keyword
 argument in smooth(). 'constraints' sets the minimum constrained
 derivative for the function which for a CSF we want to be one.
@@ -113,9 +117,11 @@ increased by 1 and the only derivative that is allowed to cross through 0
 
     plt.plot(x, y - res.y_fit)
     plt.xlabel('x', fontsize=12)
-    plt.ylabel('y', fontsize=12)
+    plt.ylabel(r'$\delta y$', fontsize=12)
     plt.tight_layout()
     plt.show()
+
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_csf_residuals.png
 
 A Partially Smooth Function can have derivatives constrained via :math:`{m \geq a}`
 where :math:`{a}` is
@@ -132,9 +138,11 @@ data features an inflection point we want to model with our fit.
 
    plt.plot(x, y - res.y_fit)
    plt.xlabel('x', fontsize=12)
-   plt.ylabel('y', fontsize=12)
+   plt.ylabel(r'$\delta y$', fontsize=12)
    plt.tight_layout()
    plt.show()
+
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_psf1_residuals.png
 
 To allow a particular set of derivatives to cross zero we use the
 'zero_crossings' keyword. In the example below we are lifting the constraints
@@ -149,9 +157,11 @@ constrained via the condition at the begining of this example code.
 
    plt.plot(x, y - res.y_fit)
    plt.xlabel('x', fontsize=12)
-   plt.ylabel('y', fontsize=12)
+   plt.ylabel(r'$\delta y$', fontsize=12)
    plt.tight_layout()
    plt.show()
+
+.. image:: https://github.com/htjb/maxsmooth/raw/master/docs/images/simple_program_psf2_residuals.png
 
 While PSFs can seem like an attractive way to improve the quality of fit they
 are less 'smooth' than a MSF or CSF and consequently they can introduce

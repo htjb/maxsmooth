@@ -85,6 +85,7 @@ import matplotlib.pyplot as plt
 plt.plot(x, y)
 plt.xlabel('x')
 plt.ylabel('y')
+plt.savefig('../docs/images/simple_program_data.png')
 plt.show()
 
 """
@@ -132,6 +133,7 @@ plt.plot(x, y - result.y_fit)
 plt.xlabel('x', fontsize=12)
 plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
+plt.savefig('../docs/images/simple_program_msf_residuals.png')
 plt.show()
 
 """
@@ -157,15 +159,16 @@ increased by 1 and the only derivative that is allowed to cross through 0
 
     plt.plot(x, y - res.y_fit)
     plt.xlabel('x', fontsize=12)
-    plt.ylabel('y', fontsize=12)
+    plt.ylabel(r'$\delta y$', fontsize=12)
     plt.tight_layout()
     plt.show()
 """
 
 plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
-plt.ylabel('y', fontsize=12)
+plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
+plt.savefig('../docs/images/simple_program_csf_residuals.png')
 plt.show()
 
 """
@@ -184,7 +187,7 @@ data features an inflection point we want to model with our fit.
 
     plt.plot(x, y - res.y_fit)
     plt.xlabel('x', fontsize=12)
-    plt.ylabel('y', fontsize=12)
+    plt.ylabel(r'$\delta y$', fontsize=12)
     plt.tight_layout()
     plt.show()
 
@@ -194,8 +197,9 @@ res = smooth(x, y, N, constraints=3)
 
 plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
-plt.ylabel('y', fontsize=12)
+plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
+plt.savefig('../docs/images/simple_program_psf1_residuals.png')
 plt.show()
 
 """
@@ -212,7 +216,7 @@ constrained via the condition at the begining of this example code.
 
     plt.plot(x, y - res.y_fit)
     plt.xlabel('x', fontsize=12)
-    plt.ylabel('y', fontsize=12)
+    plt.ylabel(r'$\delta y$', fontsize=12)
     plt.tight_layout()
     plt.show()
 """
@@ -221,8 +225,9 @@ res = smooth(x, y, N, zero_crossings=[3, 4, 5])
 
 plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
-plt.ylabel('y', fontsize=12)
+plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
+plt.savefig('../docs/images/simple_program_psf2_residuals.png')
 plt.show()
 
 """
