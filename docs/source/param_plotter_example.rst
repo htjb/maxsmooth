@@ -1,7 +1,7 @@
 We can assess the parameter space around the optimum solution
 found using ``maxsmooth`` with the param_plotter() function.
 This can help us identify how well a problem can be solved using the
-sign sampling approach employed by ``maxsmooth`` or simply
+sign navigating approach employed by ``maxsmooth`` or simply
 be used to identify correlations between the foreground parameters.
 For more details on this see the ``maxsmooth`` paper.
 
@@ -23,10 +23,29 @@ function illustrated above.
 We have changed the order of the fit to 5 to illustrate that for
 order :math:`{N \leq 5}` and fits with derivatives :math:`{m \geq 2}` constrained
 the function will plot each region of the graph corresponding to
-different sign functions in a different colourmap. If the constraints are
+different sign combinations in a different colourmap. Recall that
+by default the function smooth() fits a maximally smooth function (MSF) with
+derivatives of order :math:`{m \geq 2}`. If the constraints are
 different or the order is greater than 5 then the viable regions will have
 a single colourmap. Invalid regions are plotted as black shaded colourmaps
 and the contour lines are contours of :math:`{\chi^2}`.
+
+Specifically, invalid regions violate the condition
+
+.. math::
+
+  \pm_m \frac{\delta^m y}{\delta x^m} \leq 0
+
+where :math:`{m}` represents the derivative order, :math:`{y}` is the dependent
+variable and :math:`{x}` is the independent variable. Violation of the
+condition means that one or more of the constrained derivatives crosses 0 in the
+band of interest. For an MSF, as mentioned, :math:`{m \geq 2}` and the sign :math:`{\pm_m}`
+applies to specific derivative orders. For this specific example there are
+3 constrained derivatives, :math:`{m = 2, 3, 4}` and consequently 3 signs to
+optimise for alongside the parameters :math:`{a_k}`. The coloured valid regions
+therefore correspond to a specific combination of :math:`{\pm_m}` for the problem.
+:math:`{\pm_m}` is also referred to as :math:`{\mathbf{s}}` in the theory
+section and the ``maxsmooth`` paper.
 
 We can import the function like so,
 

@@ -19,6 +19,14 @@ built in library for the problem being fitted, analysis of the :math:`{\chi^2}`
 distribution as a function of the discrete sign spaces and analysis of the
 parameter space surrounding the optimum results.
 
+The data used for all of this examples is available
+`here <https://github.com/htjb/maxsmooth/tree/master/example_codes/Data>`__.
+
+The example codes can be found
+`here <https://github.com/htjb/maxsmooth/tree/master/example_codes>`__ and
+corresponding Jupyter Notebooks are provided
+`here <>`__.
+
 Simple Example code
 ~~~~~~~~~~~~~~~~~~~
 .. include:: simple_program.rst

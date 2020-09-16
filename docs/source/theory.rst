@@ -1,7 +1,7 @@
 This section has been adapted from section 4 of the ``maxsmooth`` paper
 in order to explain how the algorithm works. What follows is a discussion of
 the fitting problem and the
-``maxsmooth`` algorithm. To restate concisely the problem being fitted we have
+``maxsmooth`` algorithm. To state concisely the problem being fitted we have
 
 .. math::
 
@@ -9,7 +9,13 @@ the fitting problem and the
         &\mathrm{s.t.}~~\mathbf{G(s)~a} \leq \mathbf{0}.
 
 where :math:`{\mathbf{s}}` are the ``maxsmooth`` signs corresponding to the
-signs on the derivatives.
+signs on the derivatives. :math:`{\mathbf{G}}` is a matrix of prefactors on the derivatives,
+:math:`{\mathbf{a}}` are the parameters we are optimising for and their
+product gives the derivatives we are constraining with each fit.
+:math:`{\mathbf{Q}}` is the dot product of the matrix of basis functions and
+its transpose and :math:`\mathbf{q}` is the negative of the transposed data,
+:math:`\mathbf{y}` dotted with the basis functions. For more details on this
+equation see the ``maxsmooth`` paper.
 A `problem' in this context is the combination of the data, order, basis
 function and constraints on the DCF.
 
