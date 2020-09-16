@@ -165,9 +165,8 @@ Below is the BibTex citation,
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
   }
 
-JOSS paper currently under review at,
-
-  https://github.com/openjournals/joss-reviews/issues/2596
+JOSS paper currently under review
+`here <https://github.com/openjournals/joss-reviews/issues/2596>__`.
 
 Contributing
 ~~~~~~~~~~~~
