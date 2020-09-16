@@ -548,7 +548,7 @@ class param_plotter(object):
             plt.legend(loc=0)
             fig.add_axes([11.5/15, 0.15, 3/15, 0.35])
             plt.plot(
-                self.x, self.y - y_sum, label='RMS = %2.1f K'
+                self.x, self.y - y_sum, label='RMS = %2.1f'
                 % (np.sqrt(np.sum((self.y - y_sum)**2)/len(self.y))))
             plt.legend(loc=0)
             plt.ylabel(r'$\delta y$')

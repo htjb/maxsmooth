@@ -42,6 +42,47 @@ class basis_test(object):
                 some instances the basis function may fail for a given
                 :math:`{N}` and higher orders due to overflow/underflow
                 errors or ``CVXOPT`` errors.
+
+        **pivot_point: Default = len(x)//2 otherwise an integer between**
+        **-len(x) and len(x)**
+            | Some of the built in
+                models rely on pivot points in the data sets which by defualt
+                is set as the middle index. This can be altered via
+                this kwarg which can occasionally lead to a better quality fit.
+
+        **constraints: Default = 2 else an integer less than or equal**
+        **to N - 1**
+            | The minimum constrained derivative order which is set by default
+                to 2 for a Maximally Smooth Function.
+
+        zero_crossings: **Default = None else list of integers**
+            | Allows you to
+                specify if the conditions should be relaxed on any
+                of the derivatives between constraints and the highest order
+                derivative. e.g. a 6th order fit with just a constrained 2nd
+                and 3rd order derivative would have zero_crossings = [4, 5].
+
+        cap: **Default = (len(available_signs)//N) + N else an integer**
+            | Determines the maximum number of signs explored either side of
+                the minimum :math:`{\chi^2}` value found after the decent
+                algorithm has terminated.
+
+        chi_squared_limit: **Default = 2 else float or int**
+            | The prefactor on the maximum allowed increase in :math:`{\chi^2}`
+                during the directional exploration which is defaulted at 2.
+                If this value multiplied by the minimum :math:`{\chi^2}`
+                value found after the descent algorithm is exceeded then the
+                exploration in one direction is stopped and started in the
+                other. For more details on this and 'cap' see the ``maxsmooth``
+                paper.
+
+        cvxopt_maxiter: **Default = 10000 else integer**
+            | This shouldn't need
+                changing for most problems however if ``CVXOPT`` fails with a
+                'maxiters reached' error message this can be increased.
+                Doing so arbitrarily will however increase the run time of
+                ``maxsmooth``.
+
     """
 
     def __init__(self, x, y, **kwargs):
@@ -49,8 +90,12 @@ class basis_test(object):
         self.y = y
 
         for keys, values in kwargs.items():
-            if keys not in set(['fit_type', 'base_dir', 'N']):
-                raise KeyError("Unexpected keyword argument in basis_test().")
+            if keys not in set([
+                    'fit_type', 'base_dir', 'N', 'pivot_point',
+                    'constraints', 'zero_crossings', 'chi_squared_limit',
+                    'cap', 'cvxopt_maxiter']):
+                raise KeyError(
+                    "Unexpected keyword argument in basis_test().")
 
         self.fit_type = kwargs.pop('fit_type', 'qp-sign_flipping')
         if self.fit_type not in set(['qp', 'qp-sign_flipping']):
@@ -70,6 +115,66 @@ class basis_test(object):
                 raise ValueError(
                     'N must be an integer or whole number float.')
 
+        self.pivot_point = kwargs.pop('pivot_point', len(self.x)//2)
+        if type(self.pivot_point) is not int:
+            raise TypeError('Pivot point is not an integer index.')
+        elif self.pivot_point >= len(self.x) or \
+                self.pivot_point < -len(self.x):
+            raise ValueError(
+                'Pivot point must be in the range -len(x) - len(x).')
+
+        self.constraints = kwargs.pop('constraints', 2)
+        if type(self.constraints) is not int:
+            raise TypeError("'constraints' is not an integer")
+        if type(self.N) is list:
+            self.N = np.array(self.N)
+        if self.constraints >= self.N.min() and \
+                self.constraints < self.N.max():
+            self.N = np.arange(self.constraints + 1, self.N.max()+1, 1)
+        elif self.constraints >= self.N.max():
+            raise ValueError(
+                "'constraints' exceeds the number of derivatives" +
+                " for highest value N provided to the function." +
+                " Lower constraints or increase the range of N being" +
+                " tested.")
+
+        self.zero_crossings = kwargs.pop('zero_crossings', None)
+        if self.zero_crossings is not None:
+            for i in range(len(self.zero_crossings)):
+                if type(self.zero_crossings[i]) is not int:
+                    raise TypeError(
+                        "Entries in 'zero_crossings'" +
+                        " are not integer.")
+                if self.zero_crossings[i] < self.constraints:
+                    raise ValueError(
+                        'One or more specified derivatives for' +
+                        ' zero crossings is less than the minimum' +
+                        ' constrained' +
+                        ' derivative.\n zero_crossings = ' +
+                        str(self.zero_crossings)
+                        + '\n' + ' Minimum Constrained Derivative = '
+                        + str(self.constraints))
+
+        self.chi_squared_limit = kwargs.pop('chi_squared_limit', None)
+        self.cap = kwargs.pop('cap', None)
+        if self.chi_squared_limit is not None:
+            if isinstance(self.chi_squared_limit, int) or \
+                    isinstance(self.chi_squared_limit, float):
+                pass
+            else:
+                raise TypeError(
+                    "Limit on maximum allowed increase in chi squared" +
+                    ", 'chi_squared_limit', is not an integer or float.")
+        if self.cap is not None:
+            if type(self.cap) is not int:
+                raise TypeError(
+                    "The cap on directional exploration" +
+                    ", 'cap', is not an integer.")
+
+        self.cvxopt_maxiter = kwargs.pop('cvxopt_maxiter', 10000)
+        if type(self.cvxopt_maxiter) is not int:
+            raise ValueError("'cvxopt_maxiter' is not integer.")
+
         self.test()
 
     def test(self):
@@ -87,7 +192,11 @@ class basis_test(object):
                     result = smooth(
                         self.x, self.y, self.N[i],
                         model_type=model_type,
-                        fit_type=self.fit_type)
+                        fit_type=self.fit_type, pivot_point=self.pivot_point,
+                        constraints=self.constraints,
+                        cvxopt_maxiter=self.cvxopt_maxiter,
+                        zero_crossings=self.zero_crossings,
+                        cap=self.cap, chi_squared_limit=self.chi_squared_limit)
 
                     if model_type == 'loglog_polynomial':
                         chi.append(np.sum((self.y - result.y_fit)**2))
