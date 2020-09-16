@@ -85,7 +85,6 @@ import matplotlib.pyplot as plt
 plt.plot(x, y)
 plt.xlabel('x')
 plt.ylabel('y')
-plt.savefig('../docs/images/simple_program_data.png')
 plt.show()
 
 """
@@ -133,7 +132,6 @@ plt.plot(x, y - result.y_fit)
 plt.xlabel('x', fontsize=12)
 plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
-plt.savefig('../docs/images/simple_program_msf_residuals.png')
 plt.show()
 
 """
@@ -168,7 +166,6 @@ plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
 plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
-plt.savefig('../docs/images/simple_program_csf_residuals.png')
 plt.show()
 
 """
@@ -199,7 +196,6 @@ plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
 plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
-plt.savefig('../docs/images/simple_program_psf1_residuals.png')
 plt.show()
 
 """
@@ -227,7 +223,6 @@ plt.plot(x, y - res.y_fit)
 plt.xlabel('x', fontsize=12)
 plt.ylabel(r'$\delta y$', fontsize=12)
 plt.tight_layout()
-plt.savefig('../docs/images/simple_program_psf2_residuals.png')
 plt.show()
 
 """
