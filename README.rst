@@ -227,7 +227,7 @@ To run the test suit you will need:
 - `pytest <https://pypi.org/project/pytest/>`__
 
 Basin-hopping/Nelder-Mead Code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the ``maxsmooth`` MNRAS paper and JOSS paper we provide a comparison of
 ``maxsmooth`` to a Basin-hopping/Nelder-Mead approach for fitting DCFs. For
