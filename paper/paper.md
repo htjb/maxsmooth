@@ -140,7 +140,7 @@ values and the Basin-hopping results. Figure taken from @Bevins.](times.png)
 Documentation for ``maxsmooth`` is available at [ReadTheDocs](maxsmooth.readthedocs.io/)
 and the code can be
 found on [Github](https://github.com/htjb/maxsmooth). The code is also pip installable
-([PyPI](https://pypi.org/project/maxsmooth/1.1.0/)) package. Continuous
+([PyPI](https://pypi.org/project/maxsmooth/)). Continuous
 integration is performed with [Travis](https://travis-ci.com/github/htjb/maxsmooth)
 and [CircleCi](https://circleci.com/gh/htjb/maxsmooth). The
 associated code coverage can be found at [CodeCov](https://codecov.io/gh/htjb/maxsmooth).
