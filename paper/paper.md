@@ -18,101 +18,119 @@ bibliography: paper.bib
 
 # Summary
 
-``maxsmooth`` is an optimisation routine for fitting derivative constrained functions (DCFs)
-to data sets. DCFs are a family of functions which have derivatives that do not cross
-zero in the band of interest. Consequently, they can produce perfectly smooth fits to
-data sets and reveal non-smooth signals of interest in the residuals. ``maxsmooth``
-utilises the [CVXOPT](https://pypi.org/project/cvxopt/) implementation of
-quadratic programming to perform the constrained fitting rapidly and efficiently.
+``maxsmooth`` is an optimisation routine written in Python (supporting version $\geq 3$)
+for fitting Derivative Constrained Functions (DCFs) to data.
+DCFs are a family of functions which have derivatives that do not cross
+zero in the band of interest. Two special cases of DCF are Maximally Smooth Functions
+(MSFs) which have derivatives with order $m \geq 2$ constrained and Completely Smooth
+Functions (CSFs) with $m \geq 1$ constrained. Alternatively, we can constrain an
+arbitrary set of derivatives and we
+refer to these models as Partially Smooth Functions.
+Due to their constrained nature, DCFs can produce perfectly smooth fits to
+data and reveal non-smooth signals of interest in the residuals.
 
 # Statement of Need
 
-The development of ``maxsmooth`` has largely been motivated by the problem
-of foreground modelling in Global 21-cm experiments. [@EDGES_LB; @LEDA; @SARAS; @REACH].
+The development of ``maxsmooth`` has been motivated by the problem
+of foreground modelling in Global 21-cm experiments [@EDGES_LB; @LEDA; @SARAS; @REACH].
 Global 21-cm cosmology is the study of the spin temperature of hydrogen gas and
-its relative magnitude when compared to the Cosmic Microwave Background (CMB)
-during the Cosmic Dawn and Epoch of Reionisation. During this period in the Universe's
-history the first stars began to form and the properties of the gas in the
-Universe changed as it interacted with radiation from the first luminous sources
+its relative magnitude compared to the Cosmic Microwave Background
+during the Cosmic Dawn (CD) and Epoch of Reionisation (EoR). During the CD and EoR
+the first stars formed and the properties of the hydrogen gas
+changed as it interacted with radiation from these stars
 [@Furlanetto2006; @Pritchard2012; @Barkana2016].
 
 The goal of Global 21-cm experiments is to detect this
-structure in the sky averaged radio spectrum between approximately $50$ and $200$ MHz.
+structure in the sky averaged radio spectrum between $\nu = 50$ and $200$ MHz.
 However, the signal of interest is expected to be of order $\leq 250$ mK and masked by
 foregrounds $10^4 - 10^5$ orders of magnitude brighter [@Cohen; @Cohen2019].
 
-Modelling and removal of the high magnitude foregrounds is essential for detection of
-the Global 21-cm signal. The foregrounds are predominantly composed of smooth
-spectrum synchrotron and
-free-free emission from the Galaxy and extragalactic radio sources. Consequently, DCFs
-provide a powerful alternative to standard polynomials for accurately modelling the
-foregrounds in such experiments.
+Modelling and removal of the foreground is essential for detection of
+the Global 21-cm signal. DCFs provide a powerful alternative to unconstrained
+polynomials for accurately modelling the smooth synchrotron/free-free emission
+foreground from the Galaxy and extragalactic radio sources.
 
-While ``maxsmooth`` has been designed with Global 21-cm cosmology in mind it is
-equally applicable to any experiment in which the signal of interest has to be separated
+To illustrate the abilities of ``maxsmooth`` we produce mock
+21-cm experiment data and model and remove the foreground using an MSF.
+We add to a mock foreground, $\nu^{-2.5}$,
+a Gaussian noise with standard deviation of $0.02$ K and a
+Gaussian signal with amplitude $0.23$ K, central frequency of $100$ MHz
+and standard deviation of $10$ MHz.
+
+The figure below shows the residuals (bottom panel, green) when fitting
+and removing an MSF from the data (top panel) compared to the injected signal
+(bottom panel, red). While the removal of the foreground does not
+directly recover the injected signal we see the remnant of the signal in
+the residuals (see @Bevins for more details and examples).
+
+![**Top panel:** The mock 21-cm data used to illustrate the abilities of
+``maxsmooth``. **Bottom Panel:** The residuals, green, when removing an MSF
+model of the 21-cm foreground from the data showing a clear remnant of
+the signal, red. When jointly fitting an MSF and signal model we find that
+we can accurately recover the signal itself (see @Bevins).](example.png)
+
+``maxsmooth`` is applicable to any experiment in which the signal of interest
+has to be separated
 from comparatively high magnitude smooth signals or foregrounds.
 
 # ``maxsmooth``
 
 DCFs can be fitted with routines such as Basin-hopping [@Basinhopping] and
 Nelder-Mead [@Nelder-Mead] and this has
-been the practice when fitting Maximally Smooth Functions (MSFs), a specific form of
-DCF, for 21-cm Cosmology [@MSFCD; @MSF-EDGES]. However, ``maxsmooth`` employs quadratic programming to
+been the practice for 21-cm cosmology [@MSFCD; @MSF-EDGES].
+However, ``maxsmooth`` employs quadratic programming via
+[CVXOPT](https://pypi.org/project/cvxopt/) to
 rapidly and efficiently fit DCFs which are constrained such that
 
-$$  \frac{d^my}{dx^m}\geq0 ~~ \textnormal{or} ~~ \frac{d^my}{dx^m}~\leq0, $$
+$$  \frac{d^my}{dx^m}\geq0 ~~ \textnormal{or} ~~ \frac{d^my}{dx^m}~\leq0. $$
 
-where for MSFs $m$, the derivative order, is $\geq 2$. An example DCF from the library of $7$
-built-in to ``maxsmooth`` is given by
+An example DCF from the ``maxsmooth`` library is given by
 
 $$ y ~ = ~ \sum_{k=0}^{N} ~ a_{k} ~ x^k, $$
 
 where $x$ and $y$ are the independent and dependent variables respectively and $N$
-is the order of the fit with powers from $0 - (N-1)$. The library is not intended
-to be complete and will be extended by future contributions from users.
+is the order of the fit with powers from $0 - (N-1)$. The library is intended
+be extended by future contributions from users.
 We find that the use of quadratic programming makes ``maxsmooth``
 approximately two orders of magnitude quicker than a Basin-hopping/Nelder-Mead approach.
-We find that ``maxsmooth`` can fit higher order fits to a higher degree of quality, lower $\chi^2$,
-without modification of algorithm parameters as is needed when using Basin-hopping.
 
 ``maxsmooth`` rephrases the above condition such that
 
 $$ \pm_m ~ \frac{d^my}{dx^m} ~ \leq0, $$
 
-where the $\pm$ applies to a given $m$. This produces a set of discrete sign spaces
+where the $\pm$ applies to a given $m$. This produces a set of sign spaces
 with different combinations of constrained positive and negative derivatives. In each sign space
 the associated minimum is found using quadratic programming and then ``maxsmooth``
-identifies the optimum combination of signs, $\mathbf{s}$ on the derivatives. To
+identifies the optimum combination of signs, $\mathbf{s}$. To
 summarise the minimisation problem we have
 
 $$\min_{a,~s}~~\frac{1}{2}~\mathbf{a}^T~\mathbf{Q}~\mathbf{a}~+~\mathbf{q}^T~\mathbf{a},$$
 $$\mathrm{s.t.}~~\mathbf{G(s)~a} \leq \mathbf{0},$$
 
 where we are minimising $\chi^2$, $\mathbf{G(s)a}$ is a stacked matrix of derivative evaluations and $\mathbf{a}$
-is the matrix of parameters we are attempting to optimise for. $\mathbf{Q}$ and $\mathbf{q}$
+is the matrix of parameters we are optimising for. $\mathbf{Q}$ and $\mathbf{q}$
 are given by
 
 $$\mathbf{Q}~=~ \mathbf{\Phi}^T~\mathbf{\Phi}~~\textnormal{and}~~ \mathbf{q}^T~=~-\mathbf{y}^T~\mathbf{\Phi},$$
 
 here $\mathbf{\Phi}$ is a matrix of basis function evaluations and $\mathbf{y}$
-is a column matrix of the dependent data points we are fitting.
+is a column matrix of the dependent data.
 
 The discrete spaces can be searched in their entirety quickly and efficiently or
-alternatively a sign navigating algorithm can be invoked using ``maxsmooth`` which
-reduces the runtime of the algorithm. Division of the parameter space into
-discrete sign spaces allows for a more complete exploration of the parameter space
+a sign navigating algorithm can be invoked using ``maxsmooth``
+reducing the fitting time. Division of the parameter space into
+sign spaces allows for a more complete exploration
 when compared to Basin-hopping/Nelder-Mead based algorithms.
 
-The sign navigating approach uses a cascading algorithm to identify a candidate set of signs
-and parameters for the global
-minimum. The cascading algorithm starts with a randomly generated set of signs. Each
+The sign navigating approach uses a cascading algorithm to identify a candidate
+optimum $\mathbf{s}$ and $\mathbf{a}$. The algorithm starts with a randomly generated $\mathbf{s}$. Each
 individual sign is then flipped, from the lowest order derivative first, until the
 objective function decreases in value. The signs associated with the lower
-$\chi^2$ value then become the optimum set and the processes is repeated until
-the objective function stops decreasing in value. This is then followed by a limited exploration
+$\chi^2$ value become the optimum set and the processes is repeated until
+$\chi^2$ stops decreasing. This is followed by a limited exploration
 of the neighbouring sign spaces to identify the true global minimum.
 
-![The time taken to fit a polynomial data set following an approximate $x^a$ power law
+![The time taken to fit polynomial data following an approximate $x^a$ power law
 using both ``maxsmooth`` quadratic programming methods and for comparison a method
 based in Basin-hopping and Nelder-Mead routines. We show the results using the later method
 up to $N = 7$ after which the method begins to fail without adjustments to the routine parameters.
@@ -123,7 +141,8 @@ Documentation for ``maxsmooth`` is available at [ReadTheDocs](maxsmooth.readthed
 and the code can be
 found on [Github](https://github.com/htjb/maxsmooth). Version 1.1.0 is available
 as a [PyPI](https://pypi.org/project/maxsmooth/1.1.0/) package. Continuous
-integration is performed with [Travis](https://travis-ci.com/github/htjb/maxsmooth) and the
+integration is performed with [Travis](https://travis-ci.com/github/htjb/maxsmooth)
+and [CircleCi](https://circleci.com/gh/htjb/maxsmooth). The
 associated code coverage can be found at [CodeCov](https://codecov.io/gh/htjb/maxsmooth).
 
 # Acknowledgements
