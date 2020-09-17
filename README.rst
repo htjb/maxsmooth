@@ -73,7 +73,7 @@ specific high order derivatives can be constrained.
 They are designed to prevent the loss of
 signals when fitting out dominant smooth foregrounds or large magnitude signals that
 mask signals of interest. Here "smooth" means that the foregrounds follow power
-law structures and do not feature turning points in the band of interest.
+law structures in the band of interest.
 In some cases DCFs can be used to
 highlight systematics in the data.
 
