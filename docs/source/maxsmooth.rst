@@ -34,7 +34,7 @@ Simple Example code
 Turning Points and Inflection Points
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: turning_pints.rst
+.. include:: turning_points.rst
 
 New Basis Example
 ~~~~~~~~~~~~~~~~~
