@@ -60,7 +60,8 @@ and standard deviation of $10$ MHz.
 The figure below shows the residuals (bottom panel, green) when fitting
 and removing an MSF from the data (top panel) compared to the injected signal
 (bottom panel, red). While the removal of the foreground does not
-directly recover the injected signal we see the remnant of the signal in
+directly recover the injected signal, rather a smooth baseline subtracted version,
+we see the remnant of the signal in
 the residuals (see @Bevins for more details and examples).
 
 ![**Top panel:** The mock 21-cm data used to illustrate the abilities of
