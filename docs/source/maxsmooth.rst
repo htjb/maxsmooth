@@ -31,6 +31,11 @@ Simple Example code
 ~~~~~~~~~~~~~~~~~~~
 .. include:: simple_program.rst
 
+Turning Points and Inflection Points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: turning_pints.rst
+
 New Basis Example
 ~~~~~~~~~~~~~~~~~
 
