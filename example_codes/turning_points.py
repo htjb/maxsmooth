@@ -55,7 +55,7 @@ plt.show()
 
 """
 As already stated ``maxsmooth`` does not constrain the first derivative of the
-DCF by deafult so we can go ahead and fit the data.
+DCF by default so we can go ahead and fit the data.
 
 .. code:: bash
 
@@ -123,7 +123,7 @@ plt.show()
 """
 If we proceed to fit this with smooth() in its default settings we will get a
 poor fit as by default the second derivative is constrained. We need to lift this
-constraint to allow for the prominant inflection point to be modelled. We do this
+constraint to allow for the prominent inflection point to be modelled. We do this
 by setting the keyword argument constraints=3 creating a Partially Smooth Function
 or PSF.
 
