@@ -42,7 +42,7 @@ changed as it interacted with radiation from these stars
 
 The goal of Global 21-cm experiments is to detect this
 structure in the sky averaged radio spectrum between $\nu = 50$ and $200$ MHz.
-However, the signal of interest is expected to be of order $\leq 250$ mK and masked by
+However, the signal of interest is expected to be approximately $\leq 250$ mK and masked by
 foregrounds $10^4 - 10^5$ times brighter [@Cohen; @Cohen2019].
 
 Modelling and removal of the foreground is essential for detection of
