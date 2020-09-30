@@ -18,7 +18,7 @@ bibliography: paper.bib
 
 # Summary
 
-``maxsmooth`` is an optimisation routine written in Python (supporting version $\geq 3$)
+``maxsmooth`` is an optimisation routine written in Python (supporting version $\geq 3.6$)
 for fitting Derivative Constrained Functions (DCFs) to data.
 DCFs are a family of functions which have derivatives that do not cross
 zero in the band of interest. Two special cases of DCF are Maximally Smooth Functions
