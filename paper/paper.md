@@ -9,7 +9,7 @@ authors:
     orcid: 0000-0002-4367-3550
     affiliation: "1"
 affiliations:
- - name: Astrophysics Group, Cavendish Laboratory, J.J.Thomson Avenue, Cambridge, CB3 0HE, UK
+ - name: Astrophysics Group, Cavendish Laboratory, J.J.Thomson Avenue, Cambridge, CB3 0HE, United Kingdom
    index: 1
 date: 31 July 2020
 bibliography: paper.bib
