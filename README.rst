@@ -41,7 +41,7 @@ Introduction
    :target: https://mybinder.org/v2/gh/htjb/maxsmooth/master?filepath=example_notebooks%2F
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4059339.svg
    :target: https://doi.org/10.5281/zenodo.4059339
-   
+
 Installation
 ~~~~~~~~~~~~
 In the following two sections we highlight the purpose of ``maxsmooth`` and
@@ -167,8 +167,27 @@ Below is the BibTex citation,
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
   }
 
-JOSS paper currently under review
-`here <https://github.com/openjournals/joss-reviews/issues/2596>`__.
+JOSS paper,
+
+  Bevins, H. T., (2020). maxsmooth: Derivative Constrained Function Fitting. Journal of Open Source Software, 5(54), 2596, https://doi.org/10.21105/joss.02596
+
+and the BibTex,
+
+.. code:: bibtex
+
+  @article{Bevins2020,
+      doi = {10.21105/joss.02596},
+      url = {https://doi.org/10.21105/joss.02596},
+      year = {2020},
+      publisher = {The Open Journal},
+      volume = {5},
+      number = {54},
+      pages = {2596},
+      author = {Harry T. j. Bevins},
+      title = {maxsmooth: Derivative Constrained Function Fitting},
+      journal = {Journal of Open Source Software}
+  }
+
 
 Contributing
 ~~~~~~~~~~~~
