@@ -127,7 +127,7 @@ The sign navigating approach uses a cascading algorithm to identify a candidate
 optimum $\mathbf{s}$ and $\mathbf{a}$. The algorithm starts with a randomly generated $\mathbf{s}$. Each
 individual sign is then flipped, from the lowest order derivative first, until the
 objective function decreases in value. The signs associated with the lower
-$\chi^2$ value become the optimum set and the processes is repeated until
+$\chi^2$ value become the optimum set and the process is repeated until
 $\chi^2$ stops decreasing. This is followed by a limited exploration
 of the neighbouring sign spaces to identify the true global minimum.
 
