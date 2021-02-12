@@ -37,6 +37,4 @@ jobs:
     - name: Test with pytest
       run: |
         coverage run --source=maxsmooth -m py.test;
-    - name: Upload coverage to Codecov
-      run: |
         bash <(curl -s https://codecov.io/bash)
