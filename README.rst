@@ -11,12 +11,9 @@ Introduction
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 
-.. image:: https://travis-ci.com/htjb/maxsmooth.svg?branch=master
-   :target: https://travis-ci.com/htjb/maxsmooth
-   :alt: travis-ci
-.. image:: https://circleci.com/gh/htjb/maxsmooth.svg?style=svg
-   :target: https://circleci.com/gh/htjb/maxsmooth
-   :alt: circleci
+.. image:: https://github.com/htjb/maxsmooth/workflows/CI/badge.svg
+   :target: https://github.com/htjb/maxsmooth/actions?query=workflow%3ACI
+   :alt: github CI
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
    :alt: Test Coverage Status
