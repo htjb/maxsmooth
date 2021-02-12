@@ -141,27 +141,24 @@ MNRAS pre-print (referred to throughout the documentation as the ``maxsmooth``
 paper),
 
   H. T. J. Bevins et al., `maxsmooth: Rapid maximally smooth function fitting with
-  applications in Global 21-cm cosmology <https://arxiv.org/abs/2007.14970>`__,
-  arXiv e-print, arXiv:2007.14970, 2020.
+  applications in Global 21-cm cosmology <https://academic.oup.com/mnras/advance-article/doi/10.1093/mnras/stab152/6105349>`__,
+  Monthly Notices of the Royal Astronomical Society, 2021;, stab152, https://doi.org/10.1093/mnras/stab152
 
 Below is the BibTex citation,
 
 .. code:: bibtex
 
-  @ARTICLE{maxsmooth,
-       author = {{Bevins}, H.~T.~J. and {Handley}, W.~J. and {Fialkov}, A. and
-         {de Lera Acedo}, E. and {Greenhill}, L.~J. and {Price}, D.~C.},
-        title = "{maxsmooth: Rapid maximally smooth function fitting with applications in Global 21-cm cosmology}",
-      journal = {arXiv e-prints},
-         year = 2020,
-        month = jul,
-          eid = {arXiv:2007.14970},
-        pages = {arXiv:2007.14970},
-  archivePrefix = {arXiv},
-       eprint = {2007.14970},
-  primaryClass = {astro-ph.CO},
-       adsurl = {https://ui.adsabs.harvard.edu/abs/2020arXiv200714970B},
-      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+  @article{10.1093/mnras/stab152,
+    author = {Bevins, H T J and Handley, W J and Fialkov, A and Acedo, E de Lera and Greenhill, L J and Price, D C},
+    title = "{maxsmooth: rapid maximally smooth function fitting with applications in Global 21-cm cosmology}",
+    journal = {Monthly Notices of the Royal Astronomical Society},
+    year = {2021},
+    month = {01},
+    issn = {0035-8711},
+    doi = {10.1093/mnras/stab152},
+    url = {https://doi.org/10.1093/mnras/stab152},
+    note = {stab152},
+    eprint = {https://academic.oup.com/mnras/advance-article-pdf/doi/10.1093/mnras/stab152/35931358/stab152.pdf},
   }
 
 JOSS paper,
