@@ -36,5 +36,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        coverage run --source=maxsmooth -m py.test;
-        bash <(curl -s https://codecov.io/bash)
+        python -m pytest --cov=maxsmooth
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
