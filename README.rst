@@ -12,7 +12,7 @@ Introduction
 :Documentation: https://maxsmooth.readthedocs.io/
 
 .. image:: https://github.com/htjb/maxsmooth/workflows/CI/badge.svg
-   :target: https://github.com/htjb/maxsmooth/actions?query=workflow%3ACI
+   :target: https://github.com/htjb/maxsmooth/actions
    :alt: github CI
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
