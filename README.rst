@@ -11,9 +11,6 @@ Introduction
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 
-.. image:: https://github.com/htjb/maxsmooth/workflows/CI/badge.svg
-   :target: https://github.com/htjb/maxsmooth/actions
-   :alt: github CI
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
    :alt: Test Coverage Status
@@ -26,8 +23,6 @@ Introduction
 .. image:: https://pypip.in/v/maxsmooth/badge.svg
    :target: https://pypi.org/project/maxsmooth/#description
    :alt: Latest PyPI version
-.. image:: https://pypip.in/d/maxsmooth/badge.svg
-   :alt: Number of PyPI downloads
 .. image:: https://img.shields.io/badge/ascl-2008.018-blue.svg?colorB=262255
    :target: http://ascl.net/2008.018
    :alt: Astrophysics Source Code Library
