@@ -11,6 +11,9 @@ Introduction
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 
+.. image:: https://github.com/htjb/maxsmooth/workflows/.github/CI.yml/badge.svg?event=push
+   :target: https://github.com/htjb/maxsmooth/actions
+   :alt: github CI
 .. image:: https://codecov.io/gh/htjb/maxsmooth/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/htjb/maxsmooth
    :alt: Test Coverage Status
