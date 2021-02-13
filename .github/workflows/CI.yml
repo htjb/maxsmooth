@@ -38,4 +38,6 @@ jobs:
       run: |
         python -m pytest --cov=maxsmooth
     - name: Upload coverage to Codecov
-      run: bash <(curl -s https://codecov.io/bash)
+      uses: codecov/codecov-action@v1
+      with:
+        files: ${{runner.workspace}}/build/coverage.info
