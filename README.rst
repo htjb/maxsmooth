@@ -135,7 +135,7 @@ The software is free to use on the MIT open source license. However if you use
 the software for academic purposes we request that you cite the ``maxsmooth``
 papers. They are detailed below.
 
-MNRAS pre-print (referred to throughout the documentation as the ``maxsmooth``
+MNRAS paper (referred to throughout the documentation as the ``maxsmooth``
 paper),
 
   H. T. J. Bevins et al., `maxsmooth: Rapid maximally smooth function fitting with
