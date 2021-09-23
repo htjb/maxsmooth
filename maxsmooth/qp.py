@@ -11,7 +11,7 @@ warnings.simplefilter('always', UserWarning)
 class qp_class(object):
     def __init__(
             self, x, y, N, signs, pivot_point, model_type, cvxopt_maxiter,
-            all_output, zero_crossings, initial_params,
+            zero_crossings, initial_params,
             constraints, new_basis):
         self.model_type = model_type
         self.pivot_point = pivot_point
@@ -20,7 +20,6 @@ class qp_class(object):
         self.N = N
         self.signs = signs
         self.cvxopt_maxiter = cvxopt_maxiter
-        self.all_output = all_output
         self.zero_crossings = zero_crossings
         self.initial_params = initial_params
         self.basis_functions = new_basis['basis_function']

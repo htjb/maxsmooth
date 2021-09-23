@@ -64,7 +64,7 @@ def test_keywords():
     with pytest.raises(Exception):
         sol = smooth(x, y, N, cvxopt_maxiter=41.2)
     with pytest.raises(Exception):
-        sol = smooth(x, y, N, all_output=9)
+        sol = smooth(x, y, N, print_output=9)
     with pytest.raises(Exception):
         sol = smooth(x, y, N, data_save='string')
     with pytest.raises(Exception):
@@ -95,7 +95,7 @@ def test_smooth_fit():
     y = 1 + x + x**2 + x**3
 
     N = 4
-    sol = smooth(x, y, N, model_type='polynomial', all_output=True)
+    sol = smooth(x, y, N, model_type='polynomial', print_output=2)
 
     assert_almost_equal(sol.optimum_params.T[0], [1, 1, 1, 1], decimal=3)
 
@@ -106,7 +106,7 @@ def test_smooth_fit():
 
     sol = smooth(
         x, y, N, model_type='polynomial', fit_type='qp',
-        all_output=True)
+        print_output=2)
 
     assert(sol.cap is None)
     assert_almost_equal(sol.optimum_params.T[0], [1, 1, 1, 1], decimal=3)
@@ -134,7 +134,7 @@ def test_output_directional_exp():
     y = 5e7*x**(-2.5)
 
     N = 10
-    sol = smooth(x, y, N, model_type='legendre', all_output=True)
+    sol = smooth(x, y, N, model_type='legendre', print_output=0)
 
     assert_almost_equal( sol.optimum_chi , ((y - sol.y_fit)**2).sum())
 
@@ -322,14 +322,14 @@ def test_ifp():
     N = 10
 
     sol = smooth(
-        x, y, N, zero_crossings=[4, 5, 6], constraints=1, all_output=True)
+        x, y, N, zero_crossings=[4, 5, 6], constraints=1, print_output=0)
 
     assert(len(sol.optimum_zc_dict) == 4)
     assert(type(sol.optimum_zc_dict) is dict)
 
     sol = smooth(
         x, y, N, zero_crossings=[4, 5, 6],
-        constraints=1, all_output=True, fit_type='qp')
+        constraints=1, print_output=2, fit_type='qp')
 
     assert(len(sol.optimum_zc_dict) == 4)
     assert(type(sol.optimum_zc_dict) is dict)
