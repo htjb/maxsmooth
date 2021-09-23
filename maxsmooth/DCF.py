@@ -74,10 +74,15 @@ class smooth(object):
                 be over written on repeated runs but they are needed to run the
                 'chidist_plotter'.
 
-        all_output: **Default = False**
-            | If set to True this outputs to the
+        print_output: **Default = 1**
+            | The parameter can take a value of 0, 1, 2.
+                If set to 2 this outputs to the
                 terminal every fit performed by the algorithm. By default the
+                parameter has a value of 1 and the
                 only output is the optimal solution once the code is finished.
+                Setting this to 0 will prevent any output to the terminal. This
+                is useful when running the code inside a nested sampling loop
+                for example.
 
         cvxopt_maxiter: **Default = 10000 else integer**
             | This shouldn't need
@@ -193,7 +198,7 @@ class smooth(object):
         for keys, values in kwargs.items():
             if keys not in set(
                     ['fit_type', 'model_type', 'base_dir',
-                        'all_output', 'cvxopt_maxiter', 'zero_crossings',
+                        'print_output', 'cvxopt_maxiter', 'zero_crossings',
                         'data_save',
                         'constraints', 'chi_squared_limit', 'cap',
                         'initial_params', 'basis_functions',
@@ -235,15 +240,16 @@ class smooth(object):
         if type(self.cvxopt_maxiter) is not int:
             raise ValueError("'cvxopt_maxiter' is not integer.")
 
-        self.all_output = kwargs.pop('all_output', False)
+        self.print_output = kwargs.pop('print_output', 1)
+        if self.print_output not in [0, 1, 2]:
+            raise ValueError("'print_output' must have a value in the set" +
+                             " [0, 1, 2]. See documentation for details.")
+
         self.data_save = kwargs.pop('data_save', False)
-        boolean_kwargs = [self.data_save, self.all_output]
-        for i in range(len(boolean_kwargs)):
-            if type(boolean_kwargs[i]) is not bool:
-                raise TypeError(
-                    "Boolean keyword argument with value "
-                    + str(boolean_kwargs[i]) +
-                    " is not True or False.")
+        if type(self.data_save) is not bool:
+            raise TypeError(
+                "Boolean keyword argument with value 'data_save'" +
+                " is not True or False.")
 
         self.constraints = kwargs.pop('constraints', 2)
         if type(self.constraints) is not int:
@@ -350,9 +356,7 @@ class smooth(object):
             shutil.rmtree(self.base_dir+'Output_Evaluation/')
 
         def qp(x, y, pivot_point):  # Testing all signs
-            print(
-                '######################################################' +
-                '#######')
+
             start = time.time()
 
             if self.zero_crossings is not None:
@@ -369,13 +373,11 @@ class smooth(object):
                 fit = qp_class(
                     x, y, self.N, signs[j, :], pivot_point,
                     self.model_type, self.cvxopt_maxiter,
-                    self.all_output, self.zero_crossings,
+                    self.zero_crossings,
                     self.initial_params, self.constraints, self.new_basis)
 
-                if self.all_output is True:
-                    print(
-                        '-----------------------------------------------' +
-                        '-----')
+                if self.print_output == 2:
+                    print('-'*50)
                     print('Polynomial Order:', self.N)
                     if self.zero_crossings is not None:
                         print(
@@ -403,9 +405,7 @@ class smooth(object):
                             'Zero Crossings Used?' +
                             ' (0 signifies Yes\n in derivative order "i"):',
                             fit.zc_dict)
-                    print(
-                        '-----------------------------------------------' +
-                        '-----')
+                    print('-'*50)
 
                 append_params(fit.parameters)
                 append_chi(fit.chi_squared)
@@ -437,45 +437,38 @@ class smooth(object):
 
             end = time.time()
 
-            print(
-                '######################################################' +
-                '#######')
-            print(
-                '----------------------OPTIMUM RESULT--------------------' +
-                '-----')
-            print('Time:', end-start)
-            print('Polynomial Order:', self.N)
-            if self.zero_crossings is not None:
-                print(
-                    'Number of Constrained Derivatives:',
-                    self.N-self.constraints-len(self.zero_crossings))
-            else:
-                print(
-                    'Number of Constrained Derivatives:',
-                    self.N-self.constraints)
-            print('Signs :', Optimum_sign_combination)
-            print('Objective Function Value:', Optimum_chi_squared)
-            print('Parameters:', Optimum_params.T)
-            print('Method:', self.fit_type)
-            print('Model:', self.model_type)
-            print('Constraints: m >=', self.constraints)
-            if self.zero_crossings is None:
-                print(
-                    'Zero Crossings Used?' +
-                    ' (0 signifies Yes\n in derivative order "i"):',
-                    Optimum_zc_dict)
-            if self.zero_crossings is not None:
-                print('Zero Crossing Derivatives:', self.zero_crossings)
-                print(
-                    'Zero Crossings Used?' +
-                    ' (0 signifies Yes\n in derivative order "i"):',
-                    Optimum_zc_dict)
-            print(
-                '-------------------------------------------------------' +
-                '------')
-            print(
-                '######################################################' +
-                '#######')
+            if self.print_output in [1, 2]:
+                print('#'*50)
+                print('-'*20 + 'OPTIMUM RESULT' + '-'*20)
+                print('Time:', end-start)
+                print('Polynomial Order:', self.N)
+                if self.zero_crossings is not None:
+                    print(
+                        'Number of Constrained Derivatives:',
+                        self.N-self.constraints-len(self.zero_crossings))
+                else:
+                    print(
+                        'Number of Constrained Derivatives:',
+                        self.N-self.constraints)
+                print('Signs :', Optimum_sign_combination)
+                print('Objective Function Value:', Optimum_chi_squared)
+                print('Parameters:', Optimum_params.T)
+                print('Method:', self.fit_type)
+                print('Model:', self.model_type)
+                print('Constraints: m >=', self.constraints)
+                if self.zero_crossings is None:
+                    print(
+                        'Zero Crossings Used?' +
+                        ' (0 signifies Yes\n in derivative order "i"):',
+                        Optimum_zc_dict)
+                if self.zero_crossings is not None:
+                    print('Zero Crossing Derivatives:', self.zero_crossings)
+                    print(
+                        'Zero Crossings Used?' +
+                        ' (0 signifies Yes\n in derivative order "i"):',
+                        Optimum_zc_dict)
+                print('-'*50)
+                print('#'*50)
 
             save_optimum(
                 self.base_dir, end-start, self.N,
@@ -487,9 +480,7 @@ class smooth(object):
                 Optimum_sign_combination, Optimum_zc_dict
 
         def qp_sign_flipping(x, y, pivot_point):  # Sign Sampling
-            print(
-                '######################################################' +
-                '#######')
+
             start = time.time()
 
             if self.zero_crossings is not None:
@@ -511,7 +502,7 @@ class smooth(object):
             fit = qp_class(
                 x, y, self.N, signs, pivot_point,
                 self.model_type, self.cvxopt_maxiter,
-                self.all_output, self.zero_crossings,
+                self.zero_crossings,
                 self.initial_params, self.constraints, self.new_basis)
             chi_squared.append(fit.chi_squared)
             tested_signs.append(signs)
@@ -519,10 +510,8 @@ class smooth(object):
             chi_squared_old = fit.chi_squared
             previous_signs = signs
 
-            if self.all_output is True:
-                print(
-                    '--------------------------------------' +
-                    '--------------')
+            if self.print_output == 2:
+                print('-'*50)
                 print('Polynomial Order:', self.N)
                 if self.zero_crossings is not None:
                     print(
@@ -550,9 +539,7 @@ class smooth(object):
                     print(
                         'Zero Crossings Used? (0 signifies' +
                         'Yes\n in derivative order "i"):', fit.zc_dict)
-                print(
-                    '--------------------------------------' +
-                    '--------------')
+                print('-'*50)
             if self.data_save is True:
                 save(
                     self.base_dir, fit.parameters, fit.chi_squared,
@@ -582,7 +569,6 @@ class smooth(object):
                         fit = qp_class(
                             x, y, self.N, signs, pivot_point,
                             self.model_type, self.cvxopt_maxiter,
-                            self.all_output,
                             self.zero_crossings, self.initial_params,
                             self.constraints, self.new_basis)
                         if fit.chi_squared < chi_squared_old:
@@ -592,10 +578,8 @@ class smooth(object):
                             tested_signs.append(signs)
                             parameters.append(fit.parameters)
 
-                            if self.all_output is True:
-                                print(
-                                    '--------------------------------------' +
-                                    '--------------')
+                            if self.print_output == 2:
+                                print('-'*50)
                                 print('Polynomial Order:', self.N)
                                 if self.zero_crossings is not None:
                                     print(
@@ -629,9 +613,7 @@ class smooth(object):
                                         ' (0 signifies' +
                                         'Yes\n in derivative order "i"):',
                                         fit.zc_dict)
-                                print(
-                                    '--------------------------------------' +
-                                    '--------------')
+                                print('-'*50)
                             if self.data_save is True:
                                 save(
                                     self.base_dir, fit.parameters,
@@ -676,7 +658,6 @@ class smooth(object):
                     fit = qp_class(
                         x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
-                        self.all_output,
                         self.zero_crossings, self.initial_params,
                         self.constraints, self.new_basis)
                     chi_down = fit.chi_squared
@@ -684,10 +665,8 @@ class smooth(object):
                     tested_signs.append(signs)
                     parameters.append(fit.parameters)
 
-                    if self.all_output is True:
-                        print(
-                            '--------------------------------------' +
-                            '--------------')
+                    if self.print_output == 2:
+                        print('-'*50)
                         print('Polynomial Order:', self.N)
                         if self.zero_crossings is not None:
                             print(
@@ -718,9 +697,7 @@ class smooth(object):
                                 'Zero Crossings Used? (0 signifies' +
                                 'Yes\n in derivative order "i"):',
                                 fit.zc_dict)
-                        print(
-                            '--------------------------------------' +
-                            '--------------')
+                        print('-'*50)
                     if self.data_save is True:
                         save(
                             self.base_dir, fit.parameters, fit.chi_squared,
@@ -743,7 +720,6 @@ class smooth(object):
                     fit = qp_class(
                         x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
-                        self.all_output,
                         self.zero_crossings, self.initial_params,
                         self.constraints, self.new_basis)
                     chi_up = fit.chi_squared
@@ -751,10 +727,8 @@ class smooth(object):
                     tested_signs.append(signs)
                     parameters.append(fit.parameters)
 
-                    if self.all_output is True:
-                        print(
-                            '--------------------------------------' +
-                            '--------------')
+                    if self.print_output == 2:
+                        print('-'*50)
                         print('Polynomial Order:', self.N)
                         if self.zero_crossings is not None:
                             print(
@@ -785,9 +759,7 @@ class smooth(object):
                                 'Zero Crossings Used? (0 signifies' +
                                 'Yes\n in derivative order "i"):',
                                 fit.zc_dict)
-                        print(
-                            '--------------------------------------' +
-                            '--------------')
+                        print('-'*50)
                     if self.data_save is True:
                         save(
                             self.base_dir, fit.parameters, fit.chi_squared,
@@ -814,45 +786,38 @@ class smooth(object):
 
             end = time.time()
 
-            print(
-                '######################################################' +
-                '#######')
-            print(
-                '----------------------OPTIMUM RESULT--------------------' +
-                '-----')
-            print('Time:', end-start)
-            print('Polynomial Order:', self.N)
-            if self.zero_crossings is not None:
-                print(
-                    'Number of Constrained Derivatives:',
-                    self.N-self.constraints-len(self.zero_crossings))
-            else:
-                print(
-                    'Number of Constrained Derivatives:',
-                    self.N-self.constraints)
-            print('Signs :', Optimum_sign_combination)
-            print('Objective Function Value:', Optimum_chi_squared)
-            print('Parameters:', Optimum_params.T)
-            print('Method:', self.fit_type)
-            print('Model:', self.model_type)
-            print('Constraints: m >=', self.constraints)
-            if self.zero_crossings is None:
-                print(
-                    'Zero Crossings Used?' +
-                    ' (0 signifies Yes\n in derivative order "i"):',
-                    Optimum_zc_dict)
-            if self.zero_crossings is not None:
-                print('Zero Crossing Derivatives:', self.zero_crossings)
-                print(
-                    'Zero Crossings Used?' +
-                    ' (0 signifies Yes\n in derivative order "i"):',
-                    Optimum_zc_dict)
-            print(
-                '----------------------------------------------------' +
-                '---------')
-            print(
-                '####################################################' +
-                '#########')
+            if self.print_output in [1, 2]:
+                print('#'*50)
+                print('-'*20 + 'OPTIMUM RESULT' + '-'*20)
+                print('Time:', end-start)
+                print('Polynomial Order:', self.N)
+                if self.zero_crossings is not None:
+                    print(
+                        'Number of Constrained Derivatives:',
+                        self.N-self.constraints-len(self.zero_crossings))
+                else:
+                    print(
+                        'Number of Constrained Derivatives:',
+                        self.N-self.constraints)
+                print('Signs :', Optimum_sign_combination)
+                print('Objective Function Value:', Optimum_chi_squared)
+                print('Parameters:', Optimum_params.T)
+                print('Method:', self.fit_type)
+                print('Model:', self.model_type)
+                print('Constraints: m >=', self.constraints)
+                if self.zero_crossings is None:
+                    print(
+                        'Zero Crossings Used?' +
+                        ' (0 signifies Yes\n in derivative order "i"):',
+                        Optimum_zc_dict)
+                if self.zero_crossings is not None:
+                    print('Zero Crossing Derivatives:', self.zero_crossings)
+                    print(
+                        'Zero Crossings Used?' +
+                        ' (0 signifies Yes\n in derivative order "i"):',
+                        Optimum_zc_dict)
+                print('-'*50)
+                print('#'*50)
 
             save_optimum(
                 self.base_dir, end-start, self.N,
