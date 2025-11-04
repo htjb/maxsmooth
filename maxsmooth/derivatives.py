@@ -8,7 +8,13 @@ def make_derivative_functions(f, max_order):
     return derivs
 
 def derivative_prefactors(f, x, norm_x, norm_y, params, max_order):
-    """Return list of derivative matrices G[m] mapping params -> m-th derivative at all x."""
+    """
+    Return list of derivative matrices G[m] mapping params -> m-th derivative at all x.
+    
+    Taking the derivative of the function w.r.t x and then taking the Jacobian w.r.t params
+    for each order up to max_order gives the prefactor matrices Gs which are
+    needed for G . params = d^m f / dx^m < h.
+    """
     
     Gs = []
     for m in range(max_order):
