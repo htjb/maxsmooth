@@ -9,11 +9,23 @@ def normalised_polynomial(x, norm_x, norm_y, params):
     return y_sum
 
 @jax.jit
+def normalised_polynomial_basis(x, norm_x, order):
+    i = jnp.arange(order)
+    powers = (x / norm_x) ** i  
+    return powers
+
+@jax.jit
 def polynomial(x, norm_x, norm_y, params):
     i = jnp.arange(params.shape[0])
     powers = x ** i
     y_sum = jnp.sum(params * powers, axis=0)
     return y_sum
+
+@jax.jit
+def polynomial_basis(x, order):
+    i = jnp.arange(order)
+    powers = x ** i  
+    return powers
 
 @jax.jit
 def loglog_polynomial(x, norm_x, norm_y, params):
@@ -23,12 +35,23 @@ def loglog_polynomial(x, norm_x, norm_y, params):
     return y_sum
 
 @jax.jit
+def loglog_polynomial_basis(x, order):
+    i = jnp.arange(order)
+    powers = jnp.log10(x) ** i  
+    return powers
+
+@jax.jit
 def exponential(x, norm_x, norm_y, params):
     i = jnp.arange(params.shape[0])
-    x = x + 1e-10  # avoid division by zero
     powers = jnp.exp(-i * x / norm_x)
     y_sum = norm_y * jnp.sum(params * powers, axis=0)
     return y_sum
+
+@jax.jit
+def exponential_basis(x, norm_x, order):
+    i = jnp.arange(order)
+    powers = jnp.exp(-i * x / norm_x)
+    return powers
 
 @jax.jit
 def log_polynomial(x, norm_x, norm_y, params):
@@ -38,8 +61,20 @@ def log_polynomial(x, norm_x, norm_y, params):
     return y_sum
 
 @jax.jit
+def log_polynomial_basis(x, norm_x, order):
+    i = jnp.arange(order)
+    powers = jnp.log10(x / norm_x) ** i  
+    return powers
+
+@jax.jit
 def difference_polynomial(x, norm_x, norm_y, params):
     i = jnp.arange(params.shape[0])
     powers = (x - norm_x) ** i
     y_sum = jnp.sum(params * powers, axis=0)
     return y_sum
+
+@jax.jit
+def difference_polynomial_basis(x, norm_x, order):
+    i = jnp.arange(order)
+    powers = (x - norm_x) ** i  
+    return powers
