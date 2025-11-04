@@ -7,14 +7,7 @@ def make_derivative_functions(f, max_order):
         derivs.append(jax.grad(derivs[-1], argnums=0))
     return derivs
 
-def derivative_prefactors(f, x, norm_x, norm_y, params, max_order):
-    """
-    Return list of derivative matrices G[m] mapping params -> m-th derivative at all x.
-    
-    Taking the derivative of the function w.r.t x and then taking the Jacobian w.r.t params
-    for each order up to max_order gives the prefactor matrices Gs which are
-    needed for G . params = d^m f / dx^m < h.
-    """
+"""def derivative_prefactors(f, x, norm_x, norm_y, params, max_order):
     
     Gs = []
     for m in range(max_order):
@@ -27,4 +20,17 @@ def derivative_prefactors(f, x, norm_x, norm_y, params, max_order):
         # Jacobian w.r.t params
         Gm = jax.vmap(lambda xi: jax.jacobian(df_dx, argnums=3)(xi, norm_x, norm_y, params))(x)
         Gs.append(Gm)
+    return Gs"""
+
+def derivative_prefactors(f, x, norm_x, norm_y, params, max_order):
+    Gs = []
+    df_dx = f  # start from f
+
+    for m in range(max_order):
+        # Jacobian of current derivative w.r.t parameters
+        Gm = jax.vmap(lambda xi: jax.jacobian(df_dx, argnums=3)(xi, norm_x, norm_y, params))(x)
+        Gs.append(Gm)
+
+        # Prepare next derivative wrt x
+        df_dx = jax.grad(df_dx, argnums=0)
     return Gs
