@@ -69,12 +69,12 @@ def log_polynomial_basis(x, norm_x,  norm_y, params):
 @jax.jit
 def difference_polynomial(x, norm_x, norm_y, params):
     i = jnp.arange(params.shape[0])
-    powers = (x - norm_x) ** i
+    powers = (x - norm_x + 1e-6) ** i
     y_sum = jnp.sum(params * powers, axis=0)
     return y_sum
 
 @jax.jit
 def difference_polynomial_basis(x, norm_x, norm_y, params):
     i = jnp.arange(params.shape[0])
-    powers = (x - norm_x) ** i  
+    powers = (x - norm_x + 1e-6) ** i  
     return powers
