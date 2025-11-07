@@ -1,231 +1,87 @@
-from maxsmooth.derivatives import derivative_class
-from maxsmooth.Models import Models_class
-from cvxopt import matrix, solvers
-import numpy as np
-import warnings
-from scipy.special import legendre, lpmv
-
-warnings.simplefilter('always', UserWarning)
+from maxsmooth.derivatives import derivative_prefactors
+from maxsmooth.utils import is_positive_definite_cholesky
+from jaxopt import OSQP, CvxpyQP
+from jax import numpy as jnp
+from itertools import product
+import jax
 
 
-class qp_class(object):
-    def __init__(
-            self, x, y, N, signs, pivot_point, model_type, cvxopt_maxiter,
-            zero_crossings, initial_params,
-            constraints, new_basis):
-        self.model_type = model_type
-        self.pivot_point = pivot_point
-        self.y = y
-        self.x = x
-        self.N = N
-        self.signs = signs
-        self.cvxopt_maxiter = cvxopt_maxiter
-        self.zero_crossings = zero_crossings
-        self.initial_params = initial_params
-        self.basis_functions = new_basis['basis_function']
-        self.derivative_pres = new_basis['der_pres']
-        self.model = new_basis['model']
-        self.derivatives_function = new_basis['derivatives_function']
-        self.args = new_basis['args']
-        self.new_basis = new_basis
-        self.constraints = constraints
-        self.parameters, self.chi_squared, self.zc_dict = self.fit()
+def qp(x, y, N, pivot_point, function, basis_function, solver='OSQP'):
 
-    def fit(self):
+    # needs some dummy parameters to make basis
+    basis = jax.vmap(basis_function, in_axes=(0, None, None, None)) \
+        (x, x[pivot_point], y[pivot_point], jnp.ones(N))  
+    Q = jnp.dot(basis.T, basis)
+    #regularization = 1e-6 * jnp.eye(N)  # Small regularization term
+    #Q = Q + regularization
 
-        solvers.options['maxiters'] = self.cvxopt_maxiter
-        solvers.options['show_progress'] = False
+    check = is_positive_definite_cholesky(Q)
+    print("Is Q positive definite?", check)
 
-        def constraint_prefactors(m):
-            # Derivative prefactors on parameters
-            if self.derivative_pres is None:
-                if np.any(self.model_type != ['legendre', 'exponential']):
-                    derivatives = []
-                    for i in range(self.N):
-                        if i <= m - 1:
-                            derivatives.append([0]*len(self.x))
-                    for i in range(self.N-m):
-                        if self.model_type == 'normalised_polynomial':
-                            mth_order_derivative_term = (
-                                self.y[self.pivot_point] /
-                                self.x[self.pivot_point]) \
-                                * np.math.factorial(m + i) \
-                                / np.math.factorial(i) * \
-                                (self.x)**i/(self.x[self.pivot_point])**(i + 1)
-                            derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'polynomial':
-                            mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i) * (self.x)**i
-                            derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial':
-                            mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i) * \
-                                np.log10(self.x/self.x[self.pivot_point])**i
-                            derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'loglog_polynomial':
-                            mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i) * np.log10(self.x)**i
-                            derivatives.append(mth_order_derivative_term)
-                        if self.model_type == 'difference_polynomial':
-                            mth_order_derivative_term = np.math.factorial(m+i)\
-                                / np.math.factorial(i) * (
-                                self.x - self.x[self.pivot_point])**i
-                            derivatives.append(mth_order_derivative_term)
+    c = -jnp.dot(basis.T, y)
+    G = derivative_prefactors(function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N)
+    G = G[2:]
+    G_scaled = []
+    for i, g in enumerate(G):
+        # square root of sum of squares of each row
+        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
+        g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)  # Avoid division by zero
+        G_scaled.append(g / g_norm)
+    G = G_scaled
 
-            if self.derivative_pres is not None:
-                if self.args is None:
-                    derivatives = self.derivative_pres(
-                        m, self.x, self.y, self.N, self.pivot_point)
-                if self.args is not None:
-                    derivatives = self.derivative_pres(
-                        m, self.x, self.y, self.N, self.pivot_point,
-                        *self.args)
 
-            if self.model_type == 'legendre':
-                interval = np.linspace(-0.999, 0.999, len(self.x))
-                alps = []
-                for i in range(self.N):
-                    alps.append(lpmv(m, i, interval))
-                alps = np.array(alps)
-                derivatives = []
-                for h in range(len(alps)):
-                    derivatives.append(
-                        ((alps[h, :]*(-1)**(m))/(1-interval**2)**(m/2)))
-                derivatives = np.array(derivatives)
-            if self.model_type == 'exponential':
-                derivatives = np.empty([self.N, len(self.x)])
-                for i in range(self.N):
-                    for h in range(len(self.x)):
-                        derivatives[i, h] = \
-                            self.y[self.pivot_point] * \
-                            (np.exp(-i*self.x[h]/self.x[self.pivot_point])) * \
-                            (-i/self.x[self.pivot_point])**m
-                derivatives = np.array(derivatives)
+    print("Q shape:", Q.shape)
+    print("c shape:", c.shape)
+    print("G[0] shape:", G[0].shape, len(G))
 
-            derivatives = np.array(derivatives).astype(np.double)
-            derivatives = matrix(derivatives)
-            if derivatives.size == (len(self.x), self.N):
-                pass
-            else:
-                derivatives = derivatives.T
-            return derivatives
+    # All possible sign combinations for the blocks of G
+    all_signs = list(product((-1.0, 1.0), repeat=len(G)))
+    print(f"Total sign combinations: {len(all_signs)}")
 
-        m = np.arange(0, self.N, 1)
-        derivatives = []
-        signs = matrix(self.signs)
-        for i in range(len(m)):
-            if m[i] >= self.constraints:
-                if self.zero_crossings is not None:
-                    if m[i] not in set(self.zero_crossings):
-                        derivative_prefactors = constraint_prefactors(m[i])
-                        if derivative_prefactors != []:
-                            derivatives.append(derivative_prefactors)
-                else:
-                    derivative_prefactors = constraint_prefactors(m[i])
-                    if derivative_prefactors != []:
-                        derivatives.append(derivative_prefactors)
+    all_signs = jnp.array(all_signs)
 
-        for i in range(len(derivatives)):
-            derivatives[i] *= signs[i]
+    #init_params = jnp.linalg.solve(Q, -c)
 
-        G = matrix(derivatives)
+    if solver == 'OSQP':
+        qp = OSQP(maxiter=10000, tol=1e-3)
+        @jax.jit
+        def dcf(signs, c, Q):
+            
+            Gmat = jnp.vstack([signs[m] * G[m] for m in range(len(G))]) 
+            h = jnp.zeros(Gmat.shape[0])
+            sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))#.params
+            
+            return sol
 
-        if self.basis_functions is None:
-            phi = np.empty([len(self.x), self.N])
-            if self.model_type != 'legendre':
-                for h in range(len(self.x)):
-                    for i in range(self.N):
-                        if self.model_type == 'normalised_polynomial':
-                            phi[h, i] = self.y[self.pivot_point] * (
-                                self.x[h] / self.x[self.pivot_point])**i
-                        if self.model_type == 'polynomial':
-                            phi[h, i] = (self.x[h])**i
-                        if self.model_type == 'log_polynomial':
-                            phi[h, i] = \
-                                np.log10(self.x[h]/self.x[self.pivot_point])**i
-                        if self.model_type == 'loglog_polynomial':
-                            phi[h, i] = np.log10(self.x[h])**i
-                        if self.model_type == 'difference_polynomial':
-                            phi[h, i] = (self.x[h]-self.x[self.pivot_point])**i
-                        if self.model_type == 'exponential':
-                            phi[h, i] = self.y[self.pivot_point] * \
-                                np.exp(-i*self.x[h]/self.x[self.pivot_point])
-            if self.model_type == 'legendre':
-                interval = np.linspace(-0.999, 0.999, len(self.x))
-                phi = []
-                for i in range(self.N):
-                    P = legendre(i)
-                    phi.append(P(interval))
-                phi = np.array(phi).T
-            phi = matrix(phi)
-        if self.basis_functions is not None:
-            if self.args is None:
-                phi = self.basis_functions(
-                    self.x, self.y, self.pivot_point, self.N)
-                phi = matrix(phi)
-            if self.args is not None:
-                phi = self.basis_functions(
-                    self.x, self.y, self.pivot_point, self.N, *self.args)
-                phi = matrix(phi)
+        vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
+        # Solve all QPs
+        sol = vmapped_dcf(all_signs, c, Q)
 
-        if self.model_type == 'loglog_polynomial':
-            data_matrix = matrix(
-                np.log10(self.y).astype(np.double), (len(self.y), 1),
-                'd')
-        else:
-            data_matrix = matrix(
-                self.y.astype(np.double), (len(self.y), 1),
-                'd')
+    if solver == 'CvxpyQP':
+        qp = CvxpyQP()
 
-        if self.zero_crossings is None:
-            h = matrix(0.0, ((self.N-self.constraints)*len(self.x), 1), 'd')
-        else:
-            h = matrix(
-                0.0, (
-                    (self.N-self.constraints-len(self.zero_crossings))
-                    * len(self.x), 1), 'd')
 
-        Q = phi.T*phi
+        def dcf_cvxpyqp(signs, c, Q):
+            Gmat = jnp.vstack([signs[m] * G[m] for m in range(len(G))])
+            h = jnp.zeros(Gmat.shape[0])
+            
+            # Convert to numpy for cvxpy
+            Q_np = jnp.array(Q)
+            c_np = jnp.array(c)
+            Gmat_np = jnp.array(Gmat)
+            h_np = jnp.array(h)
+            
+            sol = qp.run(init_params=jnp.ones(N), params_obj=(Q_np, c_np), params_ineq=(Gmat_np, h_np))
+            return sol
 
-        q = -phi.T*data_matrix
+        # Use a regular loop instead of vmap
+        solutions = []
+        print(f"Solving {len(all_signs)} QPs...")
+        for i, signs in enumerate(all_signs):
+            if i % 4 == 0:  # Progress indicator
+                print(f"  Progress: {i}/{len(all_signs)}")
+            sol = dcf_cvxpyqp(signs, c, Q)
+            solutions.append(sol)
+        sol = solutions.copy()
 
-        if self.initial_params is None:
-            qpfit = solvers.qp(Q, q, G, h)
-        if self.initial_params is not None:
-            print(self.initial_params)
-            initvals = {'x': matrix(
-                self.initial_params, (1, self.N), 'd')}
-            qpfit = solvers.qp(Q, q, G, h, initvals=initvals)
-
-        parameters = qpfit['x']
-
-        if 'unknown' in qpfit['status']:
-            if qpfit['iterations'] == self.cvxopt_maxiter:
-                raise ValueError(
-                    'ERROR: "Maximum number of iterations reached in' +
-                    ' cvxopt routine." Increase value of' +
-                    ' setting.cvxopt_maxiter')
-            else:
-                parameters = np.array(matrix(0, (self.N, 1), 'd'))
-                if self.model_type == 'loglog_polynomial':
-                    chi_squared = np.sum((np.log10(self.y))**2)
-                else:
-                    chi_squared = np.sum((self.y)**2)
-                zc_dict = {}
-        else:
-            y = Models_class(
-                parameters, self.x, self.y, self.N, self.pivot_point,
-                self.model_type, self.new_basis).y_sum
-            der = derivative_class(
-                self.x, self.y, parameters, self.N, self.pivot_point,
-                self.model_type, self.zero_crossings,
-                self.constraints, self.new_basis)
-            zc_dict = der.zc_dict
-
-            if self.model_type == 'loglog_polynomial':
-                chi_squared = np.sum((np.log10(self.y)-np.log10(y))**2)
-            else:
-                chi_squared = np.sum((self.y-y)**2)
-            parameters = np.array(parameters)
-
-        return parameters, chi_squared, zc_dict
+    return {'solver': solver, 'state': sol.state, 'params': sol.params.primal, 'sol': sol}
