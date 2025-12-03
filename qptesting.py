@@ -8,7 +8,7 @@ from jax import numpy as jnp
 
 from maxsmooth.derivatives import make_derivative_functions
 from maxsmooth.models import normalised_polynomial, normalised_polynomial_basis
-from maxsmooth.qp import qp
+from maxsmooth.qp import fastqpsearch, qp
 
 jax.config.update("jax_enable_x64", True)
 
@@ -18,8 +18,21 @@ basis_function = normalised_polynomial_basis
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)
 y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
-N = 8
+N = 15
 pivot_point = len(x) // 2
+
+fastqpsearch = jax.jit(
+    fastqpsearch,
+    static_argnames=("N", "pivot_point", "function", "basis_function"),
+)
+start = time.time()
+fastqpsearch_sol = fastqpsearch(
+    x, y, N, pivot_point, function, basis_function, key=key
+)
+end = time.time()
+print(f"Fast QP search solved in {end - start:.2f} seconds")
+print(fastqpsearch_sol)
+exit()
 
 start = time.time()
 qp = jax.jit(

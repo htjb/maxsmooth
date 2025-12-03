@@ -149,19 +149,27 @@ def fastqpsearch(
     flip_sign = jax.vmap(lambda i, s: s.at[i].set(-s[i]), in_axes=(0, None))
     vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
 
-    while error < best_error:
+    initial_state = (error, best_error, signs, c, Q, sol.params.primal)
+
+    def condition(state: tuple) -> bool:
+        error, best_error, _, _, _, _ = state
+        return error < best_error
+
+    def body(state: tuple) -> tuple:
+        error, best_error, signs, c, Q, best_params = state
         best_error = error
         flip_signs = flip_sign(jnp.arange(len(signs)), signs)
         sol = vmapped_dcf(flip_signs, c, Q)
-        minimum_index = jnp.argmin(jnp.array([s.error for s in sol]))
+        minimum_index = jnp.argmin(jnp.array(sol.state.error))
         test_signs = flip_signs[minimum_index]
-        new_error = sol[minimum_index].state.error
-        if new_error < error:
-            error = new_error
-            signs = test_signs
+        new_error = sol.state.error[minimum_index]
+        best_params = sol.params.primal[minimum_index]
+        return (new_error, best_error, test_signs, c, Q, best_params)
+
+    results = jax.lax.while_loop(condition, body, initial_state)
 
     return {
-        "state": sol.state,
-        "params": sol.params.primal,
-        "sol": sol,
+        "state": jnp.array([]),
+        "params": results[5],
+        "sol": jnp.array([]),
     }
