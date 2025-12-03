@@ -33,7 +33,8 @@ def qp(
         dict: Dictionary containing solver information and solution.
     """
     # needs some dummy parameters to make basis
-    basis = jax.vmap(basis_function, in_axes=(0, None, None, None))(
+    basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
+    basis = basis_function(
         x, x[pivot_point], y[pivot_point], jnp.ones(N)
     )
     Q = jnp.dot(basis.T, basis)
@@ -41,23 +42,11 @@ def qp(
     c = -jnp.dot(basis.T, y)
     G = derivative_prefactors(
         function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N
-    )
-    G = G[2:]
-    """G_scaled = []
-    for i, g in enumerate(G):
-        # square root of sum of squares of each row
-        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
-        g_norm = jnp.where(
-            g_norm < 1e-10, 1.0, g_norm
-        )  # Avoid division by zero
-        G_scaled.append(g / g_norm)
-    G = G_scaled"""
+    )[2:]
 
-    all_signs = list(product((-1.0, 1.0), repeat=len(G)))
+    all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    all_signs = jnp.array(all_signs)
-
-    qp = OSQP(maxiter=10000, tol=1e-3)
+    qp = OSQP(maxiter=5000, tol=1e-3)
 
     @jax.jit
     def dcf(
@@ -76,7 +65,7 @@ def qp(
         """
         Gmat = jnp.vstack([signs[m] * G[m] for m in range(len(G))])
         h = jnp.zeros(Gmat.shape[0])
-        sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))  # .params
+        sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))
         return sol
 
     vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
