@@ -18,7 +18,7 @@ basis_function = normalised_polynomial_basis
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)
 y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
-N = 15
+N = 8
 pivot_point = len(x) // 2
 
 start = time.time()
@@ -34,9 +34,7 @@ vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
 objective_values = []
 for params in sol["params"]:
     # plt.plot(x, y, 'o', label='data')
-    fit = vmapped_function(
-        x, x[pivot_point], y[pivot_point], params
-    )
+    fit = vmapped_function(x, x[pivot_point], y[pivot_point], params)
     obj_val = jnp.sum((y - fit) ** 2)
     objective_values.append(obj_val)
 
@@ -49,11 +47,8 @@ plt.show()
 
 minimum_index = jnp.argmin(jnp.array(objective_values))
 best_params = sol["params"][minimum_index]
-print(best_params)
 plt.plot(x, y, "o", label="data")
-best_fit = vmapped_function(
-    x, x[pivot_point], y[pivot_point], best_params
-)
+best_fit = vmapped_function(x, x[pivot_point], y[pivot_point], best_params)
 plt.plot(
     x,
     best_fit,
