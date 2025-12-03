@@ -88,3 +88,32 @@ def qp(
         "params": sol.params.primal,
         "sol": sol,
     }
+
+def fastqpsearch(
+    x: jnp.ndarray,
+    y: jnp.ndarray,
+    N: int,
+    pivot_point: int,
+    function: Callable,
+    basis_function: Callable,
+    solver: str = "OSQP",
+) -> dict:
+    """Set up and solve the quadratic programming problem for maxsmooth.
+
+    fastqpsearch uses the searching algorithm detailed in the maxsmooth
+    paper to reduce the number of QP solves needed.
+
+    Args:
+        x (jnp.ndarray): Input data points.
+        y (jnp.ndarray): Output data points.
+        N (int): Number of basis functions.
+        pivot_point (int): Index of the pivot point.
+        function (Callable): The model funciton from `maxsmooth.models`.
+        basis_function (Callable): The basis function to use.
+        solver (str, optional): Solver to use ('OSQP' or 'CvxpyQP').
+            Defaults to 'OSQP'.
+
+    Returns:
+        dict: Dictionary containing solver information and solution.
+    """
+    return NotImplementedError("fastqpsearch is not implemented yet.")
