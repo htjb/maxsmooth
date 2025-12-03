@@ -70,8 +70,17 @@ def qp(
     # Solve all QPs
     sol = vmapped_dcf(all_signs, c, Q)
 
-    return {
-        "status": sol.state.status,
-        "params": sol.params.primal,
-        "error": sol.state.error,
-    }
+    vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
+
+    objective_values = []
+    for i in range(len(sol)):
+        fit = vmapped_function(x, x[pivot_point], y[pivot_point], 
+                               sol.params.primal[i])
+        obj_val = jnp.sum((y - fit) ** 2)
+        objective_values.append(obj_val)
+    best_index = jnp.argmin(jnp.array(objective_values))
+
+    params = sol.params.primal[best_index]
+    print(params)
+
+    return sol.state.status[best_index], sol.params.primal[best_index], sol.state.error[best_index]

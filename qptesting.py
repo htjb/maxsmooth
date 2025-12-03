@@ -6,8 +6,8 @@ import jax
 import matplotlib.pyplot as plt
 import tqdm
 from jax import numpy as jnp
+from itertools import product
 
-from maxsmooth.derivatives import make_derivative_functions
 from maxsmooth.models import normalised_polynomial, normalised_polynomial_basis
 from maxsmooth.qp import qp
 
@@ -22,26 +22,29 @@ y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
 N = 10
 pivot_point = len(x) // 2
 
-qp = jax.jit(
+qp_jitted = jax.jit(
     qp, static_argnames=("N", "pivot_point", "function", "basis_function")
 )
 start = time.time()
-sol = qp(x, y, N, pivot_point, function, basis_function)
+status, params, error = qp_jitted(x, y, N, pivot_point, function, basis_function)
 end = time.time()
 print(f"First Call: QP solved in {end - start:.5f} seconds")
-
+print(params)
+exit()
 start = time.time()
-sol = qp(x, y, N, pivot_point, function, basis_function)
+status, params, error = qp_jitted(x, y, N, pivot_point, function, basis_function)
 end = time.time()
 print(f"Second Call: QP solved in {end - start:.5f} seconds")
-
+print(status)
+print(params)
+exit()
 vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
 
 objective_values = []
-for i in tqdm.tqdm(range(len(sol["params"]))):
-    params = sol["params"][i]
+for i in tqdm.tqdm(range(len(params))):
     # plt.plot(x, y, 'o', label='data')
-    fit = vmapped_function(x, x[pivot_point], y[pivot_point], params)
+    fit = vmapped_function(x, x[pivot_point], y[pivot_point], params[i])
+    print(fit)
     obj_val = jnp.sum((y - fit) ** 2)
     objective_values.append(obj_val)
 
@@ -53,7 +56,7 @@ plt.title("Objective values for different constraint sign combinations")
 plt.show()
 
 minimum_index = jnp.argmin(jnp.array(objective_values))
-best_params = sol["params"][minimum_index]
+best_params = params[minimum_index]
 plt.plot(x, y, "o", label="data")
 best_fit = vmapped_function(x, x[pivot_point], y[pivot_point], best_params)
 plt.plot(
@@ -66,24 +69,6 @@ plt.legend()
 plt.show()
 
 plt.plot(x, y - best_fit, "o", label="residuals")
-plt.axhline(0, color="k", ls="--")
-plt.legend()
-plt.show()
-
-deriv_funcs = make_derivative_functions(function, N)
-derivs = [
-    jax.vmap(df, in_axes=(0, None, None, None))(
-        x, x[pivot_point], y[pivot_point], best_params
-    )
-    for df in deriv_funcs
-]
-
-derivs = derivs[2:]  # From 2nd derivative onwards
-
-[
-    plt.plot(x, derivs[m], label=f"{m + 2}-th derivative")
-    for m in range(len(derivs))
-]
 plt.axhline(0, color="k", ls="--")
 plt.legend()
 plt.show()
