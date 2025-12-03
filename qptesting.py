@@ -4,11 +4,12 @@ import time
 
 import jax
 import matplotlib.pyplot as plt
+import tqdm
 from jax import numpy as jnp
 
 from maxsmooth.derivatives import make_derivative_functions
 from maxsmooth.models import normalised_polynomial, normalised_polynomial_basis
-from maxsmooth.qp import fastqpsearch, qp
+from maxsmooth.qp import qp
 
 jax.config.update("jax_enable_x64", True)
 
@@ -18,34 +19,27 @@ basis_function = normalised_polynomial_basis
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)
 y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
-N = 15
+N = 10
 pivot_point = len(x) // 2
 
-fastqpsearch = jax.jit(
-    fastqpsearch,
-    static_argnames=("N", "pivot_point", "function", "basis_function"),
-)
-start = time.time()
-fastqpsearch_sol = fastqpsearch(
-    x, y, N, pivot_point, function, basis_function, key=key
-)
-end = time.time()
-print(f"Fast QP search solved in {end - start:.2f} seconds")
-print(fastqpsearch_sol)
-exit()
-
-start = time.time()
 qp = jax.jit(
     qp, static_argnames=("N", "pivot_point", "function", "basis_function")
 )
+start = time.time()
 sol = qp(x, y, N, pivot_point, function, basis_function)
 end = time.time()
-print(f"QP solved in {end - start:.2f} seconds")
+print(f"First Call: QP solved in {end - start:.5f} seconds")
+
+start = time.time()
+sol = qp(x, y, N, pivot_point, function, basis_function)
+end = time.time()
+print(f"Second Call: QP solved in {end - start:.5f} seconds")
 
 vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
 
 objective_values = []
-for params in sol["params"]:
+for i in tqdm.tqdm(range(len(sol["params"]))):
+    params = sol["params"][i]
     # plt.plot(x, y, 'o', label='data')
     fit = vmapped_function(x, x[pivot_point], y[pivot_point], params)
     obj_val = jnp.sum((y - fit) ** 2)
