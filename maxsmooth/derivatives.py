@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.special import lpmv
+import math
 
 
 class derivative_class(object):
@@ -33,38 +34,38 @@ class derivative_class(object):
                             mth_order_derivative_term = (
                                 self.y[self.pivot_point] /
                                 self.x[self.pivot_point]) * \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
+                                math.factorial(m+i) / \
+                                math.factorial(i) * \
                                 self.params[int(m)+i]*(self.x)**i / \
                                 (self.x[self.pivot_point])**(i+1)
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'polynomial':
                             mth_order_derivative_term = \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
+                                math.factorial(m+i) / \
+                                math.factorial(i) * \
                                 self.params[int(m)+i]*(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'log_polynomial':
                             mth_order_derivative_term = \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
+                                math.factorial(m+i) / \
+                                math.factorial(i) * \
                                 self.params[int(m) + i] * \
                                 np.log10(self.x/self.x[self.pivot_point])**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'loglog_polynomial':
                             mth_order_derivative_term = \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
+                                math.factorial(m+i) / \
+                                math.factorial(i) * \
                                 self.params[int(m)+i]*np.log10(self.x)**i
                             mth_order_derivative.append(
                                 mth_order_derivative_term)
                         if self.model_type == 'difference_polynomial':
                             mth_order_derivative_term = \
-                                np.math.factorial(m+i) / \
-                                np.math.factorial(i) * \
+                                math.factorial(m+i) / \
+                                math.factorial(i) * \
                                 self.params[int(m)+i] * \
                                 (self.x-self.x[self.pivot_point])**i
                             mth_order_derivative.append(
