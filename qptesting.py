@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import tqdm
 from jax import numpy as jnp
 
-from maxsmooth.models import normalised_polynomial, normalised_polynomial_basis
+from maxsmooth.models import difference_polynomial, difference_polynomial_basis
 from maxsmooth.qp import fastqpsearch, qp
 
 jax.config.update("jax_enable_x64", True)
 
-function = normalised_polynomial
-basis_function = normalised_polynomial_basis
+function = difference_polynomial
+basis_function = difference_polynomial_basis
 
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)

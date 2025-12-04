@@ -18,7 +18,7 @@ def qp(
     pivot_point: int,
     function: Callable,
     basis_function: Callable,
-) -> dict:
+) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Set up and solve the quadratic programming problem for maxsmooth.
 
     Args:
@@ -30,7 +30,9 @@ def qp(
         basis_function (Callable): The basis function to use.
 
     Returns:
-        dict: Dictionary containing solver information and solution.
+        jnp.ndarray: state of the solver for each sign combination.
+        jnp.ndarray: the parameters of the fits.
+        jnp.ndarray: the reported error from jaxopt.
     """
     # needs some dummy parameters to make basis
     basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
@@ -41,10 +43,19 @@ def qp(
     G = derivative_prefactors(
         function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N
     )[2:]
+    G_scaled = []
+    for i, g in enumerate(G):
+        # square root of sum of squares of each row
+        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
+        g_norm = jnp.where(
+            g_norm < 1e-10, 1.0, g_norm
+        )  # Avoid division by zero
+        G_scaled.append(g / g_norm)
+    G = G_scaled
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    qp = OSQP(maxiter=5000, tol=1e-3)
+    qp = OSQP(maxiter=4000, tol=1e-3, eq_qp_solve="lu")
 
     @jax.jit
     def dcf(
@@ -81,9 +92,6 @@ def qp(
         objective_values.append(obj_val)
     best_index = jnp.argmin(jnp.array(objective_values))
 
-    params = sol.params.primal[best_index]
-    print(params)
-
     return (
         sol.state.status[best_index],
         sol.params.primal[best_index],
@@ -115,12 +123,16 @@ def fastqpsearch(
         key (jnp.ndarray): JAX random key.
 
     Returns:
-        dict: Dictionary containing solver information and solution.
+        jnp.ndarray: state of the solver for each sign combination.
+        jnp.ndarray: the parameters of the fits.
+        jnp.ndarray: the reported error from jaxopt.
     """
 
     @jax.jit
     def dcf(
-        signs: jnp.ndarray, c: jnp.ndarray, Q: jnp.ndarray
+        signs: jnp.ndarray,
+        c: jnp.ndarray,
+        Q: jnp.ndarray,
     ) -> jaxopt._src.base.OptStep:
         """Run the quadratic programming using jaxopt OSQP.
 
@@ -147,10 +159,19 @@ def fastqpsearch(
     G = derivative_prefactors(
         function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N
     )[2:]
+    G_scaled = []
+    for i, g in enumerate(G):
+        # square root of sum of squares of each row
+        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
+        g_norm = jnp.where(
+            g_norm < 1e-10, 1.0, g_norm
+        )  # Avoid division by zero
+        G_scaled.append(g / g_norm)
+    G = G_scaled
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    qp = OSQP(maxiter=5000, tol=1e-3)
+    qp = OSQP(maxiter=4000, tol=1e-3, eq_qp_solve="lu")
 
     key, subkey = jax.random.split(key)
     r = jax.random.choice(subkey, all_signs.shape[0], (1,))
