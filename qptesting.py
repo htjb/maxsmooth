@@ -6,10 +6,9 @@ import jax
 import matplotlib.pyplot as plt
 import tqdm
 from jax import numpy as jnp
-from itertools import product
 
 from maxsmooth.models import normalised_polynomial, normalised_polynomial_basis
-from maxsmooth.qp import qp
+from maxsmooth.qp import fastqpsearch, qp
 
 jax.config.update("jax_enable_x64", True)
 
@@ -19,20 +18,35 @@ basis_function = normalised_polynomial_basis
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)
 y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
-N = 10
+N = 7
 pivot_point = len(x) // 2
+
+fastqpsearch = jax.jit(
+    fastqpsearch,
+    static_argnames=("N", "pivot_point", "function", "basis_function"),
+)
+start = time.time()
+results = fastqpsearch(x, y, N, pivot_point, function, basis_function)
+print(results[1])
+end = time.time()
+print(f"Fast QP Search: QP solved in {end - start:.5f} seconds")
 
 qp_jitted = jax.jit(
     qp, static_argnames=("N", "pivot_point", "function", "basis_function")
 )
 start = time.time()
-status, params, error = qp_jitted(x, y, N, pivot_point, function, basis_function)
+status, params, error = qp_jitted(
+    x, y, N, pivot_point, function, basis_function
+)
+print(params)
 end = time.time()
 print(f"First Call: QP solved in {end - start:.5f} seconds")
-print(params)
 exit()
+
 start = time.time()
-status, params, error = qp_jitted(x, y, N, pivot_point, function, basis_function)
+status, params, error = qp_jitted(
+    x, y, N, pivot_point, function, basis_function
+)
 end = time.time()
 print(f"Second Call: QP solved in {end - start:.5f} seconds")
 print(status)
