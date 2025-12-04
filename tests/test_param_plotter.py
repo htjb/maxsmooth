@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import pytest
 import os
 import shutil
@@ -152,8 +153,8 @@ def test_new_basis():
             if i <= m - 1:
                 mth_order_derivative.append([0]*len(x))
         for i in range(N - m):
-                mth_order_derivative_term = args[1]*np.math.factorial(m+i) / \
-                    np.math.factorial(i) * \
+                mth_order_derivative_term = args[1]*math.factorial(m+i) / \
+                    math.factorial(i) * \
                     params[int(m)+i]*(x)**i / \
                     (args[0])**(i + 1)
                 mth_order_derivative.append(
@@ -168,8 +169,8 @@ def test_new_basis():
             if i <= m - 1:
                 mth_order_derivative.append([0]*len(x))
         for i in range(N - m):
-                mth_order_derivative_term = args[1]*np.math.factorial(m+i) / \
-                    np.math.factorial(i) * \
+                mth_order_derivative_term = args[1]*math.factorial(m+i) / \
+                    math.factorial(i) * \
                     (x)**i / \
                     (args[0])**(i + 1)
                 mth_order_derivative.append(
@@ -234,8 +235,8 @@ def test_new_basis_without_args():
             if i <= m - 1:
                 mth_order_derivative.append([0]*len(x))
         for i in range(N - m):
-                mth_order_derivative_term = np.math.factorial(m+i) / \
-                    np.math.factorial(i) * \
+                mth_order_derivative_term = math.factorial(m+i) / \
+                    math.factorial(i) * \
                     params[int(m)+i]*(x)**i
                 mth_order_derivative.append(
                     mth_order_derivative_term)
@@ -249,8 +250,8 @@ def test_new_basis_without_args():
             if i <= m - 1:
                 mth_order_derivative.append([0]*len(x))
         for i in range(N - m):
-                mth_order_derivative_term = np.math.factorial(m+i) / \
-                    np.math.factorial(i) * \
+                mth_order_derivative_term = math.factorial(m+i) / \
+                    math.factorial(i) * \
                     (x)**i
                 mth_order_derivative.append(
                     mth_order_derivative_term)
