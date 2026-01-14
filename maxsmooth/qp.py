@@ -34,24 +34,21 @@ def qp(
         jnp.ndarray: the parameters of the fits.
         jnp.ndarray: the reported error from jaxopt.
     """
+    x_pivot = x[pivot_point]
+    y_pivot = y[pivot_point]
     # needs some dummy parameters to make basis
     basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
-    basis = basis_function(x, x[pivot_point], y[pivot_point], jnp.ones(N))
+    basis = basis_function(x, x_pivot, y_pivot, jnp.ones(N))
     Q = jnp.dot(basis.T, basis)
 
     c = -jnp.dot(basis.T, y)
-    G = derivative_prefactors(
-        function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N
-    )[2:]
-    G_scaled = []
-    for i, g in enumerate(G):
-        # square root of sum of squares of each row
-        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
-        g_norm = jnp.where(
-            g_norm < 1e-10, 1.0, g_norm
-        )  # Avoid division by zero
-        G_scaled.append(g / g_norm)
-    G = G_scaled
+    G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
+        2:
+    ]
+    G = jnp.array(G)
+    g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
+    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)  # Avoid division by zero
+    G = G / g_norm
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
@@ -72,7 +69,8 @@ def qp(
         Returns:
             sol: Solution of the quadratic programming problem.
         """
-        Gmat = jnp.vstack([signs[m] * G[m] for m in range(len(G))])
+        Gmat = signs[:, None, None] * G  # if shapes align
+        Gmat = Gmat.reshape(-1, G.shape[2])
         h = jnp.zeros(Gmat.shape[0])
         sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))
         return sol
@@ -83,14 +81,15 @@ def qp(
 
     vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
 
-    objective_values = []
-    for i in range(len(sol)):
-        fit = vmapped_function(
-            x, x[pivot_point], y[pivot_point], sol.params.primal[i]
+    # map over each primal in sol.params.primal
+    @jax.jit
+    def obj_val_fn(primal: jnp.ndarray) -> jnp.ndarray:
+        return jnp.sum(
+            (y - vmapped_function(x, x_pivot, y_pivot, primal)) ** 2
         )
-        obj_val = jnp.sum((y - fit) ** 2)
-        objective_values.append(obj_val)
-    best_index = jnp.argmin(jnp.array(objective_values))
+
+    objective_values = jax.vmap(obj_val_fn)(sol.params.primal)
+    best_index = jnp.argmin(objective_values)
 
     return (
         sol.state.status[best_index],
@@ -145,29 +144,29 @@ def fastqpsearch(
         Returns:
             sol: Solution of the quadratic programming problem.
         """
-        Gmat = jnp.vstack([signs[m] * G[m] for m in range(len(G))])
+        Gmat = signs[:, None, None] * G  # if shapes align
+        Gmat = Gmat.reshape(-1, G.shape[2])
         h = jnp.zeros(Gmat.shape[0])
         sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))
         return sol
 
+    x_pivot = x[pivot_point]
+    y_pivot = y[pivot_point]
     # needs some dummy parameters to make basis
     basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
-    basis = basis_function(x, x[pivot_point], y[pivot_point], jnp.ones(N))
+    basis = basis_function(x, x_pivot, y_pivot, jnp.ones(N))
     Q = jnp.dot(basis.T, basis)
 
     c = -jnp.dot(basis.T, y)
-    G = derivative_prefactors(
-        function, x, x[pivot_point], y[pivot_point], jnp.ones(N), N
-    )[2:]
-    G_scaled = []
-    for i, g in enumerate(G):
-        # square root of sum of squares of each row
-        g_norm = jnp.linalg.norm(g, axis=1, keepdims=True)
-        g_norm = jnp.where(
-            g_norm < 1e-10, 1.0, g_norm
-        )  # Avoid division by zero
-        G_scaled.append(g / g_norm)
-    G = G_scaled
+    G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
+        2:
+    ]
+
+    # square root of sum of squares of each row
+    G = jnp.array(G)
+    g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
+    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)  # Avoid division by zero
+    G = G / g_norm
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
