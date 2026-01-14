@@ -2,9 +2,8 @@
 maxsmooth: Derivative Constrained Function Fitting
 ==================================================
 
-**Note:**
-  A jax version of maxsmooth is being developed in a 
-  separate [branch](https://github.com/htjb/maxsmooth/tree/v2-jax).
+   A jax version of maxsmooth is being developed in a 
+   separate `branch<https://github.com/htjb/maxsmooth/tree/v2-jax>__`.
 
 Introduction
 ------------
