@@ -7,14 +7,13 @@ name = "maxsmooth"
 version = "2.0.0"
 description = "Derivative-constrained function fitting."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "jax>=0.8.0",
     "jaxopt>=0.8.5",
     "matplotlib>=3.10.7",
     "numpy>=2.3.4",
     "progressbar>=2.5",
-    "scipy>=1.16.3",
 ]
 
 [tool.setuptools.packages.find]
