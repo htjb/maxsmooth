@@ -1,166 +1,63 @@
-import numpy as np
-from scipy.special import lpmv
-import math
+"""Compute derivative prefactors for a given function using JAX."""
+
+from collections.abc import Callable
+
+import jax
+import jax.numpy as jnp
 
 
-class derivative_class(object):
-    def __init__(
-                self, x, y, params, N, pivot_point, model_type, zero_crossings,
-                constraints, new_basis, **kwargs):
-        self.x = x
-        self.y = y
-        self.N = N
-        self.params = params
-        self.pivot_point = pivot_point
-        self.model_type = model_type
-        self.zero_crossings = zero_crossings
-        self.derivatives_function = new_basis['derivatives_function']
-        self.args = new_basis['args']
-        self.constraints = constraints
+# function to generate derivatives
+def make_derivative_functions(f: Callable, max_order: int) -> list[Callable]:
+    """Return list of functions computing derivatives of f up to max_order.
 
-        self.call_type = kwargs.pop('call_type', 'checking')
+    Args:
+        f (Callable): Function to differentiate.
+        max_order (int): Maximum order of derivatives to compute.
 
-        self.derivatives, self.pass_fail, self.zc_dict = \
-            self.derivatives_func()
+    Returns:
+        List[Callable]: List of derivative functions.
+    """
+    derivs = [f]
+    for _ in range(1, max_order):
+        derivs.append(jax.grad(derivs[-1], argnums=0))
+    return derivs
 
-    def derivatives_func(self):
 
-        def mth_order_derivatives(m):
-            if self.derivatives_function is None:
-                if np.any(self.model_type != ['legendre', 'exponential']):
-                    mth_order_derivative = []
-                    for i in range(self.N-m):
-                        if self.model_type == 'normalised_polynomial':
-                            mth_order_derivative_term = (
-                                self.y[self.pivot_point] /
-                                self.x[self.pivot_point]) * \
-                                math.factorial(m+i) / \
-                                math.factorial(i) * \
-                                self.params[int(m)+i]*(self.x)**i / \
-                                (self.x[self.pivot_point])**(i+1)
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
-                        if self.model_type == 'polynomial':
-                            mth_order_derivative_term = \
-                                math.factorial(m+i) / \
-                                math.factorial(i) * \
-                                self.params[int(m)+i]*(self.x)**i
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
-                        if self.model_type == 'log_polynomial':
-                            mth_order_derivative_term = \
-                                math.factorial(m+i) / \
-                                math.factorial(i) * \
-                                self.params[int(m) + i] * \
-                                np.log10(self.x/self.x[self.pivot_point])**i
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
-                        if self.model_type == 'loglog_polynomial':
-                            mth_order_derivative_term = \
-                                math.factorial(m+i) / \
-                                math.factorial(i) * \
-                                self.params[int(m)+i]*np.log10(self.x)**i
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
-                        if self.model_type == 'difference_polynomial':
-                            mth_order_derivative_term = \
-                                math.factorial(m+i) / \
-                                math.factorial(i) * \
-                                self.params[int(m)+i] * \
-                                (self.x-self.x[self.pivot_point])**i
-                            mth_order_derivative.append(
-                                mth_order_derivative_term)
+def derivative_prefactors(
+    f: Callable,
+    x: jnp.ndarray,
+    norm_x: jnp.ndarray,
+    norm_y: jnp.ndarray,
+    params: jnp.ndarray,
+    max_order: int,
+) -> list[jnp.ndarray]:
+    """Return list of derivative matrices G[m].
 
-            if self.derivatives_function is not None:
-                if self.args is None:
-                    derivatives = \
-                        self.derivatives_function(
-                            m, self.x, self.y, self.N, self.pivot_point,
-                            self.params)
-                if self.args is not None:
-                    derivatives = \
-                        self.derivatives_function(
-                            m, self.x, self.y, self.N, self.pivot_point,
-                            self.params, *self.args)
-                mth_order_derivative = derivatives
+    G[m] maps params -> m-th derivative at all x.
 
-            if self.model_type == 'legendre':
-                interval = np.linspace(-0.999, 0.999, len(self.x))
-                alps = []
-                for i in range(self.N):
-                    alps.append(lpmv(m, i, interval))
-                alps = np.array(alps)
-                derivatives = []
-                for h in range(len(alps)):
-                    derivatives.append(
-                        ((alps[h, :]*(-1)**(m))/(1-interval**2)**(m/2))
-                        * self.params[h, 0])
-                mth_order_derivative = np.array(derivatives)
-            if self.model_type == 'exponential':
-                derivatives = np.empty([self.N, len(self.x)])
-                for i in range(self.N):
-                    for h in range(len(self.x)):
-                        derivatives[i, h] = \
-                            self.y[self.pivot_point] * (
-                            self.params[i] *
-                            np.exp(-i * self.x[h]/self.x[self.pivot_point])) \
-                            * (-i/self.x[self.pivot_point])**m
-                mth_order_derivative = np.array(derivatives)
+    Args:
+        f (Callable): Function to differentiate.
+        x (jnp.ndarray): Input data points.
+        norm_x (jnp.ndarray): Normalisation point for x.
+        norm_y (jnp.ndarray): Normalisation point for y.
+        params (jnp.ndarray): Parameters of the function.
+        max_order (int): Maximum order of derivatives to compute.
 
-            if type(mth_order_derivative) == list:
-                mth_order_derivative = np.array(mth_order_derivative)
-            if mth_order_derivative.shape == (len(self.x), self.N):
-                mth_order_derivative = mth_order_derivative.sum(axis=1)
-            else:
-                mth_order_derivative = mth_order_derivative.sum(axis=0)
+    Returns:
+        List[jnp.ndarray]: List of derivative matrices.
+    """
+    Gs = []
+    df_dx = f  # start from f
 
-            return mth_order_derivative
+    for m in range(max_order):
+        # Jacobian of current derivative w.r.t parameters
+        Gm = jax.vmap(
+            lambda xi: jax.jacobian(df_dx, argnums=3)(
+                xi, norm_x, norm_y, params
+            )
+        )(x)
+        Gs.append(Gm)
 
-        m = np.arange(0, self.N, 1)
-        derivatives = []
-        zc_derivatives = []
-        zc_orders = []
-        for i in range(len(m)):
-            if m[i] < self.constraints:
-                zc_orders.append(m[i])
-                zc_derivatives.append(mth_order_derivatives(m[i]))
-            if m[i] >= self.constraints:
-                if self.zero_crossings is not None:
-                    if m[i] not in set(self.zero_crossings):
-                        derivatives.append(mth_order_derivatives(m[i]))
-                    if m[i] in set(self.zero_crossings):
-                        zc_orders.append(m[i])
-                        zc_derivatives.append(mth_order_derivatives(m[i]))
-                else:
-                    derivatives.append(mth_order_derivatives(m[i]))
-        derivatives = np.array(derivatives)
-
-        zc_derivatives = np.array(zc_derivatives)
-        zc_orders = np.array(zc_orders)
-
-        # Check constrained derivatives
-        pass_fail = []
-        for i in range(derivatives.shape[0]):
-            if np.all(derivatives[i, :] >= -1e-6) or \
-                    np.all(derivatives[i, :] <= 1e-6):
-                pass_fail.append(1)
-            else:
-                pass_fail.append(0)
-        pass_fail = np.array(pass_fail)
-
-        zc_dict = {}
-        for i in range(zc_derivatives.shape[0]):
-            if np.all(zc_derivatives[i, :] >= -1e-6) or \
-                    np.all(zc_derivatives[i, :] <= 1e-6):
-                zc_dict[str(zc_orders[i])] = 1
-            else:
-                zc_dict[str(zc_orders[i])] = 0
-
-        if self.call_type == 'checking':
-            if np.any(pass_fail == 0):
-                print('Pass or fail', pass_fail)
-                raise Exception(
-                    '"Condition Violated" Derivatives feature' +
-                    ' crossing points.')
-
-        return derivatives, pass_fail, zc_dict
+        # Prepare next derivative wrt x
+        df_dx = jax.grad(df_dx, argnums=0)
+    return Gs

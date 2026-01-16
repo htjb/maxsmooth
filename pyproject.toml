@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maxsmooth"
+version = "2.0.0"
+description = "Derivative-constrained function fitting."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jax>=0.8.0",
+    "jaxopt>=0.8.5",
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.4",
+    "progressbar>=2.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["maxsmooth*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "pre-commit",
+]
+docs = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings",
+  "mkdocstrings-python",
+  "mkdocs-include-markdown-plugin",
+  "pymdown-extensions",
+]
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select =["E", "F", "W",  # basics
+            "I",            # isort
+            "D",            # docstrings
+            "UP",           # pyupgrade (includes type modernization)
+            "ANN",          # type annotations
+            ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
