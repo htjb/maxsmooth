@@ -270,10 +270,6 @@ def qpsignsearch(
             visited_signs,
         )
 
-        # jax.debug.print("Visited signs: {}", visited_signs)
-        # jax.debug.print("Number of flip signs to try: {}", len(flip_signs))
-        # jax.debug.print("Flip signs: {}", flip_signs)
-
         sol = vmapped_dcf(flip_signs, c, Q)
         minimum_index = jnp.argmin(jnp.array(sol.state.error))
         return (
