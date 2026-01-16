@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from jax import numpy as jnp
 
 from maxsmooth.models import difference_polynomial, difference_polynomial_basis
-from maxsmooth.qp import fastqpsearch
+from maxsmooth.qp import fastqpsearch, qp
 
 jax.config.update("jax_enable_x64", True)
 
@@ -30,7 +30,7 @@ print(results[1])
 end = time.time()
 print(f"Fast QP Search: QP solved in {end - start:.5f} seconds")
 
-"""qp_jitted = jax.jit(
+qp_jitted = jax.jit(
     qp, static_argnames=("N", "pivot_point", "function", "basis_function")
 )
 start = time.time()
@@ -40,7 +40,7 @@ status, params, error = qp_jitted(
 print(params)
 end = time.time()
 print(f"First Call: QP solved in {end - start:.5f} seconds")
-"""
+
 vmapped_fit = jax.vmap(function, in_axes=(0, None, None, None))
 fit = vmapped_fit(x, x[pivot_point], y[pivot_point], results[1])
 

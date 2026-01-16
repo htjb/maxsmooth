@@ -58,7 +58,7 @@ def qp(
     def dcf(
         signs: jnp.ndarray, c: jnp.ndarray, Q: jnp.ndarray
     ) -> jaxopt._src.base.OptStep:
-        """Run the quadratic programming using jaxopt OSQP.
+        """Run the quadratic programming using jaxopt OSQP (ADMM).
 
         Args:
             signs (jnp.ndarray): Sign combination
@@ -133,7 +133,7 @@ def fastqpsearch(
         c: jnp.ndarray,
         Q: jnp.ndarray,
     ) -> jaxopt._src.base.OptStep:
-        """Run the quadratic programming using jaxopt OSQP.
+        """Run the quadratic programming using jaxopt OSQP (ADMM).
 
         Args:
             signs (jnp.ndarray): Sign combination
@@ -170,14 +170,13 @@ def fastqpsearch(
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    qp = OSQP(maxiter=4000, tol=1e-3, eq_qp_solve="lu")
+    qp = OSQP(maxiter=50000, tol=1e-3, eq_qp_solve="lu")
 
     key, subkey = jax.random.split(key)
     r = jax.random.choice(subkey, all_signs.shape[0], (1,))
     signs = all_signs[r[0]]
 
-    # visited_signs = set()
-    # visited_signs.add(tuple(signs.tolist()))
+    visited_signs = jnp.zeros(all_signs.shape[0])
 
     sol = dcf(signs, c, Q)
     error = sol.state.error
@@ -186,24 +185,62 @@ def fastqpsearch(
     flip_sign = jax.vmap(lambda i, s: s.at[i].set(-s[i]), in_axes=(0, None))
     vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
 
-    initial_state = (error, best_error, signs, c, Q, sol.params.primal)
+    initial_state = (error, best_error, signs, c, Q, 
+                     sol.params.primal, visited_signs)
 
     def condition(state: tuple) -> bool:
-        error, best_error, _, _, _, _ = state
+        error, best_error, _, _, _, _, _ = state
         return error < best_error
 
     def body(state: tuple) -> tuple:
-        error, best_error, signs, c, Q, best_params = state
+        error, best_error, signs, c, Q, best_params, visited_signs = state
         best_error = error
         flip_signs = flip_sign(jnp.arange(len(signs)), signs)
-        # Remove already visited sign combinations
-        """flip_signs = jnp.array([
-            s for s in flip_signs if tuple(s.tolist()) not in visited_signs
-        ])
-        for s in flip_signs:
-            visited_signs.add(tuple(s.tolist()))
-        if flip_signs.shape[0] == 0:
-            return (best_error + 1.0, best_error, signs, c, Q, best_params)"""
+
+        def body_unique_flip(i: int, fs: jnp.ndarray) -> jnp.ndarray:
+            """Check if flip sign has been visited already.
+
+            Args:
+                i (int): Index in flip_signs.
+                fs (jnp.ndarray): Current flip signs.
+            
+            Returns:
+                jnp.ndarray: Updated flip signs with visited ones zeroed.
+            """
+            index = jnp.where(
+                jnp.all(all_signs == flip_signs[i], axis=1),  # type: ignore
+                size=1,
+                fill_value=-1,
+            )[0]
+            fs = jax.lax.cond(
+                visited_signs.at[index] == 1,
+                lambda f: jnp.zeros_like(f),
+                lambda f: f,
+                fs,
+            )
+            return fs 
+
+        flip_signs = jax.lax.fori_loop(
+            0, len(flip_signs), body_unique_flip,
+                flip_signs,
+              )  # type: ignore
+
+        visited_signs = jax.lax.fori_loop(
+            0, len(flip_signs),
+            lambda i, vs: vs.at[
+                jnp.where(
+                    jnp.all(all_signs == flip_signs[i], axis=1),  # type: ignore
+                    size=1,
+                    fill_value=0,
+                )[0]
+            ].set(1),
+            visited_signs,
+        )
+
+        #jax.debug.print("Visited signs: {}", visited_signs)
+        #jax.debug.print("Number of flip signs to try: {}", len(flip_signs))
+        #jax.debug.print("Flip signs: {}", flip_signs)
+
         sol = vmapped_dcf(flip_signs, c, Q)
         minimum_index = jnp.argmin(jnp.array(sol.state.error))
         return (
@@ -213,6 +250,7 @@ def fastqpsearch(
             c,
             Q,
             sol.params.primal[minimum_index],
+            visited_signs
         )
 
     results = jax.lax.while_loop(condition, body, initial_state)
