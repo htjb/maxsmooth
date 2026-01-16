@@ -30,6 +30,6 @@ jobs:
         pip install -e .
     - name: Test with pytest
       run: |
-        coverage run --source=maxsmooth -m py.test
+        coverage run --source=maxsmooth -m pytest
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
