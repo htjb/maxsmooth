@@ -20,6 +20,7 @@ def qp(
     pivot_point: int,
     function: Callable,
     basis_function: Callable,
+    lowest_constrained_derivative: int = 2,
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Set up and solve the quadratic programming problem for maxsmooth.
 
@@ -30,6 +31,9 @@ def qp(
         pivot_point (int): Index of the pivot point.
         function (Callable): The model funciton from `maxsmooth.models`.
         basis_function (Callable): The basis function to use.
+        lowest_constrained_derivative (int): The lowest derivative to
+            apply the constraints to.
+
 
     Returns:
         jnp.ndarray: state of the solver for each sign combination.
@@ -45,7 +49,7 @@ def qp(
 
     c = -jnp.dot(basis.T, y)
     G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
-        2:
+        lowest_constrained_derivative:
     ]
     G = jnp.array(G)
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
@@ -105,6 +109,7 @@ def qpsignsearch(
     pivot_point: int,
     function: Callable,
     basis_function: Callable,
+    lowest_constrained_derivative: int = 2,
     key: jnp.ndarray = jax.random.PRNGKey(0),
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Set up and solve the quadratic programming problem for maxsmooth.
@@ -122,6 +127,8 @@ def qpsignsearch(
         function (Callable): The model funciton from `maxsmooth.models`.
         basis_function (Callable): The basis function to use.
         key (jnp.ndarray): JAX random key.
+        lowest_constrained_derivative (int): The lowest derivative to
+            apply the constraints to.
 
     Returns:
         jnp.ndarray: state of the solver for each sign combination.
@@ -161,7 +168,7 @@ def qpsignsearch(
 
     c = -jnp.dot(basis.T, y)
     G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
-        2:
+        lowest_constrained_derivative:
     ]
 
     # square root of sum of squares of each row
