@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from jax import numpy as jnp
 
 from maxsmooth.models import difference_polynomial, difference_polynomial_basis
-from maxsmooth.qp import fastqpsearch, qp
+from maxsmooth.qp import qp, qpsignsearch
 
 jax.config.update("jax_enable_x64", True)
 
@@ -17,16 +17,16 @@ basis_function = difference_polynomial_basis
 key = jax.random.PRNGKey(0)
 x = jnp.linspace(50, 150, 100)
 y = 5e6 * x ** (-2.5) + 0.01 * jax.random.normal(key, x.shape)
-N = 7
+N = 11
 pivot_point = len(x) // 2
 
-fastqpsearch = jax.jit(
-    fastqpsearch,
+qpsignsearch = jax.jit(
+    qpsignsearch,
     static_argnames=("N", "pivot_point", "function", "basis_function"),
 )
 start = time.time()
-results = fastqpsearch(x, y, N, pivot_point, function, basis_function)
-print(results[1])
+results = qpsignsearch(x, y, N, pivot_point, function, basis_function)
+print(results[1], results[0])
 end = time.time()
 print(f"Fast QP Search: QP solved in {end - start:.5f} seconds")
 
@@ -37,7 +37,7 @@ start = time.time()
 status, params, error = qp_jitted(
     x, y, N, pivot_point, function, basis_function
 )
-print(params)
+print(params, status)
 end = time.time()
 print(f"First Call: QP solved in {end - start:.5f} seconds")
 

@@ -10,6 +10,8 @@ from jaxopt import OSQP
 
 from maxsmooth.derivatives import derivative_prefactors
 
+qpsolver = OSQP(maxiter=10000, tol=1e-3, eq_qp_solve="lu")
+
 
 def qp(
     x: jnp.ndarray,
@@ -52,8 +54,6 @@ def qp(
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    qp = OSQP(maxiter=4000, tol=1e-3, eq_qp_solve="lu")
-
     @jax.jit
     def dcf(
         signs: jnp.ndarray, c: jnp.ndarray, Q: jnp.ndarray
@@ -72,7 +72,7 @@ def qp(
         Gmat = signs[:, None, None] * G  # if shapes align
         Gmat = Gmat.reshape(-1, G.shape[2])
         h = jnp.zeros(Gmat.shape[0])
-        sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))
+        sol = qpsolver.run(params_obj=(Q, c), params_ineq=(Gmat, h))
         return sol
 
     vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
@@ -98,7 +98,7 @@ def qp(
     )
 
 
-def fastqpsearch(
+def qpsignsearch(
     x: jnp.ndarray,
     y: jnp.ndarray,
     N: int,
@@ -109,8 +109,10 @@ def fastqpsearch(
 ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Set up and solve the quadratic programming problem for maxsmooth.
 
-    fastqpsearch uses the searching algorithm detailed in the maxsmooth
-    paper to reduce the number of QP solves needed.
+    slowqpsearch uses some elements of the searching algorithm
+    detailed in the maxsmooth paper to reduce the number of QP solves needed.
+    However it involves a lot of conditional logic which makes it slower
+    in JAX than the brute-fore try everything method for small problems.
 
     Args:
         x (jnp.ndarray): Input data points.
@@ -147,7 +149,7 @@ def fastqpsearch(
         Gmat = signs[:, None, None] * G  # if shapes align
         Gmat = Gmat.reshape(-1, G.shape[2])
         h = jnp.zeros(Gmat.shape[0])
-        sol = qp.run(params_obj=(Q, c), params_ineq=(Gmat, h))
+        sol = qpsolver.run(params_obj=(Q, c), params_ineq=(Gmat, h))
         return sol
 
     x_pivot = x[pivot_point]
@@ -170,30 +172,58 @@ def fastqpsearch(
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
 
-    qp = OSQP(maxiter=50000, tol=1e-3, eq_qp_solve="lu")
+    signs = jnp.array(
+        [
+            jnp.ones(len(G)),
+            -jnp.ones(len(G)),
+            jnp.array([1 if i % 2 == 0 else -1 for i in range(len(G))]),
+            jnp.array([-1 if i % 2 == 0 else 1 for i in range(len(G))]),
+        ]
+    )
 
-    key, subkey = jax.random.split(key)
-    r = jax.random.choice(subkey, all_signs.shape[0], (1,))
-    signs = all_signs[r[0]]
-
-    visited_signs = jnp.zeros(all_signs.shape[0])
-
-    sol = dcf(signs, c, Q)
-    error = sol.state.error
-    best_error = jnp.inf
+    visited_signs = jnp.zeros(len(all_signs))
+    visited_signs = jax.lax.fori_loop(
+        0,
+        len(signs),
+        lambda i, vs: vs.at[
+            jnp.where(
+                jnp.all(all_signs == signs[i], axis=1),  # type: ignore
+                size=1,
+                fill_value=0,
+            )[0]
+        ].set(1),
+        visited_signs,
+    )
 
     flip_sign = jax.vmap(lambda i, s: s.at[i].set(-s[i]), in_axes=(0, None))
     vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
 
-    initial_state = (error, best_error, signs, c, Q, 
-                     sol.params.primal, visited_signs)
+    sol = vmapped_dcf(signs, c, Q)
+    error = sol.state.error
+    minimum_index = jnp.argmin(error)
+    signs = signs[minimum_index]
+    error = error[minimum_index]
+    best_error = jnp.inf
+
+    initial_state = (
+        sol.state.status[minimum_index],
+        error,
+        best_error,
+        signs,
+        c,
+        Q,
+        sol.params.primal[minimum_index],
+        visited_signs,
+    )
 
     def condition(state: tuple) -> bool:
-        error, best_error, _, _, _, _, _ = state
+        _, error, best_error, _, _, _, _, _ = state
         return error < best_error
 
     def body(state: tuple) -> tuple:
-        error, best_error, signs, c, Q, best_params, visited_signs = state
+        status, error, best_error, signs, c, Q, best_params, visited_signs = (
+            state
+        )
         best_error = error
         flip_signs = flip_sign(jnp.arange(len(signs)), signs)
 
@@ -203,7 +233,7 @@ def fastqpsearch(
             Args:
                 i (int): Index in flip_signs.
                 fs (jnp.ndarray): Current flip signs.
-            
+
             Returns:
                 jnp.ndarray: Updated flip signs with visited ones zeroed.
             """
@@ -218,15 +248,18 @@ def fastqpsearch(
                 lambda f: f,
                 fs,
             )
-            return fs 
+            return fs
 
         flip_signs = jax.lax.fori_loop(
-            0, len(flip_signs), body_unique_flip,
-                flip_signs,
-              )  # type: ignore
+            0,
+            len(flip_signs),
+            body_unique_flip,
+            flip_signs,
+        )  # type: ignore
 
         visited_signs = jax.lax.fori_loop(
-            0, len(flip_signs),
+            0,
+            len(flip_signs),
             lambda i, vs: vs.at[
                 jnp.where(
                     jnp.all(all_signs == flip_signs[i], axis=1),  # type: ignore
@@ -237,22 +270,23 @@ def fastqpsearch(
             visited_signs,
         )
 
-        #jax.debug.print("Visited signs: {}", visited_signs)
-        #jax.debug.print("Number of flip signs to try: {}", len(flip_signs))
-        #jax.debug.print("Flip signs: {}", flip_signs)
+        # jax.debug.print("Visited signs: {}", visited_signs)
+        # jax.debug.print("Number of flip signs to try: {}", len(flip_signs))
+        # jax.debug.print("Flip signs: {}", flip_signs)
 
         sol = vmapped_dcf(flip_signs, c, Q)
         minimum_index = jnp.argmin(jnp.array(sol.state.error))
         return (
+            sol.state.status[minimum_index],
             sol.state.error[minimum_index],
             best_error,
             flip_signs[minimum_index],
             c,
             Q,
             sol.params.primal[minimum_index],
-            visited_signs
+            visited_signs,
         )
 
     results = jax.lax.while_loop(condition, body, initial_state)
 
-    return jnp.array([]), results[5], jnp.array([])
+    return results[0], results[6], jnp.array([])
