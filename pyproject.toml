@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=77.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "maxsmooth"
-version = "0.1.0"
-description = "Add your description here"
+version = "2.0.0"
+description = "Derivative-constrained function fitting."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -12,6 +16,10 @@ dependencies = [
     "progressbar>=2.5",
     "scipy>=1.16.3",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["maxsmooth*"]
 
 [project.optional-dependencies]
 dev = [
