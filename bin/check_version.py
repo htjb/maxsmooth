@@ -2,9 +2,6 @@
 """Check Version.
 
 Verify version has been incremented.
-
-Based on check_version.py from the anesthetic GitHub repository:
-https://github.com/handley-lab/anesthetic
 """
 
 import subprocess
@@ -13,15 +10,13 @@ import sys
 from packaging import version
 
 # Filestructure
-readme_file = "README.rst"
+readme_file = "README.md"
 
 
 # Utility functions
-def run_on_commandline(*args):
+def run_on_commandline(*args: dict) -> str:
     """Run the given arguments as a command on the command line."""
-    return subprocess.run(
-        args, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    ).stdout
+    return subprocess.run(args, text=True, capture_output=True).stdout
 
 
 def unit_incremented(version_a: str, version_b: str) -> bool:
@@ -85,13 +80,13 @@ def unit_incremented(version_a: str, version_b: str) -> bool:
 
 
 def get_current_version() -> str:
-    """Get current version of package from README.rst"""
-    current_version = run_on_commandline("grep", ":Version:", readme_file)
-    current_version = current_version.split(":")[-1].strip()
+    """Get current version of package from README.md."""
+    current_version = run_on_commandline("grep", "Version:", readme_file)
+    current_version = current_version.split("**")[-1].strip()
     return current_version
 
 
-def main():
+def main() -> None:
     """Check version is consistent and incremented correctly."""
     # Get current version from readme
     current_version = get_current_version()
@@ -104,14 +99,27 @@ def main():
 
     previous_version = None
     for line in readme_contents.splitlines():
-        if ":Version:" in line:
-            previous_version = line.split(":")[-1].strip()
+        if "Version:" in line:
+            previous_version = line.split("**")[-1].strip()
             break
 
     if previous_version is None:
-        raise ValueError(
-            "Could not find version in README.rst on master branch"
+        print("Could not find version in README.md on master branch")
+        print("Trying README.rst...")
+        readme_rst = "README.rst"
+        readme_contents = run_on_commandline(
+            "git", "show", "remotes/origin/master:" + readme_rst
         )
+        for line in readme_contents.splitlines():
+            if ":Version:" in line:
+                previous_version = line.split(":")[-1].strip()
+                break
+    if previous_version is None:
+        sys.stderr.write(
+            "Could not find version in README.md"
+            + "or README.rst on master branch.\n"
+        )
+        sys.exit(1)
 
     # Check versions have been incremented
     if not unit_incremented(current_version, previous_version):
