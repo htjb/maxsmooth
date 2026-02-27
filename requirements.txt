@@ -1,5 +1,0 @@
-matplotlib
-numpy
-CVXOPT
-scipy
-progressbar

@@ -8,7 +8,7 @@ These are detailed below.
 
 """
 
-from maxsmooth.qp import qp_class
+from maxsmooth.qp import qp_class, precompute_matrices
 from maxsmooth.Models import Models_class
 from maxsmooth.derivatives import derivative_class
 from maxsmooth.Data_save import save, save_optimum
@@ -369,12 +369,16 @@ class smooth(object):
             append_params, append_chi, append_zc_dict, append_passed_signs = \
                 params.append, chi_squared.append, zc_dict.append, \
                 passed_signs.append
+            precomputed = precompute_matrices(
+                x, y, self.N, pivot_point, self.model_type,
+                self.zero_crossings, self.constraints, self.new_basis)
             for j in range(signs.shape[0]):
                 fit = qp_class(
                     x, y, self.N, signs[j, :], pivot_point,
                     self.model_type, self.cvxopt_maxiter,
                     self.zero_crossings,
-                    self.initial_params, self.constraints, self.new_basis)
+                    self.initial_params, self.constraints, self.new_basis,
+                    precomputed=precomputed)
 
                 if self.print_output == 2:
                     print('-'*50)
@@ -499,11 +503,15 @@ class smooth(object):
             for i in range(len(array_signs)):
                 if i == r:
                     tested_indices.append(i)
+            precomputed = precompute_matrices(
+                x, y, self.N, pivot_point, self.model_type,
+                self.zero_crossings, self.constraints, self.new_basis)
             fit = qp_class(
                 x, y, self.N, signs, pivot_point,
                 self.model_type, self.cvxopt_maxiter,
                 self.zero_crossings,
-                self.initial_params, self.constraints, self.new_basis)
+                self.initial_params, self.constraints, self.new_basis,
+                precomputed=precomputed)
             chi_squared.append(fit.chi_squared)
             tested_signs.append(signs)
             parameters.append(fit.parameters)
@@ -570,7 +578,8 @@ class smooth(object):
                             x, y, self.N, signs, pivot_point,
                             self.model_type, self.cvxopt_maxiter,
                             self.zero_crossings, self.initial_params,
-                            self.constraints, self.new_basis)
+                            self.constraints, self.new_basis,
+                            precomputed=precomputed)
                         if fit.chi_squared < chi_squared_old:
                             chi_squared_new = fit.chi_squared
                             previous_signs = signs
@@ -659,7 +668,8 @@ class smooth(object):
                         x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.zero_crossings, self.initial_params,
-                        self.constraints, self.new_basis)
+                        self.constraints, self.new_basis,
+                        precomputed=precomputed)
                     chi_down = fit.chi_squared
                     chi_squared.append(fit.chi_squared)
                     tested_signs.append(signs)
@@ -721,7 +731,8 @@ class smooth(object):
                         x, y, self.N, signs, pivot_point,
                         self.model_type, self.cvxopt_maxiter,
                         self.zero_crossings, self.initial_params,
-                        self.constraints, self.new_basis)
+                        self.constraints, self.new_basis,
+                        precomputed=precomputed)
                     chi_up = fit.chi_squared
                     chi_squared.append(fit.chi_squared)
                     tested_signs.append(signs)

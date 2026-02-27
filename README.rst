@@ -10,7 +10,7 @@ Introduction
 
 :maxsmooth: Derivative Constrained Function Fitting
 :Author: Harry Thomas Jones Bevins
-:Version: 1.2.3
+:Version: 1.2.4
 :Homepage: https://github.com/htjb/maxsmooth
 :Documentation: https://maxsmooth.readthedocs.io/
 

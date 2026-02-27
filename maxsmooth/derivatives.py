@@ -27,7 +27,7 @@ class derivative_class(object):
 
         def mth_order_derivatives(m):
             if self.derivatives_function is None:
-                if np.any(self.model_type != ['legendre', 'exponential']):
+                if self.model_type not in ['legendre', 'exponential']:
                     mth_order_derivative = []
                     for i in range(self.N-m):
                         if self.model_type == 'normalised_polynomial':
