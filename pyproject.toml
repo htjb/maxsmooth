@@ -7,7 +7,7 @@ name = "maxsmooth"
 version = "1.2.4"
 description = "Derivative-constrained function fitting."
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.6"
 dependencies = [
     'matplotlib',
     'numpy',
