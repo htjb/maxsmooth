@@ -25,6 +25,7 @@ dev = [
     "pytest",
     "ruff",
     "pre-commit",
+    "packaging"
 ]
 docs = [
   'sphinx', 
