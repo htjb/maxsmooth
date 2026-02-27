@@ -13,7 +13,7 @@ def _constraint_prefactors(m, x, y, N, pivot_point, model_type,
                             derivative_pres, args):
     """Compute the constraint matrix prefactors for derivative order m."""
     if derivative_pres is None:
-        if np.any(model_type != ['legendre', 'exponential']):
+        if model_type not in ['legendre', 'exponential']:
             derivatives = []
             for i in range(N):
                 if i <= m - 1:
