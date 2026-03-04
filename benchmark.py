@@ -62,7 +62,7 @@ x_jnp = jnp.array(x_np)
 y_jnp = jnp.array(y_np)
 
 PIVOT = Ndat // 2
-N_VALUES = [4, 6, 8, 10, 12]
+N_VALUES = [4, 6, 8, 10, 12, 14]
 REPEATS = 3
 
 
@@ -135,7 +135,7 @@ def fmt(s: float) -> str:
     return f"{s:.2f}s" if s >= 1.0 else f"{s*1e3:.0f}ms"
 
 
-W = 105
+W = 115
 print("\n" + "=" * W)
 print(f"  maxsmooth benchmark  |  y=5e7·x^-2.5 + 1% noise  |"
       f"  {Ndat} pts  |  {REPEATS} warm repeats")
@@ -144,7 +144,7 @@ print(
     f"{'N':>3}  {'combos':>7}  "
     f"{'v1-qp':>9}  {'v1-signflip':>11}  {'v1 solves':>9}  "
     f"{'v2-qp cold':>11}  {'v2-qp warm':>10}  {'deriv%':>7}  "
-    f"{'v2-search cold':>14}  {'v2-search warm':>14}"
+    f"{'v2-search cold':>14}  {'v2-search warm':>14}  {'qp conv?':>8}"
 )
 print("-" * W)
 
@@ -160,25 +160,32 @@ for N in N_VALUES:
 
     deriv_pct = 100.0 * v2_deriv / v2_qp_warm if v2_qp_warm > 0 else 0
 
+    _, _, qp_conv = _qp_v2(
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+        normalised_polynomial_basis,
+    )
+
     all_results[N] = dict(
         n_combos=n_combos,
         v1_qp=v1_qp_warm, v1_sf=v1_sf_warm, v1_solves=v1_solves,
         v2_qp_cold=v2_qp_cold, v2_qp=v2_qp_warm, deriv_pct=deriv_pct,
-        v2_ss_cold=v2_ss_cold, v2_ss=v2_ss_warm,
+        v2_ss_cold=v2_ss_cold, v2_ss=v2_ss_warm, qp_conv=qp_conv,
     )
     print(
         f"\r  {N:>3}  {n_combos:>7}  "
         f"{fmt(v1_qp_warm):>9}  {fmt(v1_sf_warm):>11}  {v1_solves:>9}  "
         f"{fmt(v2_qp_cold):>11}  {fmt(v2_qp_warm):>10}  {deriv_pct:>6.0f}%  "
         f"{fmt(v2_ss_cold):>14}  {fmt(v2_ss_warm):>14}"
+        f"  {'YES' if qp_conv else 'NO ':>8}"
     )
 
 print("=" * W)
 print("""
-  combos       = total sign combinations (2^(N-2)); v1-qp and v2-qp test ALL of them
-  v1 solves    = actual CVXOPT calls made by sign-descent on the last warm run
-  deriv%       = fraction of v2-qp warm time spent in derivative_prefactors()
-  cold         = first call, includes XLA JIT compilation (v2 only)
+  combos    = total sign combinations (2^(N-2)); v1-qp and v2-qp test ALL of them
+  v1 solves = actual CVXOPT calls made by sign-descent on the last warm run
+  deriv%    = fraction of v2-qp warm time spent in derivative_prefactors()
+  cold      = first call, includes XLA JIT compilation (v2 only)
+  qp conv?  = did qpax converge (KKT residual < 1e-3) for the winning sign combo
 """)
 
 # ── Residuals comparison ───────────────────────────────────────────────────
@@ -201,9 +208,9 @@ for N in N_VALUES:
                             print_output=0)
 
     # v2 fits
-    params_v2_qp, chi2_v2_qp = _qp_v2(
+    params_v2_qp, chi2_v2_qp, _ = _qp_v2(
         x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
-    params_v2_ss, chi2_v2_ss = _qpsearch_v2(
+    params_v2_ss, chi2_v2_ss, _ = _qpsearch_v2(
         x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
 
     yfit_v2_qp = vmapped_np(x_jnp, x_jnp[PIVOT], y_jnp[PIVOT], params_v2_qp)

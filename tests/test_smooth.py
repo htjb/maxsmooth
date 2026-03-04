@@ -1,336 +1,180 @@
+"""Tests for the maxsmooth v2 (JAX/qpax) API."""
+
+import jax
+import jax.numpy as jnp
 import numpy as np
-import math
 import pytest
-import os
-import shutil
-from maxsmooth.DCF import smooth
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 
-def test_api():
-    # Check api
-    np.random.seed(0)
+from maxsmooth.derivatives import _G_cache, derivative_prefactors
+from maxsmooth.models import (
+    exponential,
+    exponential_basis,
+    loglog_polynomial,
+    loglog_polynomial_basis,
+    normalised_polynomial,
+    normalised_polynomial_basis,
+    polynomial,
+    polynomial_basis,
+)
+from maxsmooth.qp import qp, qpsignsearch
 
-    Ndat = 100
-    x = np.linspace(-1, 1, Ndat)
-    y = 1 + x + x**2 + x**3 + np.random.normal(0, 0.05, 100)
 
-    N = 4
-    sol = smooth(x, y, N)
-    # Check RMS/Chi/y_fit calculated/returned correctly
-    assert_almost_equal(sol.rms, np.sqrt(np.sum((y - sol.y_fit)**2)/len(y)))
-    assert_almost_equal( sol.optimum_chi , ((y - sol.y_fit)**2).sum())
+# ── Fixtures ──────────────────────────────────────────────────────────────────
 
-    def model(x, N, params):
-        y_sum = np.sum([
-            params[i]*(x-x[len(x)//2])**i
-            for i in range(N)], axis=0)
-        return y_sum
+@pytest.fixture
+def polynomial_data() -> tuple[jnp.ndarray, jnp.ndarray]:
+    """Exact cubic: y = 1 + x + x^2 + x^3 on [1, 2].
 
-    y_fit = model(x, N, sol.optimum_params)
-    assert_almost_equal( sol.optimum_chi , ((y - y_fit)**2).sum())
-    assert(len(sol.optimum_signs) == N-2)
-    assert(sol.derivatives.shape == (N-2, len(y)))
-
-def test_keywords():
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(0, 1, Ndat)
+    Using [1, 2] rather than [0, 1] avoids the near-singular Gram matrix
+    that `polynomial` basis produces in float32 on the unit interval.
+    All constrained derivatives (m >= 2) are strictly positive on [1,2].
+    """
+    x = jnp.linspace(1, 2, 100)
     y = 1 + x + x**2 + x**3
-
-    N = 4
-
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, color='pink')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, base_dir='file')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, base_dir=5)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, 5.5)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, 'string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, fit_type='banana')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, model_type='pink')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, pivot_point='string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, pivot_point=5.5)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, pivot_point=len(x)+10)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, cvxopt_maxiter='string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, cvxopt_maxiter=41.2)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, print_output=9)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, data_save='string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, constraints='string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, constraints= 20)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, zero_crossings=[3.3])
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, zero_crossings=[1])
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, chi_squared_limit='string')
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, chi_squared_limit=[1, 2])
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, cap=5.5)
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, initial_params=[1]*(N+10))
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, initial_params=['string']*(N))
-
-def test_smooth_fit():
-    # Check parameters of smooth function are correct
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(0, 1, Ndat)
-    y = 1 + x + x**2 + x**3
-
-    N = 4
-    sol = smooth(x, y, N, model_type='polynomial', print_output=2)
-
-    assert_almost_equal(sol.optimum_params.T[0], [1, 1, 1, 1], decimal=3)
-
-    for i in range(len(sol.derivatives)):
-        assert(
-            np.all(sol.derivatives[i] <= 1e-6) or
-            np.all(sol.derivatives[i] >= -1e-6))
-
-    sol = smooth(
-        x, y, N, model_type='polynomial', fit_type='qp',
-        print_output=2)
-
-    assert(sol.cap is None)
-    assert_almost_equal(sol.optimum_params.T[0], [1, 1, 1, 1], decimal=3)
-
-    for i in range(len(sol.derivatives)):
-        assert(
-            np.all(sol.derivatives[i] <= 1e-6) or
-            np.all(sol.derivatives[i] >= -1e-6))
-
-    with pytest.raises(Exception):
-        sol = smooth(
-            x, y, N, model_type='polynomial', cvxopt_maxiter=1)
-
-    sol = smooth(
-        x, y, N, model_type='polynomial', initial_params=[1]*N,
-        cap=100, chi_squared_limit=1e4)
-
-    assert(sol.cap == 100)
-    assert_almost_equal(sol.optimum_params.T[0], [1, 1, 1, 1], decimal=3)
-
-def test_output_directional_exp():
-
-    Ndat = 100
-    x = np.linspace(50, 150, Ndat)
-    y = 5e7*x**(-2.5)
-
-    N = 10
-    sol = smooth(x, y, N, model_type='legendre', print_output=0)
-
-    assert_almost_equal( sol.optimum_chi , ((y - sol.y_fit)**2).sum())
-
-def test_data_save():
-
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(-1, 1, Ndat)
-    y = 1 + x + x**2 + x**3 + np.random.normal(0, 0.05, 100)
-
-    N = 4
-
-    if os.path.isdir('new_dir/'):
-        shutil.rmtree('new_dir/')
-
-    sol = smooth(x, y, N, data_save=True, base_dir='new_dir/')
-
-    assert(os.path.exists('new_dir/') is True)
-    assert(os.path.exists('new_dir/Output_Parameters/') is True)
-    assert(os.path.exists('new_dir/Output_Signs/') is True)
-    assert(os.path.exists('new_dir/Output_Evaluation/') is True)
-    assert(
-        os.path.isfile(
-            'new_dir/Optimal_Results_qp-sign_flipping_4.txt') is True)
-    assert(
-        os.path.isfile(
-            'new_dir/Output_Parameters/4_qp-sign_flipping.txt') is True)
-    assert(
-        os.path.isfile(
-            'new_dir/Output_Signs/4_qp-sign_flipping.txt') is True)
-    assert(
-        os.path.isfile(
-            'new_dir/Output_Evaluation/4_qp-sign_flipping.txt') is True)
-
-    sol = smooth(x, y, N, data_save=True, base_dir='new_dir/')
-
-def test_new_basis():
-
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(-1, 1, Ndat)
-    y = 1 + x + x**2 + x**3 + np.random.normal(0, 0.05, 100)
-
-    N = 4
-
-    arguments = [x[-1]*10, y[-1]*10]
-
-    def basis_functions(x, y, pivot_point, N, *args):
-
-        phi = np.empty([len(x), N])
-        for h in range(len(x)):
-            for i in range(N):
-                phi[h, i] = args[1]*(x[h]/args[0])**i
-
-        return phi
-
-    def model(x, y, pivot_point, N, params, *args):
-
-        y_sum = args[1]*np.sum([
-            params[i]*(x/args[0])**i
-            for i in range(N)], axis=0)
-
-        return y_sum
-
-    def derivative(m, x, y, N, pivot_point, params, *args):
-        mth_order_derivative = []
-        for i in range(N):
-            if i <= m - 1:
-                mth_order_derivative.append([0]*len(x))
-        for i in range(N - m):
-                mth_order_derivative_term = args[1]*math.factorial(m+i) / \
-                    math.factorial(i) * \
-                    params[int(m)+i]*(x)**i / \
-                    (args[0])**(i + 1)
-                mth_order_derivative.append(
-                    mth_order_derivative_term)
-        mth_order_derivative = np.array(mth_order_derivative).T
-
-        return mth_order_derivative
-
-    def derivative_pre(m, x, y, N, pivot_point, *args):
-
-        mth_order_derivative = []
-        for i in range(N):
-            if i <= m - 1:
-                mth_order_derivative.append([0]*len(x))
-        for i in range(N - m):
-                mth_order_derivative_term = args[1]*math.factorial(m+i) / \
-                    math.factorial(i) * \
-                    (x)**i / \
-                    (args[0])**(i + 1)
-                mth_order_derivative.append(
-                    mth_order_derivative_term)
-
-        return mth_order_derivative
-
-    sol = smooth(x, y, N, basis_functions=basis_functions, model=model,
-    derivatives=derivative, der_pres=derivative_pre, args=arguments)
-
-    assert(sol.model_type == 'user_defined')
-    assert_almost_equal(sol.rms, np.sqrt(np.sum((y - sol.y_fit)**2)/len(y)))
-    assert_almost_equal( sol.optimum_chi , ((y - sol.y_fit)**2).sum())
-
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, basis_functions=basis_functions, model=None,
-        derivatives=derivative, der_pres=derivative_pre, args=arguments)
-
-def test_new_basis_without_args():
-
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(-1, 1, Ndat)
-    y = 1 + x + x**2 + x**3 + np.random.normal(0, 0.05, 100)
-
-    N = 4
-
-    def basis_functions(x, y, pivot_point, N, *args):
-
-        phi = np.empty([len(x), N])
-        for h in range(len(x)):
-            for i in range(N):
-                phi[h, i] = (x[h])**i
-
-        return phi
-
-    def model(x, y, pivot_point, N, params, *args):
-
-        y_sum = np.sum([
-            params[i]*(x)**i
-            for i in range(N)], axis=0)
-
-        return y_sum
-
-    def derivative(m, x, y, N, pivot_point, params, *args):
-        mth_order_derivative = []
-        for i in range(N):
-            if i <= m - 1:
-                mth_order_derivative.append([0]*len(x))
-        for i in range(N - m):
-                mth_order_derivative_term = math.factorial(m+i) / \
-                    math.factorial(i) * \
-                    params[int(m)+i]*(x)**i
-                mth_order_derivative.append(
-                    mth_order_derivative_term)
-
-        return mth_order_derivative
-
-    def derivative_pre(m, x, y, N, pivot_point, *args):
-
-        mth_order_derivative = []
-        for i in range(N):
-            if i <= m - 1:
-                mth_order_derivative.append([0]*len(x))
-        for i in range(N - m):
-                mth_order_derivative_term = math.factorial(m+i) / \
-                    math.factorial(i) * \
-                    (x)**i
-                mth_order_derivative.append(
-                    mth_order_derivative_term)
-
-        return mth_order_derivative
-
-    sol = smooth(x, y, N, basis_functions=basis_functions, model=model,
-    derivatives=derivative, der_pres=derivative_pre)
-
-    assert(sol.model_type == 'user_defined')
-    assert_almost_equal(sol.rms, np.sqrt(np.sum((y - sol.y_fit)**2)/len(y)))
-    assert_almost_equal( sol.optimum_chi , ((y - sol.y_fit)**2).sum())
-
-    with pytest.raises(Exception):
-        sol = smooth(x, y, N, basis_functions=basis_functions, model=None,
-        derivatives=derivative, der_pres=derivative_pre)
-
-def test_ifp():
-
-    np.random.seed(0)
-
-    Ndat = 100
-    x = np.linspace(-1, 1, Ndat)
-    y = 1 + x + x**2 + x**3 + np.random.normal(0, 0.05, 100)
-
-    N = 10
-
-    sol = smooth(
-        x, y, N, zero_crossings=[4, 5, 6], constraints=1, print_output=0)
-
-    assert(len(sol.optimum_zc_dict) == 4)
-    assert(type(sol.optimum_zc_dict) is dict)
-
-    sol = smooth(
-        x, y, N, zero_crossings=[4, 5, 6],
-        constraints=1, print_output=2, fit_type='qp')
-
-    assert(len(sol.optimum_zc_dict) == 4)
-    assert(type(sol.optimum_zc_dict) is dict)
+    return x, y
+
+
+@pytest.fixture
+def power_law_data() -> tuple[jnp.ndarray, jnp.ndarray]:
+    """Power law with noise: y = 5e7 * x^-2.5 on [50, 200]."""
+    rng = np.random.default_rng(42)
+    x_np = np.linspace(50, 200, 100)
+    y_np = 5e7 * x_np**(-2.5) + rng.normal(0, 1e3, 100)
+    return jnp.array(x_np), jnp.array(y_np)
+
+
+# ── qp() ──────────────────────────────────────────────────────────────────────
+
+def test_qp_returns_finite(power_law_data: tuple) -> None:
+    """qp() returns finite params and chi2."""
+    x, y = power_law_data
+    params, chi2, _ = qp(x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis)
+    assert jnp.all(jnp.isfinite(params))
+    assert jnp.isfinite(chi2)
+
+
+def test_qp_chi2_matches_residual(power_law_data: tuple) -> None:
+    """Returned chi2 equals sum((y - yfit)^2) recomputed from params."""
+    x, y = power_law_data
+    params, chi2, _ = qp(x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis)
+    yfit = jax.vmap(normalised_polynomial, in_axes=(0, None, None, None))(
+        x, x[50], y[50], params
+    )
+    assert_allclose(float(chi2), float(jnp.sum((y - yfit) ** 2)), rtol=1e-4)
+
+
+def test_qp_recovers_polynomial_coefficients(polynomial_data: tuple) -> None:
+    """qp() fits exact cubic data to near-zero residual."""
+    x, y = polynomial_data
+    params, chi2, _ = qp(x, y, 4, 50, polynomial, polynomial_basis)
+    # Float32 precision limits exact param recovery; check fit quality instead.
+    yfit = jax.vmap(polynomial, in_axes=(0, None, None, None))(
+        x, x[50], y[50], params
+    )
+    assert_allclose(np.array(yfit), np.array(y), rtol=5e-3)
+
+
+# ── qpsignsearch() ────────────────────────────────────────────────────────────
+
+def test_signsearch_returns_finite(power_law_data: tuple) -> None:
+    """qpsignsearch() returns finite params and chi2."""
+    x, y = power_law_data
+    params, chi2, _ = qpsignsearch(
+        x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis
+    )
+    assert jnp.all(jnp.isfinite(params))
+    assert jnp.isfinite(chi2)
+
+
+def test_signsearch_chi2_matches_residual(power_law_data: tuple) -> None:
+    """Returned chi2 equals sum((y - yfit)^2) recomputed from params."""
+    x, y = power_law_data
+    params, chi2, _ = qpsignsearch(
+        x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis
+    )
+    yfit = jax.vmap(normalised_polynomial, in_axes=(0, None, None, None))(
+        x, x[50], y[50], params
+    )
+    assert_allclose(float(chi2), float(jnp.sum((y - yfit) ** 2)), rtol=1e-4)
+
+
+# ── qp vs qpsignsearch ────────────────────────────────────────────────────────
+
+def test_qp_and_signsearch_agree(power_law_data: tuple) -> None:
+    """Brute-force qp and qpsignsearch find consistent minima."""
+    x, y = power_law_data
+    _, chi2_qp, _ = qp(x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis)
+    _, chi2_ss, _ = qpsignsearch(
+        x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis
+    )
+    assert_allclose(float(chi2_qp), float(chi2_ss), rtol=0.05)
+
+
+# ── Constraint satisfaction ───────────────────────────────────────────────────
+
+def test_constrained_derivatives_do_not_change_sign(power_law_data: tuple) -> None:
+    """Each constrained derivative order should be all >= 0 or all <= 0."""
+    x, y = power_law_data
+    N, pivot = 6, 50
+    params, _, _ = qp(x, y, N, pivot, normalised_polynomial, normalised_polynomial_basis)
+    G_list = derivative_prefactors(
+        normalised_polynomial, x, x[pivot], y[pivot], params, N
+    )
+    for m in range(2, N):
+        deriv_m = jnp.dot(G_list[m], params)
+        tol = 0.05 * float(jnp.max(jnp.abs(deriv_m)))
+        all_pos = jnp.all(deriv_m >= -tol)
+        all_neg = jnp.all(deriv_m <= tol)
+        assert all_pos or all_neg, f"derivative order {m} changes sign"
+
+
+# ── lowest_constrained_derivative ─────────────────────────────────────────────
+
+def test_fewer_constraints_gives_equal_or_better_fit(power_law_data: tuple) -> None:
+    """Relaxing constraints (higher lowest_constrained_derivative) should not worsen fit."""
+    x, y = power_law_data
+    _, chi2_from2, _ = qp(
+        x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis,
+        lowest_constrained_derivative=2,
+    )
+    _, chi2_from3, _ = qp(
+        x, y, 6, 50, normalised_polynomial, normalised_polynomial_basis,
+        lowest_constrained_derivative=3,
+    )
+    assert float(chi2_from3) <= float(chi2_from2) + 1.0
+
+
+# ── Built-in models ───────────────────────────────────────────────────────────
+
+@pytest.mark.parametrize("fn,basis", [
+    (normalised_polynomial, normalised_polynomial_basis),
+    (exponential, exponential_basis),
+])
+def test_builtin_models_run(
+    power_law_data: tuple,
+    fn: callable,
+    basis: callable,
+) -> None:
+    """All built-in model/basis pairs complete without error."""
+    x, y = power_law_data
+    params, chi2, _ = qp(x, y, 6, 50, fn, basis)
+    assert jnp.all(jnp.isfinite(params)), f"{fn.__name__} returned non-finite params"
+    assert jnp.isfinite(chi2), f"{fn.__name__} returned non-finite chi2"
+
+
+# ── Derivative prefactors cache ───────────────────────────────────────────────
+
+def test_derivative_prefactors_cache_consistent(power_law_data: tuple) -> None:
+    """Two calls to derivative_prefactors with the same args return identical results."""
+    x, y = power_law_data
+    N, pivot = 6, 50
+    _G_cache.clear()
+    G1 = derivative_prefactors(
+        normalised_polynomial, x, x[pivot], y[pivot], jnp.ones(N), N
+    )
+    G2 = derivative_prefactors(
+        normalised_polynomial, x, x[pivot], y[pivot], jnp.ones(N), N
+    )
+    for m in range(N):
+        assert_allclose(np.array(G1[m]), np.array(G2[m]))

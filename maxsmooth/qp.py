@@ -16,7 +16,7 @@ def _dcf(
     c: jnp.ndarray,
     Q: jnp.ndarray,
     G: jnp.ndarray,
-) -> jnp.ndarray:
+) -> tuple[jnp.ndarray, jnp.ndarray]:
     """Solve one QP for a given sign vector using a primal-dual interior point method.
 
     Args:
@@ -28,13 +28,14 @@ def _dcf(
 
     Returns:
         jnp.ndarray: Optimal parameters (N,), or NaN if infeasible.
+        jnp.ndarray: Convergence flag (1 = converged, 0 = not).
     """
     Gmat = (signs[:, None, None] * G).reshape(-1, G.shape[2])
     h = jnp.zeros(Gmat.shape[0])
     A_eq = jnp.zeros((0, Q.shape[0]))
     b_eq = jnp.zeros(0)
-    x_sol, *_ = qpax.solve_qp(Q, c, A_eq, b_eq, Gmat, h)
-    return x_sol
+    x_sol, _, _, _, converged, _ = qpax.solve_qp(Q, c, A_eq, b_eq, Gmat, h)
+    return x_sol, converged
 
 
 _vmapped_dcf = jax.vmap(_dcf, in_axes=(0, None, None, None))
@@ -64,7 +65,7 @@ def qp(
     function: Callable,
     basis_function: Callable,
     lowest_constrained_derivative: int = 2,
-) -> tuple[jnp.ndarray, jnp.ndarray]:
+) -> tuple[jnp.ndarray, jnp.ndarray, bool]:
     """Set up and solve the quadratic programming problem for maxsmooth.
 
     Brute-forces all 2^(N - lowest_constrained_derivative) sign combinations
@@ -83,6 +84,8 @@ def qp(
     Returns:
         jnp.ndarray: The best-fit parameters (N,).
         jnp.ndarray: Objective (chi-squared) value for the best fit.
+        bool: True if the winning QP solve converged within qpax's
+            iteration limit.
     """
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
@@ -100,7 +103,7 @@ def qp(
     G = G / jnp.where(g_norm < 1e-10, 1.0, g_norm)
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
-    solutions = _vmapped_dcf(all_signs, c, Q, G)  # (n_combos, N)
+    solutions, converged_flags = _vmapped_dcf(all_signs, c, Q, G)
 
     vmapped_fn = jax.vmap(function, in_axes=(0, None, None, None))
 
@@ -111,7 +114,8 @@ def qp(
     # NaN solutions (infeasible sign combos) are excluded from selection
     obj = jnp.where(jnp.any(jnp.isnan(solutions), axis=1), jnp.inf, obj)
     best_index = jnp.argmin(obj)
-    return solutions[best_index], obj[best_index]
+    converged = bool(converged_flags[best_index])
+    return solutions[best_index], obj[best_index], converged
 
 
 def qpsignsearch(
@@ -123,7 +127,7 @@ def qpsignsearch(
     basis_function: Callable,
     lowest_constrained_derivative: int = 2,
     key: jnp.ndarray = jax.random.PRNGKey(0),
-) -> tuple[jnp.ndarray, jnp.ndarray]:
+) -> tuple[jnp.ndarray, jnp.ndarray, bool]:
     """Solve the DCF QP using a sign-navigating search.
 
     Starts from four seed sign vectors and iteratively flips one sign at a
@@ -144,6 +148,7 @@ def qpsignsearch(
     Returns:
         jnp.ndarray: The best-fit parameters (N,).
         jnp.ndarray: Objective (chi-squared) value for the best fit.
+        bool: True if every QP solve along the search path converged.
     """
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
@@ -191,25 +196,29 @@ def qpsignsearch(
         val = jnp.sum((y - vmapped_fn(x, x_pivot, y_pivot, params)) ** 2)
         return jnp.where(jnp.any(jnp.isnan(params)), jnp.inf, val)
 
-    seed_solutions = _vmapped_dcf(seeds, c, Q, G)
+    seed_solutions, seed_converged = _vmapped_dcf(seeds, c, Q, G)
     seed_chi2 = jax.vmap(chi2)(seed_solutions)
     best_seed = jnp.argmin(seed_chi2)
 
-    # State: (current_chi2, best_chi2, current_signs, best_params, visited)
+    # State: (current_chi2, best_chi2, current_signs, best_params,
+    #         visited, all_converged)
     initial_state = (
         seed_chi2[best_seed],
         jnp.inf,
         seeds[best_seed],
         seed_solutions[best_seed],
         visited_signs,
+        seed_converged[best_seed],
     )
 
     def condition(state: tuple) -> jnp.ndarray:
-        current_chi2, best_chi2, _, _, _ = state
+        current_chi2, best_chi2, _, _, _, _ = state
         return current_chi2 < best_chi2
 
     def body(state: tuple) -> tuple:
-        current_chi2, best_chi2, signs, best_params, visited_signs = state
+        current_chi2, best_chi2, signs, best_params, visited_signs, acc_conv = (
+            state
+        )
         best_chi2 = current_chi2
         flip_signs = _flip_sign(jnp.arange(len(signs)), signs)
 
@@ -252,18 +261,20 @@ def qpsignsearch(
             visited_signs,
         )
 
-        flip_solutions = _vmapped_dcf(flip_signs, c, Q, G)
+        flip_solutions, flip_converged = _vmapped_dcf(flip_signs, c, Q, G)
         flip_chi2 = jax.vmap(chi2)(flip_solutions)
         best_flip = jnp.argmin(flip_chi2)
+        acc_conv = acc_conv & flip_converged[best_flip]
         return (
             flip_chi2[best_flip],
             best_chi2,
             flip_signs[best_flip],
             flip_solutions[best_flip],
             visited_signs,
+            acc_conv,
         )
 
-    final_chi2, _, _, best_params, _ = jax.lax.while_loop(
+    final_chi2, _, _, best_params, _, all_converged = jax.lax.while_loop(
         condition, body, initial_state
     )
-    return best_params, final_chi2
+    return best_params, final_chi2, bool(all_converged)
