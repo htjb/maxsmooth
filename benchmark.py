@@ -62,7 +62,7 @@ x_jnp = jnp.array(x_np)
 y_jnp = jnp.array(y_np)
 
 PIVOT = Ndat // 2
-N_VALUES = [4, 6, 8]
+N_VALUES = [4, 6, 8, 10, 12]
 REPEATS = 3
 
 
@@ -181,15 +181,62 @@ print("""
   cold         = first call, includes XLA JIT compilation (v2 only)
 """)
 
+# ── Residuals comparison ───────────────────────────────────────────────────
+print("=" * W)
+print("  Residuals check — chi-squared from each method (lower = better fit)")
+print("=" * W)
+print(f"{'N':>3}  {'combos':>7}  {'v1-qp chi2':>14}  {'v1-signflip chi2':>17}"
+      f"  {'v2-qp chi2':>14}  {'v2-search chi2':>15}  {'v1/v2 agree?':>13}")
+print("-" * W)
+
+vmapped_np = jax.vmap(normalised_polynomial, in_axes=(0, None, None, None))
+
+residual_results = {}
+for N in N_VALUES:
+    # v1 fits
+    sol_v1_qp = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
+                            fit_type="qp", pivot_point=PIVOT, print_output=0)
+    sol_v1_sf = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
+                            fit_type="qp-sign_flipping", pivot_point=PIVOT,
+                            print_output=0)
+
+    # v2 fits
+    params_v2_qp, chi2_v2_qp = _qp_v2(
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
+    params_v2_ss, chi2_v2_ss = _qpsearch_v2(
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
+
+    yfit_v2_qp = vmapped_np(x_jnp, x_jnp[PIVOT], y_jnp[PIVOT], params_v2_qp)
+
+    chi2_v1_qp = float(sol_v1_qp.optimum_chi)
+    chi2_v1_sf = float(sol_v1_sf.optimum_chi)
+    chi2_v2_qp = float(chi2_v2_qp)
+    chi2_v2_ss = float(chi2_v2_ss)
+
+    agree = abs(chi2_v1_qp - chi2_v2_qp) / chi2_v1_qp < 0.01  # within 1%
+    residual_results[N] = dict(
+        chi2_v1_qp=chi2_v1_qp, chi2_v1_sf=chi2_v1_sf,
+        chi2_v2_qp=chi2_v2_qp, chi2_v2_ss=chi2_v2_ss,
+        yfit_v1=sol_v1_qp.y_fit, yfit_v2_qp=np.array(yfit_v2_qp),
+    )
+    print(
+        f"  {N:>3}  {2**(N-2):>7}  "
+        f"{chi2_v1_qp:>14.4g}  {chi2_v1_sf:>17.4g}"
+        f"  {chi2_v2_qp:>14.4g}  {chi2_v2_ss:>15.4g}"
+        f"  {'YES ✓' if agree else 'NO  ✗':>13}"
+    )
+
+print("=" * W)
+
 # ── Plot ──────────────────────────────────────────────────────────────────
 import matplotlib.pyplot as plt  # noqa: E402
 
 Ns = list(all_results.keys())
 r = all_results
 
-fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+fig, axes = plt.subplots(2, 2, figsize=(13, 10))
 
-ax = axes[0]
+ax = axes[0][0]
 ax.plot(Ns, [r[N]["v1_qp"] * 1e3 for N in Ns],
         "o-", label="v1-qp  (CVXOPT brute)", color="steelblue", lw=2)
 ax.plot(Ns, [r[N]["v1_sf"] * 1e3 for N in Ns],
@@ -207,7 +254,7 @@ ax.legend(fontsize=9)
 ax.set_yscale("log")
 ax.grid(True, which="both", alpha=0.3)
 
-ax = axes[1]
+ax = axes[0][1]
 ax.plot(Ns, [r[N]["v2_qp_cold"] * 1e3 for N in Ns],
         "s-", label="v2-qp cold (incl. JIT)", color="tomato", lw=2)
 ax.plot(Ns, [r[N]["v2_ss_cold"] * 1e3 for N in Ns],
@@ -225,8 +272,38 @@ ax.legend(fontsize=9)
 ax.set_yscale("log")
 ax.grid(True, which="both", alpha=0.3)
 
+# ── Residuals panels ──────────────────────────────────────────────────────
+colors = ["steelblue", "tomato", "seagreen", "orange", "mediumpurple", "goldenrod"]  # cycle through for each N 
+N_plot = N_VALUES  # one line per N
+
+ax = axes[1][0]
+ax.scatter(x_np, y_np, s=8, color="gray", alpha=0.5, label="data", zorder=1)
+for i, N in enumerate(N_plot):
+    ax.plot(x_np, residual_results[N]["yfit_v1"], color=colors[i],
+            lw=1.5, label=f"v1-qp  N={N}")
+    ax.plot(x_np, residual_results[N]["yfit_v2_qp"], color=colors[i],
+            lw=1.5, ls="--")
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_title("Fits: v1 (solid) vs v2-qp (dashed) — should overlap")
+ax.legend(fontsize=8)
+ax.grid(True, alpha=0.3)
+
+ax = axes[1][1]
+for i, N in enumerate(N_plot):
+    resid_v1 = y_np - residual_results[N]["yfit_v1"]
+    resid_v2 = y_np - residual_results[N]["yfit_v2_qp"]
+    ax.plot(x_np, resid_v1, color=colors[i], lw=1.5, label=f"v1-qp  N={N}")
+    ax.plot(x_np, resid_v2, color=colors[i], lw=1.5, ls="--")
+ax.axhline(0, color="k", lw=0.8, ls=":")
+ax.set_xlabel("x")
+ax.set_ylabel("residual  (y - fit)")
+ax.set_title("Residuals: v1 (solid) vs v2-qp (dashed) — should overlap")
+ax.legend(fontsize=8)
+ax.grid(True, alpha=0.3)
+
 fig.suptitle(
-    "maxsmooth: v1 (CVXOPT) vs v2 (JAX/OSQP) — brute-force vs sign-search\n"
+    "maxsmooth: v1 (CVXOPT) vs v2 (JAX/qpax) — brute-force vs sign-search\n"
     f"y = 5×10⁷·x⁻²·⁵ + 1% noise, {Ndat} pts",
     fontsize=11,
 )
@@ -234,4 +311,4 @@ fig.tight_layout()
 out = REPO / "benchmark_results.png"
 fig.savefig(out, dpi=150)
 print(f"Plot saved → {out}")
-plt.show()
+plt.close()
