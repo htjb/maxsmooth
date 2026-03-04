@@ -13,6 +13,49 @@ from maxsmooth.derivatives import derivative_prefactors
 qpsolver = OSQP(maxiter=10000, tol=1e-3, eq_qp_solve="lu")
 
 
+@jax.jit
+def _dcf(
+    signs: jnp.ndarray,
+    c: jnp.ndarray,
+    Q: jnp.ndarray,
+    G: jnp.ndarray,
+) -> jaxopt._src.base.OptStep:
+    """Run one QP solve for a given sign vector.
+
+    Args:
+        signs (jnp.ndarray): Sign combination (n_constrained,).
+        c (jnp.ndarray): Linear term in the objective (N,).
+        Q (jnp.ndarray): Quadratic term in the objective (N, N).
+        G (jnp.ndarray): Derivative constraint matrix
+            (n_constrained, n_data, N).
+
+    Returns:
+        sol: Solution of the quadratic programming problem.
+    """
+    Gmat = (signs[:, None, None] * G).reshape(-1, G.shape[2])
+    h = jnp.zeros(Gmat.shape[0])
+    return qpsolver.run(params_obj=(Q, c), params_ineq=(Gmat, h))
+
+
+_vmapped_dcf = jax.vmap(_dcf, in_axes=(0, None, None, None))
+
+
+def _flip_one(i: int, s: jnp.ndarray) -> jnp.ndarray:
+    """Flip the i-th element of sign vector s.
+
+    Args:
+        i (int): Index to flip.
+        s (jnp.ndarray): Sign vector.
+
+    Returns:
+        jnp.ndarray: Sign vector with element i negated.
+    """
+    return s.at[i].set(-s[i])
+
+
+_flip_sign = jax.vmap(_flip_one, in_axes=(0, None))
+
+
 def qp(
     x: jnp.ndarray,
     y: jnp.ndarray,
@@ -34,7 +77,6 @@ def qp(
         lowest_constrained_derivative (int): The lowest derivative to
             apply the constraints to.
 
-
     Returns:
         jnp.ndarray: state of the solver for each sign combination.
         jnp.ndarray: the parameters of the fits.
@@ -42,57 +84,28 @@ def qp(
     """
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
-    # needs some dummy parameters to make basis
-    basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
-    basis = basis_function(x, x_pivot, y_pivot, jnp.ones(N))
+    vmapped_basis = jax.vmap(basis_function, in_axes=(0, None, None, None))
+    basis = vmapped_basis(x, x_pivot, y_pivot, jnp.ones(N))
     Q = jnp.dot(basis.T, basis)
-
     c = -jnp.dot(basis.T, y)
+
     G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
         lowest_constrained_derivative:
     ]
     G = jnp.array(G)
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
-    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)  # Avoid division by zero
+    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)
     G = G / g_norm
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
-
-    @jax.jit
-    def dcf(
-        signs: jnp.ndarray, c: jnp.ndarray, Q: jnp.ndarray
-    ) -> jaxopt._src.base.OptStep:
-        """Run the quadratic programming using jaxopt OSQP (ADMM).
-
-        Args:
-            signs (jnp.ndarray): Sign combination
-                for the inequality constraints.
-            c (jnp.ndarray): Linear term in the objective function.
-            Q (jnp.ndarray): Quadratic term in the objective function.
-
-        Returns:
-            sol: Solution of the quadratic programming problem.
-        """
-        Gmat = signs[:, None, None] * G  # if shapes align
-        Gmat = Gmat.reshape(-1, G.shape[2])
-        h = jnp.zeros(Gmat.shape[0])
-        sol = qpsolver.run(params_obj=(Q, c), params_ineq=(Gmat, h))
-        return sol
-
-    vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
-    # Solve all QPs
-    sol = vmapped_dcf(all_signs, c, Q)
+    sol = _vmapped_dcf(all_signs, c, Q, G)
 
     vmapped_function = jax.vmap(function, in_axes=(0, None, None, None))
-
-    # map over each primal in sol.params.primal
-    @jax.jit
-    def obj_val_fn(primal: jnp.ndarray) -> jnp.ndarray:
-        return jnp.sum(
+    objective_values = jax.vmap(
+        lambda primal: jnp.sum(
             (y - vmapped_function(x, x_pivot, y_pivot, primal)) ** 2
         )
-
-    objective_values = jax.vmap(obj_val_fn)(sol.params.primal)
+    )(sol.params.primal)
     best_index = jnp.argmin(objective_values)
 
     return (
@@ -135,46 +148,19 @@ def qpsignsearch(
         jnp.ndarray: the parameters of the fits.
         jnp.ndarray: the reported error from jaxopt.
     """
-
-    @jax.jit
-    def dcf(
-        signs: jnp.ndarray,
-        c: jnp.ndarray,
-        Q: jnp.ndarray,
-    ) -> jaxopt._src.base.OptStep:
-        """Run the quadratic programming using jaxopt OSQP (ADMM).
-
-        Args:
-            signs (jnp.ndarray): Sign combination
-                for the inequality constraints.
-            c (jnp.ndarray): Linear term in the objective function.
-            Q (jnp.ndarray): Quadratic term in the objective function.
-
-        Returns:
-            sol: Solution of the quadratic programming problem.
-        """
-        Gmat = signs[:, None, None] * G  # if shapes align
-        Gmat = Gmat.reshape(-1, G.shape[2])
-        h = jnp.zeros(Gmat.shape[0])
-        sol = qpsolver.run(params_obj=(Q, c), params_ineq=(Gmat, h))
-        return sol
-
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
-    # needs some dummy parameters to make basis
-    basis_function = jax.vmap(basis_function, in_axes=(0, None, None, None))
-    basis = basis_function(x, x_pivot, y_pivot, jnp.ones(N))
+    vmapped_basis = jax.vmap(basis_function, in_axes=(0, None, None, None))
+    basis = vmapped_basis(x, x_pivot, y_pivot, jnp.ones(N))
     Q = jnp.dot(basis.T, basis)
-
     c = -jnp.dot(basis.T, y)
+
     G = derivative_prefactors(function, x, x_pivot, y_pivot, jnp.ones(N), N)[
         lowest_constrained_derivative:
     ]
-
-    # square root of sum of squares of each row
     G = jnp.array(G)
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
-    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)  # Avoid division by zero
+    g_norm = jnp.where(g_norm < 1e-10, 1.0, g_norm)
     G = G / g_norm
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
@@ -202,10 +188,7 @@ def qpsignsearch(
         visited_signs,
     )
 
-    flip_sign = jax.vmap(lambda i, s: s.at[i].set(-s[i]), in_axes=(0, None))
-    vmapped_dcf = jax.vmap(dcf, in_axes=(0, None, None))
-
-    sol = vmapped_dcf(signs, c, Q)
+    sol = _vmapped_dcf(signs, c, Q, G)
     error = sol.state.error
     minimum_index = jnp.argmin(error)
     signs = signs[minimum_index]
@@ -232,7 +215,7 @@ def qpsignsearch(
             state
         )
         best_error = error
-        flip_signs = flip_sign(jnp.arange(len(signs)), signs)
+        flip_signs = _flip_sign(jnp.arange(len(signs)), signs)
 
         def body_unique_flip(i: int, fs: jnp.ndarray) -> jnp.ndarray:
             """Check if flip sign has been visited already.
@@ -277,7 +260,7 @@ def qpsignsearch(
             visited_signs,
         )
 
-        sol = vmapped_dcf(flip_signs, c, Q)
+        sol = _vmapped_dcf(flip_signs, c, Q, G)
         minimum_index = jnp.argmin(jnp.array(sol.state.error))
         return (
             sol.state.status[minimum_index],
