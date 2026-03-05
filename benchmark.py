@@ -87,7 +87,7 @@ def time_v2(N: int, use_signsearch: bool) -> tuple[float, float]:
     """Return (cold_s, avg_warm_s, avg_deriv_s)."""
     fn = _qpsearch_v2 if use_signsearch else _qp_v2
     args = (x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-            difference_polynomial_basis)
+            difference_polynomial_basis, 2, N**2)
 
     # cold call — includes XLA JIT compilation
     t0 = time.perf_counter()
@@ -134,7 +134,7 @@ for N in N_VALUES:
 
     _, _, qp_conv = _qp_v2(
         x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis
+        difference_polynomial_basis, max_iters=N**2
     )
 
     all_results[N] = dict(
@@ -181,10 +181,10 @@ for N in N_VALUES:
     # v2 fits
     params_v2_qp, chi2_v2_qp, _ = _qp_v2(
         x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis)
+        difference_polynomial_basis, max_iters=N**2)
     params_v2_ss, chi2_v2_ss, _ = _qpsearch_v2(
         x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis)
+        difference_polynomial_basis, max_iters=N**2)
 
     yfit_v2_qp = vmapped_np(x_jnp, x_jnp[PIVOT], y_jnp[PIVOT], params_v2_qp)
 
@@ -214,9 +214,13 @@ import matplotlib.pyplot as plt  # noqa: E402, I001
 Ns = list(all_results.keys())
 r = all_results
 
-fig, axes = plt.subplots(2, 2, figsize=(13, 10))
+fig = plt.figure(figsize=(13, 10))
+gs = fig.add_gridspec(2, 2)
+ax_warm = fig.add_subplot(gs[0, 0])
+ax_cold = fig.add_subplot(gs[0, 1])
+ax_resid = fig.add_subplot(gs[1, :])
 
-ax = axes[0][0]
+ax = ax_warm
 ax.plot(Ns, [r[N]["v1_qp"] * 1e3 for N in Ns],
         "o-", label="v1-qp  (CVXOPT brute)", color="steelblue", lw=2)
 ax.plot(Ns, [r[N]["v1_sf"] * 1e3 for N in Ns],
@@ -234,7 +238,7 @@ ax.legend(fontsize=9)
 ax.set_yscale("log")
 ax.grid(True, which="both", alpha=0.3)
 
-ax = axes[0][1]
+ax = ax_cold
 ax.plot(Ns, [r[N]["v2_qp_cold"] * 1e3 for N in Ns],
         "s-", label="v2-qp cold (incl. JIT)", color="tomato", lw=2)
 ax.plot(Ns, [r[N]["v2_ss_cold"] * 1e3 for N in Ns],
@@ -256,20 +260,7 @@ ax.grid(True, which="both", alpha=0.3)
 colors = ["steelblue", "tomato", "seagreen", "orange", "mediumpurple", "goldenrod"]  # cycle through for each N 
 N_plot = N_VALUES  # one line per N
 
-ax = axes[1][0]
-ax.scatter(x_np, y_np, s=8, color="gray", alpha=0.5, label="data", zorder=1)
-for i, N in enumerate(N_plot):
-    ax.plot(x_np, residual_results[N]["yfit_v1"], color=colors[i],
-            lw=1.5, label=f"v1-qp  N={N}")
-    ax.plot(x_np, residual_results[N]["yfit_v2_qp"], color=colors[i],
-            lw=1.5, ls="--")
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.set_title("Fits: v1 (solid) vs v2-qp (dashed) — should overlap")
-ax.legend(fontsize=8)
-ax.grid(True, alpha=0.3)
-
-ax = axes[1][1]
+ax = ax_resid
 for i, N in enumerate(N_plot):
     resid_v1 = y_np - residual_results[N]["yfit_v1"]
     resid_v2 = y_np - residual_results[N]["yfit_v2_qp"]
@@ -281,6 +272,7 @@ ax.set_ylabel("residual  (y - fit)")
 ax.set_title("Residuals: v1 (solid) vs v2-qp (dashed) — should overlap")
 ax.legend(fontsize=8)
 ax.grid(True, alpha=0.3)
+ax.set_ylim(-1, 1)
 
 fig.suptitle(
     "maxsmooth: v1 (CVXOPT) vs v2 (JAX/qpax) — brute-force vs sign-search\n"

@@ -16,8 +16,15 @@ def _dcf(
     c: jnp.ndarray,
     Q: jnp.ndarray,
     G: jnp.ndarray,
+    max_iters: int,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
-    """Solve one QP for a given sign vector using a primal-dual interior point method.
+    """Solve one QP for a given sign vector.
+    
+    Using a primal-dual interior point method implemented in qpax.
+
+    CVXOPT was used in version 1 of maxsmooth which also implements
+    primal-dual interior point method but is not
+    jit-compatible and is much slower than qpax.
 
     Args:
         signs (jnp.ndarray): Sign combination (n_constrained,).
@@ -25,6 +32,7 @@ def _dcf(
         Q (jnp.ndarray): Quadratic term in the objective (N, N).
         G (jnp.ndarray): Derivative constraint matrix
             (n_constrained, n_data, N).
+        max_iters (int): Maximum iterations for the QP solver.
 
     Returns:
         jnp.ndarray: Optimal parameters (N,), or NaN if infeasible.
@@ -34,11 +42,13 @@ def _dcf(
     h = jnp.zeros(Gmat.shape[0])
     A_eq = jnp.zeros((0, Q.shape[0]))
     b_eq = jnp.zeros(0)
-    x_sol, _, _, _, converged, _ = qpax.solve_qp(Q, c, A_eq, b_eq, Gmat, h)
+    x_sol, _, _, _, converged, _ = qpax.solve_qp(Q, c, A_eq, b_eq, Gmat, h,
+                    max_iters=max_iters
+    )
     return x_sol, converged
 
 
-_vmapped_dcf = jax.vmap(_dcf, in_axes=(0, None, None, None))
+_vmapped_dcf = jax.vmap(_dcf, in_axes=(0, None, None, None, None))
 
 
 def _flip_one(i: int, s: jnp.ndarray) -> jnp.ndarray:
@@ -56,7 +66,6 @@ def _flip_one(i: int, s: jnp.ndarray) -> jnp.ndarray:
 
 _flip_sign = jax.vmap(_flip_one, in_axes=(0, None))
 
-
 def qp(
     x: jnp.ndarray,
     y: jnp.ndarray,
@@ -65,6 +74,7 @@ def qp(
     function: Callable,
     basis_function: Callable,
     lowest_constrained_derivative: int = 2,
+    max_iters: int | jnp.ndarray | None = None,
 ) -> tuple[jnp.ndarray, jnp.ndarray, bool]:
     """Set up and solve the quadratic programming problem for maxsmooth.
 
@@ -80,6 +90,8 @@ def qp(
         basis_function (Callable): The basis function to use.
         lowest_constrained_derivative (int): The lowest derivative to
             apply the constraints to.
+        max_iters (int | None): Maximum iterations for the QP solver. If None,
+            uses max_iters: int =jnp.where(N**2 > 50, N**2, 50),
 
     Returns:
         jnp.ndarray: The best-fit parameters (N,).
@@ -87,6 +99,9 @@ def qp(
         bool: True if the winning QP solve converged within qpax's
             iteration limit.
     """
+    max_iters = (jnp.where(N**2 > 50, N**2, 50) 
+                 if max_iters is None else max_iters
+    )
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
     vmapped_basis = jax.vmap(basis_function, in_axes=(0, None, None, None))
@@ -103,7 +118,7 @@ def qp(
     G = G / jnp.where(g_norm < 1e-10, 1.0, g_norm)
 
     all_signs = jnp.array(list(product((-1.0, 1.0), repeat=len(G))))
-    solutions, converged_flags = _vmapped_dcf(all_signs, c, Q, G)
+    solutions, converged_flags = _vmapped_dcf(all_signs, c, Q, G, max_iters)
 
     vmapped_fn = jax.vmap(function, in_axes=(0, None, None, None))
 
@@ -126,7 +141,7 @@ def qpsignsearch(
     function: Callable,
     basis_function: Callable,
     lowest_constrained_derivative: int = 2,
-    key: jnp.ndarray = jax.random.PRNGKey(0),
+    max_iters: int | jnp.ndarray | None = None,
 ) -> tuple[jnp.ndarray, jnp.ndarray, bool]:
     """Solve the DCF QP using a sign-navigating search.
 
@@ -141,15 +156,20 @@ def qpsignsearch(
         pivot_point (int): Index of the pivot point.
         function (Callable): The model function from `maxsmooth.models`.
         basis_function (Callable): The basis function to use.
-        key (jnp.ndarray): JAX random key (unused, reserved for future use).
         lowest_constrained_derivative (int): The lowest derivative to
             apply the constraints to.
+        max_iters (int | None): Maximum iterations for the QP solver. If None,
+            uses max_iters: int =jnp.where(N**2 > 50, N**2, 50),
+                which is a heuristic that seems to work well in practice.
 
     Returns:
         jnp.ndarray: The best-fit parameters (N,).
         jnp.ndarray: Objective (chi-squared) value for the best fit.
         bool: True if every QP solve along the search path converged.
     """
+    max_iters = (jnp.where(N**2 > 50, N**2, 50) 
+                 if max_iters is None else max_iters
+    )
     x_pivot = x[pivot_point]
     y_pivot = y[pivot_point]
     vmapped_basis = jax.vmap(basis_function, in_axes=(0, None, None, None))
@@ -196,7 +216,7 @@ def qpsignsearch(
         val = jnp.sum((y - vmapped_fn(x, x_pivot, y_pivot, params)) ** 2)
         return jnp.where(jnp.any(jnp.isnan(params)), jnp.inf, val)
 
-    seed_solutions, seed_converged = _vmapped_dcf(seeds, c, Q, G)
+    seed_solutions, seed_converged = _vmapped_dcf(seeds, c, Q, G, max_iters)
     seed_chi2 = jax.vmap(chi2)(seed_solutions)
     best_seed = jnp.argmin(seed_chi2)
 
@@ -261,7 +281,9 @@ def qpsignsearch(
             visited_signs,
         )
 
-        flip_solutions, flip_converged = _vmapped_dcf(flip_signs, c, Q, G)
+        flip_solutions, flip_converged = _vmapped_dcf(
+            flip_signs, c, Q, G, max_iters
+        )
         flip_chi2 = jax.vmap(chi2)(flip_solutions)
         best_flip = jnp.argmin(flip_chi2)
         acc_conv = acc_conv & flip_converged[best_flip]
