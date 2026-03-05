@@ -33,76 +33,61 @@ if not MASTER_WT.exists():
 
 # ── V1 imports (master on path first) ────────────────────────────────────
 sys.path.insert(0, str(MASTER_WT))
-from maxsmooth.DCF import smooth as _smooth_v1  # noqa: E402
-import maxsmooth.qp as _v1_qp_mod              # noqa: E402
+from maxsmooth.DCF import smooth as _smooth_v1  # noqa: E402, I001
 sys.path.pop(0)
 for _k in list(sys.modules):
     if _k == "maxsmooth" or _k.startswith("maxsmooth."):
         del sys.modules[_k]
 
 # ── V2 imports (installed package) ───────────────────────────────────────
-import jax                                               # noqa: E402
-import jax.numpy as jnp                                  # noqa: E402
-from maxsmooth.derivatives import derivative_prefactors  # noqa: E402
-from maxsmooth.models import (                           # noqa: E402
-    normalised_polynomial,
-    normalised_polynomial_basis,
+import jax                                               # noqa: E402, I001
+import jax.numpy as jnp                                  # noqa: E402, I001
+
+jax.config.update("jax_enable_x64", True)
+
+from maxsmooth.models import (
+    difference_polynomial,
+    difference_polynomial_basis                           # noqa: E402, I001
 )
-from maxsmooth.qp import qp as _qp_v2                   # noqa: E402
-from maxsmooth.qp import qpsignsearch as _qpsearch_v2   # noqa: E402
+from maxsmooth.qp import qp as _qp_v2                   # noqa: E402, I001
+from maxsmooth.qp import qpsignsearch as _qpsearch_v2   # noqa: E402, I001
 
 # ── Toy data ──────────────────────────────────────────────────────────────
+# Similar to toy data for a 21-cm problem.
 rng = np.random.default_rng(42)
 Ndat = 100
 x_np = np.linspace(50, 200, Ndat)
 y_true = 5e7 * x_np**(-2.5)
-y_np = y_true + rng.normal(0, 0.01 * y_true.mean(), Ndat)
+y_np = y_true + rng.normal(0, 0.25, Ndat)
 
 x_jnp = jnp.array(x_np)
 y_jnp = jnp.array(y_np)
 
 PIVOT = Ndat // 2
-N_VALUES = [4, 6, 8, 10, 12, 14]
+N_VALUES = [4, 6, 8, 12]
 REPEATS = 3
 
 
 # ── V1 timing ─────────────────────────────────────────────────────────────
-def time_v1(N: int, fit_type: str) -> tuple[float, float, int]:
+def time_v1(N: int, fit_type: str) -> float:
     """Return (first_s, avg_warm_s, qp_solve_count)."""
-    call_count = [0]
-    orig = _v1_qp_mod.qp_class.__init__
 
-    def _counted(self, *a, **kw):
-        call_count[0] += 1
-        orig(self, *a, **kw)
-
-    _v1_qp_mod.qp_class.__init__ = _counted
-
-    kwargs = dict(model_type="normalised_polynomial",
+    kwargs = dict(model_type="difference_polynomial",
                   fit_type=fit_type, print_output=0)
 
     t0 = time.perf_counter()
     _smooth_v1(x_np, y_np, N, **kwargs)
     first = time.perf_counter() - t0
 
-    warm_times = []
-    for _ in range(REPEATS):
-        call_count[0] = 0
-        t0 = time.perf_counter()
-        _smooth_v1(x_np, y_np, N, **kwargs)
-        warm_times.append(time.perf_counter() - t0)
-    n_solves = call_count[0]
-
-    _v1_qp_mod.qp_class.__init__ = orig
-    return first, float(np.mean(warm_times)), n_solves
+    return first
 
 
 # ── V2 timing ─────────────────────────────────────────────────────────────
-def time_v2(N: int, use_signsearch: bool) -> tuple[float, float, float]:
+def time_v2(N: int, use_signsearch: bool) -> tuple[float, float]:
     """Return (cold_s, avg_warm_s, avg_deriv_s)."""
     fn = _qpsearch_v2 if use_signsearch else _qp_v2
-    args = (x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
-            normalised_polynomial_basis)
+    args = (x_jnp, y_jnp, N, PIVOT, difference_polynomial,
+            difference_polynomial_basis)
 
     # cold call — includes XLA JIT compilation
     t0 = time.perf_counter()
@@ -115,35 +100,24 @@ def time_v2(N: int, use_signsearch: bool) -> tuple[float, float, float]:
         jax.block_until_ready(fn(*args))
         warm_times.append(time.perf_counter() - t0)
 
-    # derivative_prefactors share of warm time
-    deriv_times = []
-    for _ in range(REPEATS):
-        t0 = time.perf_counter()
-        G = derivative_prefactors(
-            normalised_polynomial, x_jnp,
-            x_jnp[PIVOT], y_jnp[PIVOT], jnp.ones(N), N,
-        )
-        for g in G:
-            jax.block_until_ready(g)
-        deriv_times.append(time.perf_counter() - t0)
-
-    return cold, float(np.mean(warm_times)), float(np.mean(deriv_times))
+    return cold, float(np.mean(warm_times))
 
 
 # ── Run & print ───────────────────────────────────────────────────────────
 def fmt(s: float) -> str:
+    """Format seconds as ms if <1s, otherwise s with 2 decimal places."""
     return f"{s:.2f}s" if s >= 1.0 else f"{s*1e3:.0f}ms"
 
 
 W = 115
 print("\n" + "=" * W)
-print(f"  maxsmooth benchmark  |  y=5e7·x^-2.5 + 1% noise  |"
+print(f"  maxsmooth benchmark  |  y=5e7·x^-2.5 + epsilon  |"
       f"  {Ndat} pts  |  {REPEATS} warm repeats")
 print("=" * W)
 print(
     f"{'N':>3}  {'combos':>7}  "
-    f"{'v1-qp':>9}  {'v1-signflip':>11}  {'v1 solves':>9}  "
-    f"{'v2-qp cold':>11}  {'v2-qp warm':>10}  {'deriv%':>7}  "
+    f"{'v1-qp':>9}  {'v1-signflip':>11}  "
+    f"{'v2-qp cold':>11}  {'v2-qp warm':>10}  "
     f"{'v2-search cold':>14}  {'v2-search warm':>14}  {'qp conv?':>8}"
 )
 print("-" * W)
@@ -153,28 +127,26 @@ for N in N_VALUES:
     n_combos = 2 ** (N - 2)
     print(f"  N={N}  ...", end="", flush=True)
 
-    _, v1_qp_warm, _ = time_v1(N, "qp")
-    _, v1_sf_warm, v1_solves = time_v1(N, "qp-sign_flipping")
-    v2_qp_cold, v2_qp_warm, v2_deriv = time_v2(N, use_signsearch=False)
-    v2_ss_cold, v2_ss_warm, _ = time_v2(N, use_signsearch=True)
-
-    deriv_pct = 100.0 * v2_deriv / v2_qp_warm if v2_qp_warm > 0 else 0
+    v1_qp_warm = time_v1(N, "qp")
+    v1_sf_warm = time_v1(N, "qp-sign_flipping")
+    v2_qp_cold, v2_qp_warm = time_v2(N, use_signsearch=False)
+    v2_ss_cold, v2_ss_warm = time_v2(N, use_signsearch=True)
 
     _, _, qp_conv = _qp_v2(
-        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
-        normalised_polynomial_basis,
+        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
+        difference_polynomial_basis
     )
 
     all_results[N] = dict(
         n_combos=n_combos,
-        v1_qp=v1_qp_warm, v1_sf=v1_sf_warm, v1_solves=v1_solves,
-        v2_qp_cold=v2_qp_cold, v2_qp=v2_qp_warm, deriv_pct=deriv_pct,
+        v1_qp=v1_qp_warm, v1_sf=v1_sf_warm,
+        v2_qp_cold=v2_qp_cold, v2_qp=v2_qp_warm,
         v2_ss_cold=v2_ss_cold, v2_ss=v2_ss_warm, qp_conv=qp_conv,
     )
     print(
         f"\r  {N:>3}  {n_combos:>7}  "
-        f"{fmt(v1_qp_warm):>9}  {fmt(v1_sf_warm):>11}  {v1_solves:>9}  "
-        f"{fmt(v2_qp_cold):>11}  {fmt(v2_qp_warm):>10}  {deriv_pct:>6.0f}%  "
+        f"{fmt(v1_qp_warm):>9}  {fmt(v1_sf_warm):>11}  "
+        f"{fmt(v2_qp_cold):>11}  {fmt(v2_qp_warm):>10}  "
         f"{fmt(v2_ss_cold):>14}  {fmt(v2_ss_warm):>14}"
         f"  {'YES' if qp_conv else 'NO ':>8}"
     )
@@ -183,7 +155,6 @@ print("=" * W)
 print("""
   combos    = total sign combinations (2^(N-2)); v1-qp and v2-qp test ALL of them
   v1 solves = actual CVXOPT calls made by sign-descent on the last warm run
-  deriv%    = fraction of v2-qp warm time spent in derivative_prefactors()
   cold      = first call, includes XLA JIT compilation (v2 only)
   qp conv?  = did qpax converge (KKT residual < 1e-3) for the winning sign combo
 """)
@@ -196,22 +167,24 @@ print(f"{'N':>3}  {'combos':>7}  {'v1-qp chi2':>14}  {'v1-signflip chi2':>17}"
       f"  {'v2-qp chi2':>14}  {'v2-search chi2':>15}  {'v1/v2 agree?':>13}")
 print("-" * W)
 
-vmapped_np = jax.vmap(normalised_polynomial, in_axes=(0, None, None, None))
+vmapped_np = jax.vmap(difference_polynomial, in_axes=(0, None, None, None))
 
 residual_results = {}
 for N in N_VALUES:
     # v1 fits
-    sol_v1_qp = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
+    sol_v1_qp = _smooth_v1(x_np, y_np, N, model_type="difference_polynomial",
                             fit_type="qp", pivot_point=PIVOT, print_output=0)
-    sol_v1_sf = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
+    sol_v1_sf = _smooth_v1(x_np, y_np, N, model_type="difference_polynomial",
                             fit_type="qp-sign_flipping", pivot_point=PIVOT,
                             print_output=0)
 
     # v2 fits
     params_v2_qp, chi2_v2_qp, _ = _qp_v2(
-        x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
+        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
+        difference_polynomial_basis)
     params_v2_ss, chi2_v2_ss, _ = _qpsearch_v2(
-        x_jnp, y_jnp, N, PIVOT, normalised_polynomial, normalised_polynomial_basis)
+        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
+        difference_polynomial_basis)
 
     yfit_v2_qp = vmapped_np(x_jnp, x_jnp[PIVOT], y_jnp[PIVOT], params_v2_qp)
 
@@ -236,7 +209,7 @@ for N in N_VALUES:
 print("=" * W)
 
 # ── Plot ──────────────────────────────────────────────────────────────────
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402, I001
 
 Ns = list(all_results.keys())
 r = all_results
@@ -311,7 +284,7 @@ ax.grid(True, alpha=0.3)
 
 fig.suptitle(
     "maxsmooth: v1 (CVXOPT) vs v2 (JAX/qpax) — brute-force vs sign-search\n"
-    f"y = 5×10⁷·x⁻²·⁵ + 1% noise, {Ndat} pts",
+    f"y = 5×10⁷·x⁻²·⁵ + epsilon, {Ndat} pts",
     fontsize=11,
 )
 fig.tight_layout()
