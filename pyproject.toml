@@ -10,10 +10,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "jax>=0.8.0",
-    "jaxopt>=0.8.5",
     "matplotlib>=3.10.7",
     "numpy>=2.3.4",
     "progressbar>=2.5",
+    "git+https://github.com/htjb/qpax@max_iters"
 ]
 
 [tool.setuptools.packages.find]
