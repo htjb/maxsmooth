@@ -201,17 +201,12 @@ if HAS_GPU:
     GPU_SOLVER_OK = True
     for N in N_VALUES:
         print(f"  N={N}  ...", end="", flush=True)
-        try:
-            v2_gpu_qp_cold, v2_gpu_qp_warm = time_v2(
-                N, use_signsearch=False, device=GPU_DEVICE
-            )
-            v2_gpu_ss_cold, v2_gpu_ss_warm = time_v2(
-                N, use_signsearch=True, device=GPU_DEVICE
-            )
-        except Exception as e:
-            print(f"\r  GPU timing failed: {e}")
-            GPU_SOLVER_OK = False
-            break
+        v2_gpu_qp_cold, v2_gpu_qp_warm = time_v2(
+            N, use_signsearch=False, device=GPU_DEVICE
+        )
+        v2_gpu_ss_cold, v2_gpu_ss_warm = time_v2(
+            N, use_signsearch=True, device=GPU_DEVICE
+        )
         all_results[N].update(
             v2_gpu_qp_cold=v2_gpu_qp_cold, v2_gpu_qp=v2_gpu_qp_warm,
             v2_gpu_ss_cold=v2_gpu_ss_cold, v2_gpu_ss=v2_gpu_ss_warm,
@@ -221,9 +216,6 @@ if HAS_GPU:
             f"{fmt(v2_gpu_qp_cold):>14}  {fmt(v2_gpu_qp_warm):>14}  "
             f"{fmt(v2_gpu_ss_cold):>14}  {fmt(v2_gpu_ss_warm):>14}"
         )
-    if not GPU_SOLVER_OK:
-        print("  (cuSolver unavailable on this GPU — skipping GPU plot panels)")
-        HAS_GPU = False
     print("=" * W)
 
 print("""
