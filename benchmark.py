@@ -45,6 +45,17 @@ import jax.numpy as jnp                                  # noqa: E402, I001
 
 jax.config.update("jax_enable_x64", True)
 
+# ── Device detection ──────────────────────────────────────────────────────
+CPU_DEVICE = jax.devices("cpu")[0]
+try:
+    GPU_DEVICE = next(
+        d for d in jax.devices() if d.platform == "gpu"
+    )
+    HAS_GPU = True
+except StopIteration:
+    GPU_DEVICE = None
+    HAS_GPU = False
+
 from maxsmooth.models import (
     normalised_polynomial,
     normalised_polynomial_basis                           # noqa: E402, I001
@@ -84,22 +95,32 @@ def time_v1(N: int, fit_type: str) -> float:
 
 
 # ── V2 timing ─────────────────────────────────────────────────────────────
-def time_v2(N: int, use_signsearch: bool) -> tuple[float, float]:
-    """Return (cold_s, avg_warm_s, avg_deriv_s)."""
+def time_v2(
+    N: int, use_signsearch: bool, device=None
+) -> tuple[float, float]:
+    """Return (cold_s, avg_warm_s) for the given JAX device.
+
+    The cold call includes XLA JIT compilation for this device.
+    """
+    if device is None:
+        device = CPU_DEVICE
     fn = _qpsearch_v2 if use_signsearch else _qp_v2
-    args = (x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+    x = jax.device_put(x_jnp, device)
+    y = jax.device_put(y_jnp, device)
+    args = (x, y, N, PIVOT, normalised_polynomial,
             normalised_polynomial_basis, 2, N**2)
 
-    # cold call — includes XLA JIT compilation
-    t0 = time.perf_counter()
-    jax.block_until_ready(fn(*args))
-    cold = time.perf_counter() - t0
-
-    warm_times = []
-    for _ in range(REPEATS):
+    with jax.default_device(device):
+        # cold call — includes XLA JIT compilation for this device
         t0 = time.perf_counter()
         jax.block_until_ready(fn(*args))
-        warm_times.append(time.perf_counter() - t0)
+        cold = time.perf_counter() - t0
+
+        warm_times = []
+        for _ in range(REPEATS):
+            t0 = time.perf_counter()
+            jax.block_until_ready(fn(*args))
+            warm_times.append(time.perf_counter() - t0)
 
     return cold, float(np.mean(warm_times))
 
@@ -111,15 +132,21 @@ def fmt(s: float) -> str:
 
 
 W = 115
+header = (
+    f"  maxsmooth benchmark  |  y=5e7·x^-2.5 + epsilon  |"
+    f"  {Ndat} pts  |  {REPEATS} warm repeats"
+)
+if HAS_GPU:
+    header += f"  |  GPU: {GPU_DEVICE}"
+
 print("\n" + "=" * W)
-print(f"  maxsmooth benchmark  |  y=5e7·x^-2.5 + epsilon  |"
-      f"  {Ndat} pts  |  {REPEATS} warm repeats")
+print(header)
 print("=" * W)
 print(
     f"{'N':>3}  {'combos':>7}  "
     f"{'v1-qp':>9}  {'v1-signflip':>11}  "
-    f"{'v2-qp cold':>11}  {'v2-qp warm':>10}  "
-    f"{'v2-search cold':>14}  {'v2-search warm':>14}  {'qp conv?':>8}"
+    f"{'v2-cpu-qp cold':>14}  {'v2-cpu-qp warm':>14}  "
+    f"{'v2-cpu-ss cold':>14}  {'v2-cpu-ss warm':>14}  {'qp conv?':>8}"
 )
 print("-" * W)
 
@@ -130,34 +157,68 @@ for N in N_VALUES:
 
     v1_qp_warm = time_v1(N, "qp")
     v1_sf_warm = time_v1(N, "qp-sign_flipping")
-    v2_qp_cold, v2_qp_warm = time_v2(N, use_signsearch=False)
-    v2_ss_cold, v2_ss_warm = time_v2(N, use_signsearch=True)
+    v2_qp_cold, v2_qp_warm = time_v2(N, use_signsearch=False, device=CPU_DEVICE)
+    v2_ss_cold, v2_ss_warm = time_v2(N, use_signsearch=True, device=CPU_DEVICE)
 
-    _, _, qp_conv = _qp_v2(
-        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
-        normalised_polynomial_basis, max_iters=N**2
-    )
+    with jax.default_device(CPU_DEVICE):
+        _, _, qp_conv = _qp_v2(
+            jax.device_put(x_jnp, CPU_DEVICE),
+            jax.device_put(y_jnp, CPU_DEVICE),
+            N, PIVOT, normalised_polynomial,
+            normalised_polynomial_basis, max_iters=N**2,
+        )
 
     all_results[N] = dict(
         n_combos=n_combos,
         v1_qp=v1_qp_warm, v1_sf=v1_sf_warm,
-        v2_qp_cold=v2_qp_cold, v2_qp=v2_qp_warm,
-        v2_ss_cold=v2_ss_cold, v2_ss=v2_ss_warm, qp_conv=qp_conv,
+        v2_cpu_qp_cold=v2_qp_cold, v2_cpu_qp=v2_qp_warm,
+        v2_cpu_ss_cold=v2_ss_cold, v2_cpu_ss=v2_ss_warm,
+        qp_conv=qp_conv,
     )
     print(
         f"\r  {N:>3}  {n_combos:>7}  "
         f"{fmt(v1_qp_warm):>9}  {fmt(v1_sf_warm):>11}  "
-        f"{fmt(v2_qp_cold):>11}  {fmt(v2_qp_warm):>10}  "
+        f"{fmt(v2_qp_cold):>14}  {fmt(v2_qp_warm):>14}  "
         f"{fmt(v2_ss_cold):>14}  {fmt(v2_ss_warm):>14}"
         f"  {'YES' if qp_conv else 'NO ':>8}"
     )
 
 print("=" * W)
+
+# ── GPU timing (if available) ─────────────────────────────────────────────
+if HAS_GPU:
+    print(f"\n  v2 on GPU ({GPU_DEVICE})")
+    print("=" * W)
+    print(
+        f"{'N':>3}  {'combos':>7}  "
+        f"{'v2-gpu-qp cold':>14}  {'v2-gpu-qp warm':>14}  "
+        f"{'v2-gpu-ss cold':>14}  {'v2-gpu-ss warm':>14}"
+    )
+    print("-" * W)
+
+    for N in N_VALUES:
+        print(f"  N={N}  ...", end="", flush=True)
+        v2_gpu_qp_cold, v2_gpu_qp_warm = time_v2(
+            N, use_signsearch=False, device=GPU_DEVICE
+        )
+        v2_gpu_ss_cold, v2_gpu_ss_warm = time_v2(
+            N, use_signsearch=True, device=GPU_DEVICE
+        )
+        all_results[N].update(
+            v2_gpu_qp_cold=v2_gpu_qp_cold, v2_gpu_qp=v2_gpu_qp_warm,
+            v2_gpu_ss_cold=v2_gpu_ss_cold, v2_gpu_ss=v2_gpu_ss_warm,
+        )
+        print(
+            f"\r  {N:>3}  {2**(N-2):>7}  "
+            f"{fmt(v2_gpu_qp_cold):>14}  {fmt(v2_gpu_qp_warm):>14}  "
+            f"{fmt(v2_gpu_ss_cold):>14}  {fmt(v2_gpu_ss_warm):>14}"
+        )
+    print("=" * W)
+
 print("""
-  combos    = total sign combinations (2^(N-2)); v1-qp and v2-qp test ALL of them
-  v1 solves = actual CVXOPT calls made by sign-descent on the last warm run
-  cold      = first call, includes XLA JIT compilation (v2 only)
-  qp conv?  = did qpax converge (KKT residual < 1e-3) for the winning sign combo
+  combos   = total sign combinations (2^(N-2)); v1-qp and v2-qp test ALL of them
+  cold     = first call, includes XLA JIT compilation (v2 only; per-device)
+  qp conv? = did qpax converge (KKT residual < 1e-3) for the winning sign combo
 """)
 
 # ── Residuals comparison ───────────────────────────────────────────────────
@@ -219,22 +280,35 @@ fig, (ax_cold, ax_resid) = plt.subplots(2, 1, figsize=(8, 6))
 
 
 ax = ax_cold
-ax.plot(Ns, [r[N]["v2_qp_cold"] * 1e3 for N in Ns],
-        "s-", label="v2-qp cold (incl. JIT)", color="tomato", lw=2)
-ax.plot(Ns, [r[N]["v2_ss_cold"] * 1e3 for N in Ns],
-        "s--", label="v2-signsearch cold (incl. JIT)", color="orange", lw=2)
-ax.plot(Ns, [r[N]["v2_qp"] * 1e3 for N in Ns],
-        "s:", label="v2-qp warm", color="tomato", lw=2, alpha=0.6)
-ax.plot(Ns, [r[N]["v2_ss"] * 1e3 for N in Ns],
-        "s:", label="v2-signsearch warm", color="orange", lw=2, alpha=0.6)
+ax.plot(Ns, [r[N]["v2_cpu_qp_cold"] * 1e3 for N in Ns],
+        "s-", label="v2-cpu-qp cold (incl. JIT)", color="tomato", lw=2)
+ax.plot(Ns, [r[N]["v2_cpu_ss_cold"] * 1e3 for N in Ns],
+        "s--", label="v2-cpu-signsearch cold (incl. JIT)", color="orange", lw=2)
+ax.plot(Ns, [r[N]["v2_cpu_qp"] * 1e3 for N in Ns],
+        "s:", label="v2-cpu-qp warm", color="tomato", lw=2, alpha=0.6)
+ax.plot(Ns, [r[N]["v2_cpu_ss"] * 1e3 for N in Ns],
+        "s:", label="v2-cpu-signsearch warm", color="orange", lw=2, alpha=0.6)
+if HAS_GPU:
+    ax.plot(Ns, [r[N]["v2_gpu_qp_cold"] * 1e3 for N in Ns],
+            "^-", label="v2-gpu-qp cold (incl. JIT)", color="tomato", lw=2,
+            alpha=0.5)
+    ax.plot(Ns, [r[N]["v2_gpu_ss_cold"] * 1e3 for N in Ns],
+            "^--", label="v2-gpu-signsearch cold (incl. JIT)", color="orange",
+            lw=2, alpha=0.5)
+    ax.plot(Ns, [r[N]["v2_gpu_qp"] * 1e3 for N in Ns],
+            "^:", label="v2-gpu-qp warm", color="tomato", lw=2, alpha=0.35)
+    ax.plot(Ns, [r[N]["v2_gpu_ss"] * 1e3 for N in Ns],
+            "^:", label="v2-gpu-signsearch warm", color="orange", lw=2,
+            alpha=0.35)
 ax.plot(Ns, [r[N]["v1_qp"] * 1e3 for N in Ns],
         "o-", label="v1-qp  (CVXOPT brute)", color="steelblue", lw=2)
 ax.plot(Ns, [r[N]["v1_sf"] * 1e3 for N in Ns],
-        "o-", label="v1-signsearch (CVXOPT)", color="steelblue", lw=2, ls=':')
+        "o-", label="v1-signsearch (CVXOPT)", color="steelblue", lw=2, ls=":")
 ax.set_xlabel("Polynomial order N")
 ax.set_ylabel("Wall time (ms)")
-ax.set_title("Timing)")
-ax.legend(fontsize=9)
+gpu_info = f" | GPU: {GPU_DEVICE}" if HAS_GPU else " | no GPU"
+ax.set_title(f"Timing (squares=CPU, triangles=GPU){gpu_info}")
+ax.legend(fontsize=8)
 ax.set_yscale("log")
 ax.grid(True, which="both", alpha=0.3)
 
@@ -257,9 +331,10 @@ ax.legend(fontsize=8)
 ax.grid(True, alpha=0.3)
 ax.set_ylim(-1, 1)
 
+gpu_subtitle = f" | GPU: {GPU_DEVICE}" if HAS_GPU else ""
 fig.suptitle(
     "maxsmooth: v1 (CVXOPT) vs v2 (JAX/qpax) — brute-force vs sign-search\n"
-    f"y = 5×10⁷·x⁻²·⁵ + epsilon, {Ndat} pts",
+    f"y = 5×10⁷·x⁻²·⁵ + epsilon, {Ndat} pts{gpu_subtitle}",
     fontsize=11,
 )
 fig.tight_layout()
