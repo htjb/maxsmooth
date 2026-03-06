@@ -6,6 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+# module level cache that persists for the length of the python process
 _G_cache: dict[tuple, list[jnp.ndarray]] = {}
 
 

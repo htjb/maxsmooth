@@ -19,7 +19,7 @@ def _dcf(
     max_iters: int,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
     """Solve one QP for a given sign vector.
-    
+
     Using a primal-dual interior point method implemented in qpax.
 
     CVXOPT was used in version 1 of maxsmooth which also implements
@@ -114,6 +114,9 @@ def qp(
             lowest_constrained_derivative:
         ]
     )
+    # needed if G was cached on a different device, e.g. CPU vs GPU
+    G = jax.device_put(G, c.devices().pop())
+
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
     G = G / jnp.where(g_norm < 1e-10, 1.0, g_norm)
 
@@ -182,6 +185,8 @@ def qpsignsearch(
             lowest_constrained_derivative:
         ]
     )
+    G = jax.device_put(G, c.devices().pop())
+
     g_norm = jnp.linalg.norm(G, axis=2, keepdims=True)
     G = G / jnp.where(g_norm < 1e-10, 1.0, g_norm)
 
