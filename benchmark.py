@@ -46,8 +46,8 @@ import jax.numpy as jnp                                  # noqa: E402, I001
 jax.config.update("jax_enable_x64", True)
 
 from maxsmooth.models import (
-    difference_polynomial,
-    difference_polynomial_basis                           # noqa: E402, I001
+    normalised_polynomial,
+    normalised_polynomial_basis                           # noqa: E402, I001
 )
 from maxsmooth.qp import qp as _qp_v2                   # noqa: E402, I001
 from maxsmooth.qp import qpsignsearch as _qpsearch_v2   # noqa: E402, I001
@@ -58,7 +58,8 @@ rng = np.random.default_rng(42)
 Ndat = 100
 x_np = np.linspace(50, 200, Ndat)
 y_true = 5e7 * x_np**(-2.5)
-y_np = y_true + rng.normal(0, 0.25, Ndat)
+noise = rng.normal(0, 0.025, size=Ndat)
+y_np = y_true + noise
 
 x_jnp = jnp.array(x_np)
 y_jnp = jnp.array(y_np)
@@ -72,7 +73,7 @@ REPEATS = 3
 def time_v1(N: int, fit_type: str) -> float:
     """Return (first_s, avg_warm_s, qp_solve_count)."""
 
-    kwargs = dict(model_type="difference_polynomial",
+    kwargs = dict(model_type="normalised_polynomial",
                   fit_type=fit_type, print_output=0)
 
     t0 = time.perf_counter()
@@ -86,8 +87,8 @@ def time_v1(N: int, fit_type: str) -> float:
 def time_v2(N: int, use_signsearch: bool) -> tuple[float, float]:
     """Return (cold_s, avg_warm_s, avg_deriv_s)."""
     fn = _qpsearch_v2 if use_signsearch else _qp_v2
-    args = (x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-            difference_polynomial_basis, 2, N**2)
+    args = (x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+            normalised_polynomial_basis, 2, N**2)
 
     # cold call — includes XLA JIT compilation
     t0 = time.perf_counter()
@@ -133,8 +134,8 @@ for N in N_VALUES:
     v2_ss_cold, v2_ss_warm = time_v2(N, use_signsearch=True)
 
     _, _, qp_conv = _qp_v2(
-        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis, max_iters=N**2
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+        normalised_polynomial_basis, max_iters=N**2
     )
 
     all_results[N] = dict(
@@ -167,24 +168,24 @@ print(f"{'N':>3}  {'combos':>7}  {'v1-qp chi2':>14}  {'v1-signflip chi2':>17}"
       f"  {'v2-qp chi2':>14}  {'v2-search chi2':>15}  {'v1/v2 agree?':>13}")
 print("-" * W)
 
-vmapped_np = jax.vmap(difference_polynomial, in_axes=(0, None, None, None))
+vmapped_np = jax.vmap(normalised_polynomial, in_axes=(0, None, None, None))
 
 residual_results = {}
 for N in N_VALUES:
     # v1 fits
-    sol_v1_qp = _smooth_v1(x_np, y_np, N, model_type="difference_polynomial",
+    sol_v1_qp = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
                             fit_type="qp", pivot_point=PIVOT, print_output=0)
-    sol_v1_sf = _smooth_v1(x_np, y_np, N, model_type="difference_polynomial",
+    sol_v1_sf = _smooth_v1(x_np, y_np, N, model_type="normalised_polynomial",
                             fit_type="qp-sign_flipping", pivot_point=PIVOT,
                             print_output=0)
 
     # v2 fits
     params_v2_qp, chi2_v2_qp, _ = _qp_v2(
-        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis, max_iters=N**2)
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+        normalised_polynomial_basis, max_iters=N**2)
     params_v2_ss, chi2_v2_ss, _ = _qpsearch_v2(
-        x_jnp, y_jnp, N, PIVOT, difference_polynomial,
-        difference_polynomial_basis, max_iters=N**2)
+        x_jnp, y_jnp, N, PIVOT, normalised_polynomial,
+        normalised_polynomial_basis, max_iters=N**2)
 
     yfit_v2_qp = vmapped_np(x_jnp, x_jnp[PIVOT], y_jnp[PIVOT], params_v2_qp)
 
@@ -214,29 +215,8 @@ import matplotlib.pyplot as plt  # noqa: E402, I001
 Ns = list(all_results.keys())
 r = all_results
 
-fig = plt.figure(figsize=(13, 10))
-gs = fig.add_gridspec(2, 2)
-ax_warm = fig.add_subplot(gs[0, 0])
-ax_cold = fig.add_subplot(gs[0, 1])
-ax_resid = fig.add_subplot(gs[1, :])
+fig, (ax_cold, ax_resid) = plt.subplots(2, 1, figsize=(8, 6))
 
-ax = ax_warm
-ax.plot(Ns, [r[N]["v1_qp"] * 1e3 for N in Ns],
-        "o-", label="v1-qp  (CVXOPT brute)", color="steelblue", lw=2)
-ax.plot(Ns, [r[N]["v1_sf"] * 1e3 for N in Ns],
-        "o--", label="v1-signflip  (CVXOPT descent)", color="steelblue",
-        lw=2, alpha=0.5)
-ax.plot(Ns, [r[N]["v2_qp"] * 1e3 for N in Ns],
-        "s-", label="v2-qp  (JAX vmap warm)", color="tomato", lw=2)
-ax.plot(Ns, [r[N]["v2_ss"] * 1e3 for N in Ns],
-        "s--", label="v2-signsearch  (JAX while_loop warm)", color="tomato",
-        lw=2, alpha=0.5)
-ax.set_xlabel("Polynomial order N")
-ax.set_ylabel("Wall time (ms)")
-ax.set_title("Warm-call timing (log scale)")
-ax.legend(fontsize=9)
-ax.set_yscale("log")
-ax.grid(True, which="both", alpha=0.3)
 
 ax = ax_cold
 ax.plot(Ns, [r[N]["v2_qp_cold"] * 1e3 for N in Ns],
@@ -247,11 +227,13 @@ ax.plot(Ns, [r[N]["v2_qp"] * 1e3 for N in Ns],
         "s:", label="v2-qp warm", color="tomato", lw=2, alpha=0.6)
 ax.plot(Ns, [r[N]["v2_ss"] * 1e3 for N in Ns],
         "s:", label="v2-signsearch warm", color="orange", lw=2, alpha=0.6)
+ax.plot(Ns, [r[N]["v1_qp"] * 1e3 for N in Ns],
+        "o-", label="v1-qp  (CVXOPT brute)", color="steelblue", lw=2)
 ax.plot(Ns, [r[N]["v1_sf"] * 1e3 for N in Ns],
-        "o-", label="v1-signflip warm (reference)", color="steelblue", lw=2)
+        "o-", label="v1-signsearch (CVXOPT)", color="steelblue", lw=2, ls=':')
 ax.set_xlabel("Polynomial order N")
 ax.set_ylabel("Wall time (ms)")
-ax.set_title("v2 cold vs warm (JIT overhead)")
+ax.set_title("Timing)")
 ax.legend(fontsize=9)
 ax.set_yscale("log")
 ax.grid(True, which="both", alpha=0.3)
@@ -266,10 +248,11 @@ for i, N in enumerate(N_plot):
     resid_v2 = y_np - residual_results[N]["yfit_v2_qp"]
     ax.plot(x_np, resid_v1, color=colors[i], lw=1.5, label=f"v1-qp  N={N}")
     ax.plot(x_np, resid_v2, color=colors[i], lw=1.5, ls="--")
+ax.plot(x_np, noise, color="k", lw=0.8, ls=":", label="data noise")
 ax.axhline(0, color="k", lw=0.8, ls=":")
 ax.set_xlabel("x")
 ax.set_ylabel("residual  (y - fit)")
-ax.set_title("Residuals: v1 (solid) vs v2-qp (dashed) — should overlap")
+ax.set_title("Residuals")
 ax.legend(fontsize=8)
 ax.grid(True, alpha=0.3)
 ax.set_ylim(-1, 1)
@@ -281,6 +264,6 @@ fig.suptitle(
 )
 fig.tight_layout()
 out = REPO / "benchmark_results.png"
-fig.savefig(out, dpi=150)
+fig.savefig(out, dpi=350)
 print(f"Plot saved → {out}")
 plt.close()
